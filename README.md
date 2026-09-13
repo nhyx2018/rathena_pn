@@ -19,8 +19,8 @@ A customized [rAthena](https://github.com/rathena/rathena) server with fourth-jo
 
 1. Open the [latest release](https://github.com/patnawa/rathena_pn/releases/latest) and download **all client `.part*.rar` files** from that release.
 2. Keep every part in one folder. Extract **part 1 once** with a RAR5-compatible extractor; it reads the remaining parts automatically.
-3. Open the extracted `PN-Client` folder and run **`Check Client.cmd`**.
-4. Adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**.
+3. Download **`PN-Bank-v2.2-20260913.zip`** from the same release. With the game closed, copy its `BankUI.dll` into the extracted `PN-Client` folder, replacing the existing DLL.
+4. Run **`Check Client.cmd`**, adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**. The bank title bar should show **v2.2**.
 
 The client uses the LAN address above. You need access to that network to log in. When upgrading, close the game, extract into a fresh folder, and update desktop shortcuts to that folder. Keep the supplied `DATA.INI` order and bank/font DLLs together.
 
@@ -43,7 +43,7 @@ One bank balance is shared by **all characters on the same game login**. Open it
 
 Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**, show the current maximum buy/sell quantities, and display the bank cost or proceeds before you click.
 
-**Bank v2.1** shows the reason inside each disabled Buy/Sell row, including the exact extra bank funds required. A bank holding 1,000,000 Zeny needs **2,000 more deposited** to buy one ticket. Get the small v2.1 patch from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64), or see the [feedback guide](doc/bank_feedback_20260913.md).
+**Bank v2.2** fixes periodic refreshes that briefly disabled Buy/Sell and caused blinking. Valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges retain their visible requirement messages. Get the small v2.2 patch from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64), or read the [refresh repair and verification](doc/bank_refresh_20260913.md).
 
 | Item | Buy one | Sell one |
 | --- | ---: | ---: |

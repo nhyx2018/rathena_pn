@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--build',type=Path)
     parser.add_argument('--backup',type=Path,required=True)
     parser.add_argument('--rollback',action='store_true')
+    parser.add_argument('--diagnostics',action='store_true',help='Enable the local bank control-state report.')
     args=parser.parse_args();root=args.client_root.resolve();backup=args.backup.resolve()
     idle()
     if args.rollback:
@@ -52,6 +53,8 @@ def main():
         'BankUI-LICENSE.txt':(HERE/'vendor/MinHook/LICENSE.txt').read_bytes(),
         'SystemEN/AccountBankInfo.lua':(REPO/'client-patch/client_compat/SystemEN/AccountBankInfo.lua').read_bytes(),
         'tools/client/start-client.ps1':(REPO/'client-patch/client_usability/tools/client/start-client.ps1').read_bytes()}
+    if args.diagnostics:
+        files['BankUI.ini']=files['BankUI.ini'].replace(b'Diagnostics=0',b'Diagnostics=1')
     loader=(root/'SystemEN/itemInfo.lua').read_bytes()
     if b'dofile("SystemEN/AccountBankInfo.lua")' not in loader:
         newline=b'\r\n' if b'\r\n' in loader else b'\n'

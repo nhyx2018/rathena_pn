@@ -5,6 +5,7 @@
 #include <array>
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include <cwchar>
 #include <string>
 #include <vector>
@@ -15,7 +16,11 @@ HWND panel=nullptr, game=nullptr;
 WNDPROC previous_game_proc=nullptr;
 HFONT font=nullptr;
 HBRUSH white=nullptr;
-bool preview=false, busy=false, verified=false;
+bool preview=false, busy=false, refreshing=false, verified=false;
+uint32_t queued_action=pn_bank::Refresh; // One explicit click may wait for a read-only refresh.
+int64_t queued_amount=0;
+std::wstring diagnostics_path;
+bool last_reply_connected=false;
 pn_bank::Reply state;
 uint64_t sequence=0;
 ULONGLONG last_refresh=0;
@@ -27,6 +32,11 @@ constexpr int preset_y[3]={151,284,449};
 constexpr int action_y[3]={103,236,401};
 constexpr int edit_ids[3]={100,101,102};
 constexpr int refresh_id=200, close_id=201, title_close=202;
+
+bool transaction_pending() { return (busy && !refreshing) || queued_action!=pn_bank::Refresh; }
+bool actions_ready() {
+    return verified && !transaction_pending() && state.result!=pn_bank::Saving && state.result!=pn_bank::Unavailable;
+}
 
 std::wstring wide(const char* value) { return std::wstring(value,value+strlen(value)); }
 std::wstring commas(int64_t value,bool zeny=false) {
@@ -48,7 +58,7 @@ void set_amount(int row,int64_t value) { auto text=std::to_wstring(value); SetWi
 std::wstring exchange_block_reason(int row,bool buy) {
     const std::wstring label=buy?L"Buy: ":L"Sell: ";
     if(!verified) return label+L"Log in, then Refresh to connect to the bank.";
-    if(busy || state.result==pn_bank::Saving) return label+L"Waiting for the bank. Please wait...";
+    if(transaction_pending() || state.result==pn_bank::Saving) return label+L"Waiting for the bank. Please wait...";
     if(state.result==pn_bank::Unavailable) return label+L"Banking is unavailable here.";
     const uint32_t action=(row==1?pn_bank::BuyDiamond:pn_bank::BuyNote)+(buy?0:1);
     const auto count=amount(row);
@@ -107,7 +117,7 @@ void paint(HDC dc) {
     SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(0,0,0));
     gradient(dc,RECT{0,0,520,27},RGB(188,200,255),RGB(225,232,255));
     text(dc,12,3,420,L"\x25cf  Bank");
-    text(dc,390,3,90,L"v2.1",true);
+    text(dc,390,3,90,L"v2.2",true);
     text(dc,10,32,495,L"Master Account");
     for(auto range:{std::pair<int,int>{55,181},{185,346},{350,511}}) {
         RECT box{9,range.first,511,range.second}; FrameRect(dc,&box,reinterpret_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH)));
@@ -151,7 +161,7 @@ void paint(HDC dc) {
     text(dc,10,538,500,L"On-hand limit: "+commas(state.wallet_limit)+L"z");
     text(dc,10,556,500,L"Favorite, bound, modified and rental items cannot be sold.");
     auto guidance=status;
-    if(verified && !busy && state.result==pn_bank::Ok) {
+    if(actions_ready() && state.result==pn_bank::Ok && status==wide(pn_bank::message(pn_bank::Ok))) {
         guidance=L"Buy uses bank zeny; Sell uses eligible items on hand.";
         for(int row=1;row<3;++row)
             if(GetFocus()==inputs[row] && amount(row)<=0)
@@ -164,27 +174,74 @@ HWND button(int id,const wchar_t* label,int x,int y,int width,int height=21) {
         x,y,width,height,panel,reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)),instance,nullptr);
     SendMessage(child,WM_SETFONT,reinterpret_cast<WPARAM>(font),TRUE); return child;
 }
-bool actions_ready() {
-    return verified && !busy && state.result!=pn_bank::Saving && state.result!=pn_bank::Unavailable;
+const char* result_name(uint32_t result) {
+    const char* names[]={"Ok","Saving","Unauthorized","Invalid","Busy","Unavailable","Funds","Capacity","Limit","Items","Stale","SaveFailed"};
+    return result<=pn_bank::SaveFailed?names[result]:"Unknown";
 }
-void update() {
+void write_diagnostics(const char* event) {
+    if(diagnostics_path.empty()) return;
+    FILE* file=_wfopen(diagnostics_path.c_str(),L"w");
+    if(!file) return;
+    // Local, opt-in latest-state snapshot. Never log identities, balances,
+    // inventory counts, login tokens, nonces, raw packets, or passwords.
+    std::fprintf(file,"version=2.2\nevent=%s\nuptime_ms=%llu\nauthenticated=%d\nverified=%d\nbusy=%d\nrefreshing=%d\nqueued_action=%u\nlast_reply_connected=%d\nserver_result=%s\n",
+        event,static_cast<unsigned long long>(GetTickCount64()),bank_authenticated(),verified,busy,refreshing,queued_action,last_reply_connected,result_name(state.result));
+    const char* names[]={"Deposit","Withdraw","BuyDiamond","SellDiamond","BuyTicket","SellTicket"};
+    for(int i=0;i<6;++i) {
+        const char* reason=!verified?"Unverified":transaction_pending()?"Pending":state.result==pn_bank::Saving?"Saving":
+            state.result==pn_bank::Unavailable?"Unavailable":result_name(pn_bank::plan(state,i+1,amount(i/2)).result);
+        std::fprintf(file,"%s.enabled=%d\n%s.reason=%s\n",names[i],actions[i] && IsWindowEnabled(actions[i]),names[i],reason);
+    }
+    std::fclose(file);
+}
+void configure_diagnostics() {
+    wchar_t module[MAX_PATH]{};
+    const auto length=GetModuleFileNameW(instance,module,MAX_PATH);
+    if(!length || length>=MAX_PATH) return;
+    std::wstring directory(module);
+    auto slash=directory.find_last_of(L"\\/");
+    if(slash==std::wstring::npos) return;
+    directory.resize(slash+1);
+    if(GetPrivateProfileIntW(L"Bank",L"Diagnostics",0,(directory+L"BankUI.ini").c_str()))
+        diagnostics_path=directory+L"BankUI-diagnostics.txt";
+}
+void enable(HWND control,bool enabled) {
+    if(control && !!IsWindowEnabled(control)!=enabled) EnableWindow(control,enabled);
+}
+void update(const char* event="controls") {
     for(int i=0;i<6;++i) {
         int row=i/2; uint32_t action=i+1;
         auto plan=pn_bank::plan(state,action,amount(row));
-        EnableWindow(actions[i],actions_ready() && plan.result==pn_bank::Ok);
+        enable(actions[i],actions_ready() && plan.result==pn_bank::Ok);
     }
-    EnableWindow(GetDlgItem(panel,refresh_id),!busy);
+    enable(GetDlgItem(panel,refresh_id),!transaction_pending());
     InvalidateRect(panel,nullptr,FALSE);
+    write_diagnostics(event);
 }
 void submit(uint32_t action,int64_t value=0) {
-    if(busy || preview) return;
+    if(preview) return;
     if(action!=pn_bank::Refresh && !actions_ready()) return;
     if(action!=pn_bank::Refresh && pn_bank::plan(state,action,value).result!=pn_bank::Ok) return;
+    if(busy) {
+        if(action!=pn_bank::Refresh && refreshing) {
+            // Keep enabled controls responsive without racing a second worker.
+            // Capture the clicked amount and revalidate it against the reply.
+            queued_action=action; queued_amount=value;
+            status=L"Waiting for the balance check before saving...";
+            update("action_queued");
+        }
+        return;
+    }
     uint64_t id=action==pn_bank::Refresh?0:++sequence;
     busy=bank_submit(panel,state,action,value,id);
-    if(busy) { status=action==pn_bank::Refresh?L"Refreshing balances...":L"Saving transaction. Please wait..."; last_refresh=GetTickCount64(); }
+    refreshing=busy && action==pn_bank::Refresh;
+    if(busy) {
+        last_refresh=GetTickCount64();
+        if(refreshing && verified) { write_diagnostics("refresh_started"); return; }
+        status=refreshing?L"Refreshing balances...":L"Saving transaction. Please wait...";
+    }
     else { verified=false; status=L"Log in to a character to use the bank."; }
-    update();
+    update("request_started");
 }
 void show() {
     if(game) SetWindowLongPtr(panel,GWLP_HWNDPARENT,reinterpret_cast<LONG_PTR>(game));
@@ -194,8 +251,9 @@ void show() {
         int x=area.left+std::max<LONG>(0,(area.right-area.left-522)/2);
         int y=area.top+std::max<LONG>(0,(area.bottom-area.top-642)/2);
         SetWindowPos(panel,nullptr,x,y,522,642,SWP_NOZORDER);
+        ShowWindow(panel,SW_SHOW); SetForegroundWindow(panel); SetFocus(inputs[0]);
     }
-    ShowWindow(panel,SW_SHOW); SetForegroundWindow(panel); SetFocus(inputs[0]); submit(pn_bank::Refresh);
+    submit(pn_bank::Refresh);
 }
 LRESULT CALLBACK game_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     if((message==WM_SYSKEYDOWN || message==WM_KEYDOWN) && w=='B' && ((GetKeyState(VK_MENU)|GetKeyState(VK_CONTROL))&0x8000)) {
@@ -233,7 +291,20 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         }
         button(refresh_id,L"Refresh",10,584,247); button(close_id,L"Close",263,584,247);
         SetTimer(window,1,250,nullptr); return 0;
-    case WM_PAINT: { PAINTSTRUCT ps; HDC dc=BeginPaint(window,&ps); paint(dc); EndPaint(window,&ps); return 0; }
+    case WM_PAINT: {
+        PAINTSTRUCT ps; HDC dc=BeginPaint(window,&ps);
+        RECT area{}; GetClientRect(window,&area);
+        HDC memory=CreateCompatibleDC(dc);
+        HBITMAP bitmap=CreateCompatibleBitmap(dc,area.right,area.bottom);
+        if(memory && bitmap) {
+            auto old=SelectObject(memory,bitmap); paint(memory);
+            BitBlt(dc,0,0,area.right,area.bottom,memory,0,0,SRCCOPY);
+            SelectObject(memory,old);
+        } else paint(dc);
+        if(bitmap) DeleteObject(bitmap);
+        if(memory) DeleteDC(memory);
+        EndPaint(window,&ps); return 0;
+    }
     case WM_PRINTCLIENT: paint(reinterpret_cast<HDC>(w)); return 0;
     case WM_ERASEBKGND: return 1;
     case WM_CTLCOLORSTATIC:
@@ -281,23 +352,33 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         return 0;
     case BANK_SESSION:
         if(!bank_current_generation(static_cast<LONG>(w),false)) return 0;
-        busy=false; verified=false; state=pn_bank::Reply{}; sequence=0;
+        busy=refreshing=verified=last_reply_connected=false;
+        queued_action=pn_bank::Refresh; queued_amount=0; state=pn_bank::Reply{}; sequence=0;
         for(int row=0;row<3;++row) set_amount(row,row==0?0:1);
         status=L"Log in to a character to use the bank.";
         if(bank_authenticated()) submit(pn_bank::Refresh);
-        update(); return 0;
+        update("session_changed"); return 0;
     case BANK_RESULT: {
         auto result=reinterpret_cast<BankResult*>(l);
         if(bank_current_generation(result->generation)) {
-            busy=false;
+            const bool unchanged=refreshing && verified && result->connected &&
+                queued_action==pn_bank::Refresh && !std::memcmp(&state,&result->state,sizeof(state));
+            const auto next_action=queued_action; const auto next_amount=queued_amount;
+            busy=refreshing=false; queued_action=pn_bank::Refresh; queued_amount=0;
+            last_reply_connected=result->connected;
             if(result->connected) {
                 state=result->state; sequence=std::max(sequence,state.request_id);
                 verified=state.result!=pn_bank::Unauthorized;
-                status=wide(pn_bank::message(state.result));
+                if(!unchanged) status=wide(pn_bank::message(state.result));
             } else {
                 verified=false; status=L"Connection lost. Refresh to verify the transaction result.";
             }
-            update();
+            if(next_action!=pn_bank::Refresh && result->connected && state.result==pn_bank::Ok && actions_ready()) {
+                const auto plan=pn_bank::plan(state,next_action,next_amount);
+                if(plan.result==pn_bank::Ok) submit(next_action,next_amount);
+                else { status=wide(pn_bank::message(plan.result)); update("queued_action_rejected"); }
+            } else if(!unchanged) update("reply_received");
+            else write_diagnostics("refresh_unchanged");
         }
         delete result; return 0;
     }
@@ -338,10 +419,11 @@ int bank_window_main(HINSTANCE module,bool render) {
     WNDCLASSW type{}; type.lpfnWndProc=window_proc; type.hInstance=instance;
     type.hCursor=LoadCursor(nullptr,IDC_ARROW); type.lpszClassName=L"PNAccountBank";
     RegisterClassW(&type);
-    panel=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_CONTROLPARENT,type.lpszClassName,L"Bank",WS_POPUP|WS_BORDER,
+    panel=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_CONTROLPARENT,type.lpszClassName,L"Bank",WS_POPUP|WS_BORDER|WS_CLIPCHILDREN,
         100,100,522,642,nullptr,nullptr,instance,nullptr);
     if(!panel) return 1;
     bank_install_transport(panel);
+    if(!preview) configure_diagnostics();
     if(preview) {
         state.result=pn_bank::Ok; state.bank=1834023229; state.wallet=0;
         state.max_deposit=0; state.max_withdraw=state.bank;

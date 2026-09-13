@@ -1,5 +1,7 @@
 # Bank v2.1: clear Buy/Sell feedback
 
+**Superseded by [Bank v2.2](bank_refresh_20260913.md)**, which also fixes periodic refresh disablement and panel flicker. Use the v2.2 patch for current installations; the following records the earlier feedback update.
+
 Disabled Buy/Sell buttons now explain the requirement directly inside their item row. The panel shows the exact additional Zeny needed in the bank, missing eligible items, inventory space/weight limits, invalid quantities, balance limits, and connection or save status. Available exchanges continue to show their total cost or proceeds.
 
 ![Bank v2.1 explaining insufficient bank funds and missing sale items](images/bank-v2.1-feedback.png)

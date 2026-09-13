@@ -1,0 +1,70 @@
+{
+  "feature": "Bank v2.2 stable refresh and responsive actions",
+  "validation": {
+    "passed": true,
+    "manual_Ragexe_playthrough": false,
+    "utc": "2026-09-13T13:46:10.362389+00:00",
+    "tests": {
+      "BankUITest.exe": {
+        "exit_code": 0,
+        "output": "PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n"
+      },
+      "BankRefreshTest.exe": {
+        "exit_code": 0,
+        "output": "PASS: shipping UI + real hooked authentication + delayed fragmented loopback replies; timer refresh keeps Buy enabled; native click queues once and preserves quantity; pending save blocks actions; committed purchase restores Buy/Sell; logout cancels queued sale and stale reply\n"
+      },
+      "BankTransportTest.exe": {
+        "exit_code": 0,
+        "output": "PASS: real Windows API hooks, fragmented authentication, unmodified game bytes, idle and interleaved open notifications, exact 64-bit balances, authenticated companion exchange, short reply rejection, logout and stale-session rejection\n"
+      },
+      "BankLoaderTest.exe": {
+        "exit_code": 0,
+        "output": "PASS: shipping FontScale export forwards DirectDraw, original font scaling preserved, BankUI loads hidden with unauthenticated transactions disabled\n"
+      },
+      "BankPreview.exe": {
+        "exit_code": 0,
+        "output": ""
+      }
+    },
+    "sha256": {
+      "bank-preview-max.bmp": "7fa573eb591f215dd96d6aa4a8b05f304fcf99156bbd2b5c67e025151177ee66",
+      "bank-preview-needs-deposit.bmp": "a8fc18aaeed5cbaca1a3a3bb04bc470b8001c6a83fe9b32b3acdb47f3f9aec21",
+      "bank-preview.bmp": "8f386f60dde00ac548ecfe7ff0665b8d07d8395f5c0c25b3d7a8c8034f47b4fc",
+      "BankLoaderTest.exe": "87dc1eb8fe5126dd610754076ab26152d6ffcec809e1706c07a92be17ba3fa3b",
+      "BankPreview.exe": "7a98ef22080e1b8988fd1c8a93cb387dcedfbb3964d2179d2f22b3dbac3a9936",
+      "BankRefreshTest.exe": "7ddc8e47b6e1cb9290299d6f4d0b59c7b2b3ee14419c3607a0d7655a2dd51a89",
+      "BankTransportTest.exe": "cd1bc05ff01e1088b9b87eb7b7bffad4982b6bcf70399f9a4ac3796bdf672089",
+      "BankUI.dll": "a3f324dbe7765421cef8e38024072e93c78f0e81830232dba5f05dc8f4a18a60",
+      "BankUITest.exe": "04ec43d6177e68b659c17aa0064d43b79421b042299f871801b9e8bf03426e2e",
+      "FontScale.dll": "3b4769db1f63a4b3a33853e6a11340ddfa8766a569c18de3c3dc234940d6535a",
+      "FontScaleOriginal.dll": "ca4820f0a86c06cf2cea7fc4173ae3f6fd1b362cab9dcfa703c8319891510d82"
+    },
+    "source_sha256": {
+      "client-patch/account_bank/bank_ui.cpp": "5e7e64f35e8593bd284be4bed2fc9c9497f5f9e578a3d9af77625baa3b18860c",
+      "client-patch/account_bank/bank_transport.cpp": "53ad9c344037688aeb7b77bdabc5be760153b8edcfddcc23e81c2f907afdcccf",
+      "src/custom/bank_protocol.hpp": "080fad3bb7c5908f831fc435d498b491184ad6343c3c5eb09491edc2aafbf2ba",
+      "tools/ci/bank_ui_test.cpp": "2b62ae0788ca038946b8e64d928e08220fe750e51c334334149be72abe8fe6f9",
+      "tools/ci/bank_refresh_test.cpp": "e0cd8f6eba5525024751b57990cff1639155951a6642611ca1771b08ec0610e5"
+    }
+  },
+  "installation": {
+    "installed": true,
+    "file_backups_retained": true,
+    "launcher_check_passed": true,
+    "installed_dll_sha256": "a3f324dbe7765421cef8e38024072e93c78f0e81830232dba5f05dc8f4a18a60",
+    "client_executable_and_font_settings_preserved": true,
+    "local_diagnostics_enabled": true
+  },
+  "player_bank_or_wallet_modified_for_testing": false,
+  "live_Ragexe_reproduction": {
+    "recorded_utc": "2026-09-13T13:49:40.524182+00:00",
+    "version": "2.2",
+    "authenticated_connection_verified": true,
+    "unchanged_refresh_received": true,
+    "refresh_did_not_leave_actions_pending": true,
+    "remaining_disabled_actions_have_validated_requirement_reasons": true,
+    "no_blinking_confirmed_by_user": true,
+    "player_exchange_not_yet_manually_verified": true,
+    "player_transactions_executed_by_tests": false
+  }
+}

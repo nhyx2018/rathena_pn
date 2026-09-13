@@ -3,12 +3,19 @@
 #define PN_BANK_UI_TEST
 #include "../../client-patch/account_bank/bank_ui.cpp"
 #include <iostream>
+#include <fstream>
 
 namespace fixture {
 struct Request { uint32_t action; int64_t amount; uint64_t sequence; };
 std::vector<Request> requests;
 bool authenticated=true, connected=true;
 LONG generation=7;
+int enable_messages=0;
+WNDPROC button_proc=nullptr;
+}
+static LRESULT CALLBACK counted_button(HWND window,UINT message,WPARAM w,LPARAM l) {
+    if(message==WM_ENABLE) ++fixture::enable_messages;
+    return CallWindowProc(fixture::button_proc,window,message,w,l);
 }
 void bank_install_transport(HWND) {}
 bool bank_authenticated() { return fixture::authenticated; }
@@ -38,7 +45,7 @@ int main() {
     instance=GetModuleHandle(nullptr);
     WNDCLASSW type{};type.lpfnWndProc=window_proc;type.hInstance=instance;type.lpszClassName=L"PNBankUIFixture";
     assert(RegisterClassW(&type));
-    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP,0,0,522,642,nullptr,nullptr,instance,nullptr);
+    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_CLIPCHILDREN,0,0,522,642,nullptr,nullptr,instance,nullptr);
     assert(panel);
     // These fail in the reported build: both item edits originally started at 0.
     assert(amount(0)==0 && amount(1)==1 && amount(2)==1);
@@ -46,6 +53,72 @@ int main() {
     auto value=funded();reply(value);
     for(int i=2;i<6;++i) assert(IsWindowEnabled(actions[i]));
     for(int row=1;row<3;++row) for(bool buy:{true,false}) assert(exchange_block_reason(row,buy).empty());
+    for(auto control:actions)
+        fixture::button_proc=reinterpret_cast<WNDPROC>(SetWindowLongPtr(control,GWLP_WNDPROC,reinterpret_cast<LONG_PTR>(counted_button)));
+    diagnostics_path=L"bank-ui-test-diagnostics.txt";
+    // The real timer used to disable every action and invalidate the entire
+    // panel at both ends of each unchanged automatic balance refresh.
+    set_amount(0,1);ValidateRect(panel,nullptr);const auto old_status=status;
+    const auto before_refresh=fixture::requests.size();fixture::enable_messages=0;
+    last_refresh=0;SendMessage(panel,WM_TIMER,1,0);
+    assert(fixture::requests.size()==before_refresh+1 && fixture::requests.back().action==pn_bank::Refresh);
+    assert(busy && refreshing && status==old_status && actions_ready());
+    for(auto control:actions) assert(IsWindowEnabled(control));
+    assert(!GetUpdateRect(panel,nullptr,FALSE) && fixture::enable_messages==0);
+    for(int row=1;row<3;++row) for(bool buy:{true,false}) assert(exchange_block_reason(row,buy).empty());
+    reply(value);
+    assert(!busy && !refreshing && status==old_status);
+    assert(!GetUpdateRect(panel,nullptr,FALSE) && fixture::enable_messages==0);
+    std::ifstream diagnostic("bank-ui-test-diagnostics.txt");
+    std::string report((std::istreambuf_iterator<char>(diagnostic)),{});diagnostic.close();
+    assert(report.find("event=refresh_unchanged")!=std::string::npos);
+    assert(report.find("BuyTicket.enabled=1\nBuyTicket.reason=Ok")!=std::string::npos);
+    for(auto secret:{"nonce","account_id","char_id","password","bank=","wallet="}) assert(report.find(secret)==std::string::npos);
+    diagnostics_path.clear();assert(DeleteFileW(L"bank-ui-test-diagnostics.txt"));
+    // One click during a refresh is delivered exactly once, with the amount
+    // that was clicked, even if the user edits the field before the reply.
+    for(int id=400;id<406;++id) {
+        reply(value);const int row=(id-400)/2;set_amount(row,1);
+        const auto before=fixture::requests.size();submit(pn_bank::Refresh);
+        click(id);assert(queued_action==static_cast<uint32_t>(id-399) && queued_amount==1);
+        assert(fixture::requests.size()==before+1);
+        for(auto control:actions) assert(!IsWindowEnabled(control));
+        set_amount(row,2);click(id);SendMessage(panel,WM_COMMAND,id,0);
+        assert(fixture::requests.size()==before+1 && queued_amount==1);
+        reply(value);
+        assert(fixture::requests.size()==before+2 && fixture::requests.back().action==static_cast<uint32_t>(id-399));
+        assert(fixture::requests.back().amount==1 && busy && !refreshing && queued_action==pn_bank::Refresh);
+        click(id);assert(fixture::requests.size()==before+2);
+        reply(value);set_amount(row,1);
+    }
+    // Recheck every queued financial action against the fresh server snapshot.
+    for(int id=400;id<406;++id) {
+        reply(value);set_amount((id-400)/2,1);
+        const auto before=fixture::requests.size();submit(pn_bank::Refresh);click(id);
+        auto changed=value;
+        if(id==400) changed.wallet=changed.max_deposit=0;
+        else if(id==401 || id==402 || id==404) {
+            changed.bank=changed.max_withdraw=0;changed.max_buy[0]=changed.max_buy[1]=0;
+        } else { const int item=(id-402)/2;changed.counts[item]=changed.max_sell[item]=0; }
+        reply(changed);
+        assert(fixture::requests.size()==before+1 && !busy && queued_action==pn_bank::Refresh);
+        assert(!IsWindowEnabled(GetDlgItem(panel,id)));
+        assert(status==wide(pn_bank::message(id==403 || id==405?pn_bank::Items:pn_bank::Funds)));
+    }
+    reply(value);submit(pn_bank::Refresh);click(404);
+    auto capacity=value;capacity.max_buy[1]=0;const auto before_capacity=fixture::requests.size();reply(capacity);
+    assert(fixture::requests.size()==before_capacity && status==wide(pn_bank::message(pn_bank::Capacity)));
+    for(auto result:{pn_bank::Saving,pn_bank::Unavailable,pn_bank::Unauthorized,pn_bank::Busy,pn_bank::Stale,
+            pn_bank::SaveFailed,pn_bank::Invalid,pn_bank::Funds,pn_bank::Capacity,pn_bank::Limit,pn_bank::Items}) {
+        reply(value);submit(pn_bank::Refresh);click(404);const auto before=fixture::requests.size();
+        auto blocked=value;blocked.result=result;reply(blocked);
+        assert(fixture::requests.size()==before && !busy && queued_action==pn_bank::Refresh);
+        reply(value);assert(fixture::requests.size()==before); // no delayed retry
+    }
+    reply(value);submit(pn_bank::Refresh);click(404);
+    const auto before_disconnect=fixture::requests.size();reply(value,false);
+    assert(fixture::requests.size()==before_disconnect && !verified && queued_action==pn_bank::Refresh);
+    reply(value);assert(fixture::requests.size()==before_disconnect);
     for(int id=402;id<=405;++id) {
         reply(value);const auto before=fixture::requests.size();click(id);
         assert(fixture::requests.size()==before+1);
@@ -117,11 +190,14 @@ int main() {
     reply(value);reply(value,false);
     for(auto control:actions) assert(!IsWindowEnabled(control));
     reply(value);set_amount(1,10);set_amount(2,100);
+    submit(pn_bank::Refresh);click(404);assert(queued_action==pn_bank::BuyNote);
+    const auto before_session=fixture::requests.size();
     fixture::authenticated=false;++fixture::generation;
     SendMessage(panel,BANK_SESSION,fixture::generation,0);
     assert(amount(0)==0 && amount(1)==1 && amount(2)==1);
     reply(value,true,fixture::generation-1);
+    assert(queued_action==pn_bank::Refresh && !busy && !refreshing && fixture::requests.size()==before_session);
     for(auto control:actions) assert(!IsWindowEnabled(control));
     DestroyWindow(panel);
-    std::cout<<"PASS: default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
+    std::cout<<"PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
 }
