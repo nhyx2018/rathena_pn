@@ -28,6 +28,24 @@ function	script	PN_StorageLabel	{
 	return pnstoragename(.@id);
 }
 
+function	script	PN_StorageUnlock	{
+	.@id=getarg(0);
+	if (pnstorageavailable(.@id)) return;
+	clear;mes "[Expand Storages]";
+	mes "Unlock "+callfunc("PN_StorageLabel",.@id)+"?";
+	mes "This adds one complete 600-slot page for all characters on this game login.";
+	mes "Cost: 50,000,000 zeny from your character wallet.";
+	if (select("Unlock for 50,000,000 zeny:Cancel")==2) return;
+	if (Zeny<pnstorageprice()) { mes "You need 50,000,000 zeny in your character wallet.";next;return; }
+	if (!pnstorageunlock(.@id)) { mes "The page could not be unlocked. Check your funds and close other services.";next;return; }
+	mes "Saving your expansion. Please wait.";
+	while (pnstoragepending()) sleep2 100;
+	if (pnstorageavailable(.@id)) mes "Your storage page is now unlocked.";
+	else mes "The page is still locked. Please try again.";
+	next;
+	return;
+}
+
 function	script	PN_MultiStorageMenu	{
 	callfunc "PN_StorageLayout";
 	mes "[Mystic Box]";
@@ -36,7 +54,7 @@ function	script	PN_MultiStorageMenu	{
 		mes "[Mystic Box]";
 		mes "Which storage would you like to open?";
 		mes "Guild Storage requires guild permission and the Guild Storage Expansion skill.";
-		mes "^FF0000Red pages^000000 can be unlocked for 50,000,000 zeny each.";
+		mes "Select a ^FF0000red page^000000 to unlock it for 50,000,000 zeny, or choose Expand Storages.";
 		.@menu$="";
 		for (.@i=0; .@i<19; .@i++) {
 			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@i]);
@@ -44,10 +62,10 @@ function	script	PN_MultiStorageMenu	{
 			if (.@id != -1 && !pnstorageavailable(.@id)) .@name$="^FF0000"+.@name$+"^000000";
 			.@menu$+=.@name$+":";
 		}
-		.@pick=select(.@menu$+"Rename Storages:Reorder Storages:Expand Storages:Close")-1;
+		.@pick=select("Expand Storages:"+.@menu$+"Rename Storages:Reorder Storages:Close")-1;
 		if (.@pick == 22) close;
-		if (.@pick < 19) {
-			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@pick]);
+		if (.@pick >= 1 && .@pick <= 19) {
+			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@pick-1]);
 			if (.@id == -1) {
 				close2;
 				.@result=guildopenstorage();
@@ -55,13 +73,14 @@ function	script	PN_MultiStorageMenu	{
 				return;
 			}
 			if (!pnstorageavailable(.@id)) {
-				mes "Unlock this page through Expand Storages.";next;continue;
+				callfunc "PN_StorageUnlock",.@id;
+				continue;
 			}
 			close2;
 			if (!openstorage2(.@id,STOR_MODE_ALL)) dispbottom "Storage is busy or unavailable. Close other services and try again.";
 			return;
 		}
-		if (.@pick == 19) {
+		if (.@pick == 20) {
 			clear;mes "[Rename Storages]";
 			mes "Choose a personal storage page to rename.";
 			.@choices$="";.@count=0;
@@ -81,7 +100,7 @@ function	script	PN_MultiStorageMenu	{
 			else mes "Invalid name or storage is busy. Use 1-23 printable English characters with no leading/trailing spaces, colon, or ^ symbol.";
 			next;continue;
 		}
-		if (.@pick == 20) {
+		if (.@pick == 21) {
 			clear;mes "[Reorder Storages]";
 			mes "Choose the page to move.";
 			.@choices$="";
@@ -112,14 +131,7 @@ function	script	PN_MultiStorageMenu	{
 		mes "The page is shared by all characters on this game login.";
 		.@choice=select(.@choices$+"Cancel")-1;
 		if (.@choice==.@count) continue;
-		.@id=.@pages[.@choice];
-		mes "Unlock "+callfunc("PN_StorageLabel",.@id)+"?";
-		if (select("Unlock for 50,000,000 zeny:Cancel")==2) continue;
-		if (Zeny<pnstorageprice()) { mes "You need 50,000,000 zeny in your character wallet.";next;continue; }
-		if (!pnstorageunlock(.@id)) { mes "The page could not be unlocked. Check your funds and close other services.";next;continue; }
-		mes "Saving your expansion. Please wait.";
-		while (pnstoragepending()) sleep2 100;
-		mes "Your storage page is now unlocked.";next;
+		callfunc "PN_StorageUnlock",.@pages[.@choice];
 	}
 }
 
@@ -130,5 +142,10 @@ OnMenu:
 OnInit:
 	bindatcmd "storage",strnpcinfo(3)+"::OnMenu",0,99;
 	bindatcmd "mstorage",strnpcinfo(3)+"::OnMenu",0,99;
+	end;
+}
+
+prontera,158,185,4	script	Mystic Box::PN Mystic Box	4_TREASURE_BOX,{
+	callfunc "PN_MultiStorageMenu";
 	end;
 }

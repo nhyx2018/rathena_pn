@@ -68,6 +68,7 @@ try:
     (OUT/'bank-open-fixture.txt').write_text('prontera,150,181,4\tscript\tBankOpenFixture\t4_F_KAFRA1,{\nopenbank; end;\nOnInit: debugmes "BANK_FIXTURE_NPC_ID="+getnpcid(0); end;\n}\n')
     with (OUT/'bank-open-fixture.txt').open('a') as f:
         f.write('-\tscript\tStorageCartFixture\t-1,{\nOnCart: skill "MC_PUSHCART",10,3;setcart 1;dispbottom "Fixture cart: "+checkcart();end;\nOnInit: bindatcmd "storagefixturecart",strnpcinfo(3)+"::OnCart",0,99;end;\n}\n')
+        f.write('-\tscript\tStorageLocationFixture\t-1,{\nOnInit: debugmes "STORAGE_FIXTURE_NPC_ID="+getnpcid(0,"PN Mystic Box")+",WALKABLE="+checkcell("prontera",158,185,CELL_CHKPASS);end;\n}\n')
     boot='''#!/bin/sh
 set -eu
 ./login-server > /evidence/runtime-login.log 2>&1 &

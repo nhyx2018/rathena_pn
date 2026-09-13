@@ -1,0 +1,59 @@
+{
+  "feature": "Storage unlock dialog and Prontera Mystic Box",
+  "deployed_utc": "2026-09-13T12:45:14.484364+00:00",
+  "scope": "NPC script only; existing storage binaries and schema retained",
+  "menu": {
+    "first_option": "Expand Storages",
+    "locked_page": "Opens explicit purchase confirmation",
+    "npc": {
+      "name": "Mystic Box",
+      "map": "prontera",
+      "x": 158,
+      "y": 185
+    }
+  },
+  "expansion": {
+    "zeny": 50000000,
+    "source": "character wallet",
+    "unlocks": "one 600-slot page for all characters on the same game login",
+    "cancel_cost": 0
+  },
+  "validation": {
+    "passed": true,
+    "production_data_used_for_tests": false,
+    "native_scenarios": [
+      "all screenshot menu entries and twelve initially locked pages",
+      "both player commands show Expand Storages as the first visible menu option",
+      "visible Mystic Box NPC opens multi-storage and locked-page purchase confirmation",
+      "direct and expansion-list confirmations do not charge on inspection, Cancel or menu Escape",
+      "independent normal and premium pages, native deposit and withdrawal, immediate SQL persistence",
+      "card-only and character-bound filters preserve metadata and reject invalid deposits",
+      "rename and reorder keep the same page inventory and native window title",
+      "confirmed expansion charges exactly 50M character zeny and unlocks one 600-slot page",
+      "sibling shares account pages, names, order and unlocks; private bound page stays separate; insufficient funds rejected",
+      "failed transfer rolls back both containers, then retries safely after client disconnect",
+      "failed expansion and disconnected confirmation charge once after recovery",
+      "native storage-to-cart and cart-to-storage transfers commit both containers",
+      "invalid indices, negative/zero and oversized quantities cannot move items",
+      "guild page uses native membership and permission checks",
+      "all 600 slots load through split client packets and a full page rejects an extra item",
+      "committed transfer survives a map crash; an uncommitted transfer rolls back after a map crash",
+      "GM level 99 uses the same command menu and locked-page purchase confirmation"
+    ],
+    "npc_sha256": "0196383848a71506c580b5071e32d396c6fa205474aa5c88eb7871cf1e9a9807"
+  },
+  "deployment": {
+    "passed": true,
+    "players_before": 0,
+    "full_database_backup_created": true,
+    "preserved_player_financial_storage_tables": 31,
+    "rows_unchanged": true,
+    "login_char_map_startup_verified": true,
+    "reachable_ports": [
+      6900,
+      6121,
+      5121
+    ],
+    "running_binaries_match_validated_build": true
+  }
+}

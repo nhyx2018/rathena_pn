@@ -69,6 +69,11 @@ class Client(bank.Client):
         self.world.sendall(struct.pack('<HIB', 0xb8, self.npc, choice))
         return drain(self.world, .4)
 
+    def pick(self, label):
+        labels = [re.sub(r'\^[0-9A-Fa-f]{6}', '', value) for value in self.labels]
+        assert label in labels, (label, labels)
+        return self.choose(labels.index(label)+1)
+
     def next(self):
         self.world.sendall(struct.pack('<HI', 0xb9, self.npc))
         return drain(self.world, .4)
@@ -78,7 +83,7 @@ class Client(bank.Client):
 
     def open(self, label):
         self.menu(); assert label in self.labels, (label, self.labels)
-        wire = self.choose(self.labels.index(label)+1)
+        wire = self.pick(label)
         if struct.pack('<HI', 0xb6, self.npc) in wire:
             wire += self.end_dialog()
         starts = [p for p in packets(wire, 0xb08, 6) if p[4] == 2]
@@ -95,11 +100,18 @@ class Client(bank.Client):
         self.world.sendall(struct.pack('<HHi', packet, index, amount))
         return drain(self.world, seconds)
 
-    def unlock(self, label):
-        self.menu(); self.menu(self.choose(22))
-        assert label in self.labels, self.labels
-        self.menu(self.choose(self.labels.index(label)+1))
-        return self.choose(1)
+    def purchase_prompt(self, label, direct=False):
+        self.menu()
+        if not direct: self.menu(self.pick('Expand Storages'))
+        wire = self.pick(label)
+        self.menu(wire)
+        assert self.labels == ['Unlock for 50,000,000 zeny', 'Cancel'], self.labels
+        assert b'600-slot page' in wire and b'character wallet' in wire, wire.hex()
+        return wire
+
+    def unlock(self, label, direct=False):
+        self.purchase_prompt(label, direct)
+        return self.pick('Unlock for 50,000,000 zeny')
 
     def close(self):
         self.world.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
@@ -118,12 +130,39 @@ def main():
     sql(f"INSERT INTO inventory(char_id,nameid,amount,identify,bound,refine,unique_id,card0,option_id0,option_val0,enchantgrade) VALUES ({CID},501,20,1,0,0,0,0,0,0,0),({CID},4001,5,1,0,0,0,0,0,0,0),({CID},1201,1,1,4,10,98765001,4001,1,27,2),({CID},1202,1,1,0,8,98765002,4002,2,11,1)")
     c = Client()
     labels = c.menu()
-    assert len(labels) == 23 and labels[:3] == ['Storage I', 'Storage II', 'Storage III']
-    assert labels[3:5] == ['Guild Storage', 'Master Storage I']
+    assert len(labels) == 23 and labels[0] == 'Expand Storages'
+    assert labels[1:4] == ['Storage I', 'Storage II', 'Storage III']
+    assert labels[4:6] == ['Guild Storage', 'Master Storage I']
     assert sum(s.startswith('^FF0000') for s in labels) == 12
-    assert labels[17:19] == ['Card Storage', 'Character Bound Storage']
-    c.choose(23); c.end_dialog()
+    assert labels[18:20] == ['Card Storage', 'Character Bound Storage']
+    c.pick('Close'); c.end_dialog()
     cases.append('all screenshot menu entries and twelve initially locked pages')
+    c.menu(c.chat('@mstorage'))
+    assert c.labels == labels
+    c.pick('Close'); c.end_dialog()
+    cases.append('both player commands show Expand Storages as the first visible menu option')
+    log = (Path(os.environ['BANK_FIXTURE_ROOT'])/'runtime/runtime-map.log').read_text(errors='replace')
+    match = re.search(r'STORAGE_FIXTURE_NPC_ID=(\d+),WALKABLE=(\d+)', log)
+    assert match and int(match[1]) > 0 and match[2] == '1', 'Mystic Box must exist on a walkable Prontera cell'
+    time.sleep(.55)
+    c.world.sendall(struct.pack('<HIB', 0x90, int(match[1]), 0))
+    c.menu(drain(c.world, .4))
+    assert c.labels == labels, 'Clicking the real Mystic Box NPC must open the same menu'
+    c.menu(c.pick('Storage IV'))
+    assert c.labels == ['Unlock for 50,000,000 zeny', 'Cancel']
+    c.menu(c.pick('Cancel')); c.pick('Close'); c.end_dialog()
+    cases.append('visible Mystic Box NPC opens multi-storage and locked-page purchase confirmation')
+    wallet = sql(f'SELECT zeny FROM `char` WHERE char_id={CID}')
+    journal = sql('SELECT COUNT(*) FROM pn_storage_commits')
+    c.purchase_prompt('Storage IV', direct=True)
+    assert sql(f'SELECT zeny FROM `char` WHERE char_id={CID}') == wallet
+    c.menu(c.pick('Cancel')); c.pick('Close'); c.end_dialog()
+    c.purchase_prompt('Storage IV')
+    c.choose(255)  # Native menu Escape/cancel; 0x146 only acknowledges close/close2.
+    assert sql(f'SELECT zeny FROM `char` WHERE char_id={CID}') == wallet
+    assert sql('SELECT COUNT(*) FROM pn_storage_commits') == journal
+    assert sql(f"SELECT COUNT(*) FROM acc_reg_num WHERE account_id={AID} AND `key`='#PNStoragePaid'") == '0'
+    cases.append('direct and expansion-list confirmations do not charge on inspection, Cancel or menu Escape')
     assert c.open('Storage I') == {}
     c.transfer(0x364, c.inventory[501][0], 2)
     assert sql(f'SELECT amount FROM storage WHERE account_id={AID} AND nameid=501') == '2'
@@ -152,34 +191,34 @@ def main():
     assert sql('SELECT char_id,bound,refine,unique_id,card0,option_id0,option_val0,enchantgrade FROM pn_character_storage') == f'{CID}\t4\t10\t98765001\t4001\t1\t27\t2'
     c.close_storage()
     cases.append('card-only and character-bound filters preserve metadata and reject invalid deposits')
-    c.menu(); c.menu(c.choose(20)); wire = c.choose(2)
+    c.menu(); c.menu(c.pick('Rename Storages')); wire = c.pick('Storage II')
     value = b'Supplies\0'
     c.world.sendall(struct.pack('<HHI', 0x1d5, 8+len(value), c.npc)+value)
     assert b'name saved' in drain(c.world, .4)
-    c.menu(c.next()); c.menu(c.choose(21)); c.menu(c.choose(2)); c.choose(1)
-    assert c.menu(c.next())[0] == 'Supplies'
-    c.choose(23); c.end_dialog()
+    c.menu(c.next()); c.menu(c.pick('Reorder Storages')); c.menu(c.pick('Supplies')); c.choose(1)
+    assert c.menu(c.next())[1] == 'Supplies'
+    c.pick('Close'); c.end_dialog()
     assert c.open('Supplies')[501]; c.close_storage()
     cases.append('rename and reorder keep the same page inventory and native window title')
-    wire = c.unlock('Storage IV')
+    wire = c.unlock('Storage IV', direct=True)
     assert b'now unlocked' in wire, wire.hex()
     assert sql(f'SELECT zeny FROM `char` WHERE char_id={CID}') == '950000000'
     assert sql(f"SELECT value FROM acc_reg_num WHERE account_id={AID} AND `key`='#PNStoragePaid' AND `index`=102") == '1'
-    c.menu(c.next()); c.choose(23); c.end_dialog()
+    c.menu(c.next()); c.pick('Close'); c.end_dialog()
     assert c.open('Storage IV') == {}; c.close_storage()
     cases.append('confirmed expansion charges exactly 50M character zeny and unlocks one 600-slot page')
     c.close(); time.sleep(2); c = Client(1)
     labels = c.menu()
-    assert labels[0] == 'Supplies', (labels, sql("SELECT * FROM acc_reg_num WHERE `key` LIKE '#PNStorage%' ORDER BY `key`,`index`"), sql("SELECT * FROM acc_reg_str WHERE `key` LIKE '#PNStorage%'"))
-    c.choose(23); c.end_dialog()
+    assert labels[1] == 'Supplies', (labels, sql("SELECT * FROM acc_reg_num WHERE `key` LIKE '#PNStorage%' ORDER BY `key`,`index`"), sql("SELECT * FROM acc_reg_str WHERE `key` LIKE '#PNStorage%'"))
+    c.pick('Close'); c.end_dialog()
     assert 501 in c.open('Supplies'); c.close_storage()
     assert 4001 in c.open('Card Storage'); c.close_storage()
     assert c.open('Character Bound Storage') == {}; c.close_storage()
     assert c.open('Storage IV') == {}; c.close_storage()
-    wire = c.unlock('Storage V'); assert b'need 50,000,000' in wire
+    wire = c.unlock('Storage V', direct=True); assert b'need 50,000,000' in wire
     assert sql(f'SELECT zeny FROM `char` WHERE char_id={CID+1}') == '49999999'
     assert sql(f"SELECT COUNT(*) FROM acc_reg_num WHERE account_id={AID} AND `key`='#PNStoragePaid' AND `index`=103") == '0'
-    c.menu(c.next()); c.choose(23); c.end_dialog(); c.close(); time.sleep(2)
+    c.menu(c.next()); c.pick('Close'); c.end_dialog(); c.close(); time.sleep(2)
     cases.append('sibling shares account pages, names, order and unlocks; private bound page stays separate; insufficient funds rejected')
     c = Client(); c.open('Master Storage I')
     before = sql(f'SELECT amount FROM inventory WHERE char_id={CID} AND nameid=501')
@@ -243,6 +282,13 @@ def main():
     assert sql(f'SELECT amount FROM inventory WHERE char_id={CID} AND nameid=501') == expected
     cases.append('committed transfer survives a map crash; an uncommitted transfer rolls back after a map crash')
     c.close(); time.sleep(2)
+    sql(f'UPDATE login SET group_id=99 WHERE account_id={AID}')
+    c = Client()
+    c.purchase_prompt('Storage VI', direct=True)
+    c.menu(c.pick('Cancel'))
+    assert c.labels[0] == 'Expand Storages'
+    c.pick('Close'); c.end_dialog(); c.close(); time.sleep(2)
+    cases.append('GM level 99 uses the same command menu and locked-page purchase confirmation')
     result = {'passed': True, 'production_data_used': False, 'scenarios': cases}
     print(json.dumps(result, indent=2))
 
