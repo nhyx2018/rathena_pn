@@ -51,6 +51,12 @@ struct guild_log_entry{
 
 const char *storage_getName(uint8 id);
 bool storage_exists(uint8 id);
+bool storage_page_available(map_session_data& sd, int id);
+const char* storage_page_name(map_session_data& sd, uint8 id);
+bool storage_page_rename(map_session_data& sd, int id, const char* name);
+bool storage_page_unlock(map_session_data& sd, int id);
+void storage_batch_begin(map_session_data& sd);
+void storage_batch_end(map_session_data& sd, s_storage& storage);
 
 int32 storage_delitem(map_session_data* sd, struct s_storage *stor, int32 index, int32 amount);
 int32 storage_storageopen(map_session_data *sd);

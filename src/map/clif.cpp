@@ -25733,7 +25733,7 @@ static int32 clif_parse(int32 fd)
 	sd = (TBL_PC *)session[fd]->session_data;
 	// Keep pending bank users attached even after a cable pull, until the SQL
 	// commit is acknowledged. Queued gameplay input resumes afterwards.
-	if (sd && sd->bank_ui.pending) return 0;
+	if (sd && (pc_transaction_pending(sd) || sd->multi_storage.loading)) return 0;
 
 	if (session[fd]->flag.eof) {
 		if (sd) {

@@ -43,4 +43,5 @@ Body:
 
 Footer:
   Imports:
+    - Path: conf/pn_storage.yml
     - Path: conf/import/inter_server.yml

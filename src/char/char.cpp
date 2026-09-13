@@ -1,3 +1,4 @@
+#include <custom/multi_storage.hpp>
 // Copyright (c) rAthena Dev Teams - Licensed under GNU GPL
 // For more information, see LICENCE in the main folder
 
@@ -561,7 +562,7 @@ int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, en
 
 			printname = storage_info->name;
 			tablename = storage_info->table;
-			selectoption = "account_id";
+			selectoption = stor_id == pn_storage::character ? "char_id" : "account_id";
 			} break;
 		case TABLE_GUILD_STORAGE:
 			printname = "Guild Storage";
@@ -794,7 +795,7 @@ bool char_memitemdata_from_sql(struct s_storage* p, int32 max, int32 id, enum st
 
 			printname = storage_info->name;
 			tablename = storage_info->table;
-			selectoption = "account_id";
+			selectoption = stor_id == pn_storage::character ? "char_id" : "account_id";
 			storage = p->u.items_storage;
 			max2 = storage_info->max_num;
 			} break;
@@ -1708,6 +1709,9 @@ enum e_char_del_response char_delete(struct char_session_data* sd, uint32 char_i
 
 	/* delete cart inventory */
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id`='%d'", schema_config.cart_db, char_id) )
+		Sql_ShowDebug(sql_handle);
+	/* A character-private page belongs to the deleted character, not its account. */
+	if (Sql_Query(sql_handle, "DELETE FROM `pn_character_storage` WHERE `char_id`=%d", char_id) != SQL_SUCCESS)
 		Sql_ShowDebug(sql_handle);
 
 	/* delete memo areas */

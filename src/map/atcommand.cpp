@@ -6428,6 +6428,7 @@ ACMD_FUNC(storeall)
 {
 	int32 i;
 	nullpo_retr(-1, sd);
+	if (pc_transaction_pending(sd) || sd->multi_storage.loading) return -1;
 
 	if (sd->state.storage_flag != 1)
 	{	//Open storage.
@@ -6437,6 +6438,7 @@ ACMD_FUNC(storeall)
 		}
 	}
 
+	storage_batch_begin(*sd);
 	for (i = 0; i < MAX_INVENTORY; i++) {
 		if (sd->inventory.u.items_inventory[i].amount) {
 			if(sd->inventory.u.items_inventory[i].equip != 0)
@@ -6448,6 +6450,7 @@ ACMD_FUNC(storeall)
 			storage_storageadd(sd, &sd->storage, i, sd->inventory.u.items_inventory[i].amount);
 		}
 	}
+	storage_batch_end(*sd, sd->storage);
 	storage_storageclose(sd);
 
 	clif_displaymessage(fd, msg_txt(sd,1162)); // All items stored.

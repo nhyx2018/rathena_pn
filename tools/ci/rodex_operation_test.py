@@ -39,13 +39,27 @@ prefix = r'''
 using int32=int32_t;
 #define PACKETVER 20250319
 #define MF_NORODEX 1
+#define OPT1_BURNING 1
 #define nullpo_ret(sd) assert(sd)
 #define nullpo_retv(sd) assert(sd)
 #define ARRAYLENGTH(a) (sizeof(a)/sizeof((a)[0]))
-struct Storage { struct { int items_storage[10]; } u; int amount=0,max_amount=10,stor_id=0; };
+struct Storage {
+ struct { int items_storage[10]; } u;
+ struct { int put=0,get=0; } state;
+ int amount=0,max_amount=10,stor_id=0; bool status=false;
+};
 struct map_session_data {
  int m=0,fd=1,npc_id=0,npc_shopid=0;
- struct { int storage_flag=0; bool trading=false,vending=false,buyingstore=false,mail_writing=false; } state;
+ struct { int storage_flag=0;
+  bool trading=false,vending=false,buyingstore=false,mail_writing=false;
+  bool prevend=false,banking=false,callshop=false,refineui_open=false,stylist_open=false;
+  bool inventory_expansion_confirmation=false,barter_open=false,barter_extended_open=false;
+  bool laphine_synthesis=false,laphine_upgrade=false,roulette_open=false,enchantgrade_open=false;
+  bool item_reform=false,item_reform_save_id=false,item_enchant_index=false;
+ } state;
+ struct { bool pending=false; } bank_ui;
+ struct { bool pending=false,loading=false; } multi_storage;
+ struct { int opt1=0; } sc;
  Storage storage,premiumStorage;
 };
 bool restricted=false,allowed=true;
@@ -56,6 +70,7 @@ const char* msg_txt(const map_session_data*,int) { return "test"; }
 void clif_displaymessage(int,const char*) {}
 void storage_sortitem(int*,size_t) {}
 const char* storage_getName(int) { return "storage"; }
+const char* storage_page_name(map_session_data&,int) { return "storage"; }
 void clif_storagelist(map_session_data*,int*,size_t,const char*) { ++opened; }
 void clif_updatestorageamount(map_session_data&,int,int) {}
 '''
@@ -87,10 +102,21 @@ int main() {
  sd.npc_id=sd.state.storage_flag=0;
  storage_premiumStorage_open(&sd);
  assert(sd.state.storage_flag==3 && opened==2 && mail_invalid_operation(&sd));
+ for(int pending=0;pending<3;++pending) {
+  map_session_data blocked;
+  blocked.bank_ui.pending=pending==0;
+  blocked.multi_storage.pending=pending==1;
+  blocked.multi_storage.loading=pending==2;
+  assert(storage_storageopen(&blocked)==1);
+  storage_premiumStorage_open(&blocked);
+  assert(blocked.state.storage_flag==0 && opened==2);
+ }
  std::cout << "256 RODEX state combinations and storage/composer transitions: PASS\n";
 }
 '''
 test = prefix + '\n'.join([
+    function('src/map/pc.hpp', 'static inline bool pc_transaction_pending('),
+    function('src/map/pc.hpp', 'static bool pc_cant_act2('),
     function('src/map/mail.cpp', 'bool mail_invalid_operation('),
     function('src/map/storage.cpp', 'int32 storage_storageopen('),
     function('src/map/storage.cpp', 'void storage_premiumStorage_open('),

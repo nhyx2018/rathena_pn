@@ -25847,6 +25847,28 @@ BUILDIN_FUNC(getguildalliance)
  * openstorage2 <storage_id>{,<mode>{,<account_id>}}
  * mode @see enum e_storage_mode
  **/
+BUILDIN_FUNC(pnstorageavailable) {
+    map_session_data* sd; if (!script_rid2sd(sd)) { script_pushint(st,0); return SCRIPT_CMD_SUCCESS; }
+    script_pushint(st,storage_page_available(*sd,script_getnum(st,2)));return SCRIPT_CMD_SUCCESS;
+}
+BUILDIN_FUNC(pnstoragename) {
+    map_session_data* sd;const int64 id=script_getnum(st,2);
+    if (!script_rid2sd(sd) || id<0 || id>UINT8_MAX || !storage_exists(id)) script_pushstrcopy(st,"Unavailable Storage");
+    else script_pushstrcopy(st,storage_page_name(*sd,id));return SCRIPT_CMD_SUCCESS;
+}
+BUILDIN_FUNC(pnstoragerename) {
+    map_session_data* sd; if (!script_rid2sd(sd)) { script_pushint(st,0); return SCRIPT_CMD_SUCCESS; }
+    script_pushint(st,storage_page_rename(*sd,script_getnum(st,2),script_getstr(st,3)));return SCRIPT_CMD_SUCCESS;
+}
+BUILDIN_FUNC(pnstorageunlock) {
+    map_session_data* sd; if (!script_rid2sd(sd)) { script_pushint(st,0); return SCRIPT_CMD_SUCCESS; }
+    script_pushint(st,storage_page_unlock(*sd,script_getnum(st,2)));return SCRIPT_CMD_SUCCESS;
+}
+BUILDIN_FUNC(pnstoragepending) {
+    map_session_data* sd; script_pushint(st,script_rid2sd(sd) && sd->multi_storage.pending);return SCRIPT_CMD_SUCCESS;
+}
+BUILDIN_FUNC(pnstorageprice) { script_pushint(st,pn_storage::expansion_price);return SCRIPT_CMD_SUCCESS; }
+
 BUILDIN_FUNC(openstorage2) {
 	map_session_data *sd = nullptr;
 
@@ -25857,7 +25879,7 @@ BUILDIN_FUNC(openstorage2) {
 
 	int32 stor_id = script_getnum(st, 2);
 
-	if (!storage_exists(stor_id)) {
+	if (stor_id < 0 || stor_id > UINT8_MAX || !storage_exists(stor_id)) {
 		ShowError("buildin_openstorage2: Invalid storage_id '%d'!\n", stor_id);
 		st->state = END;
 		return SCRIPT_CMD_FAILURE;
@@ -29328,6 +29350,12 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF(needed_trait_point, "ii?"),
 	BUILDIN_DEF(jobcanentermap,"s?"),
 	BUILDIN_DEF(openstorage2,"i??"),
+	BUILDIN_DEF(pnstorageavailable,"i"),
+	BUILDIN_DEF(pnstoragename,"i"),
+	BUILDIN_DEF(pnstoragerename,"is"),
+	BUILDIN_DEF(pnstorageunlock,"i"),
+	BUILDIN_DEF(pnstoragepending,""),
+	BUILDIN_DEF(pnstorageprice,""),
 	BUILDIN_DEF(unloadnpc, "s"),
 	BUILDIN_DEF(duplicate, "ssii?????"),
 	BUILDIN_DEF(duplicate_dynamic, "s?"),

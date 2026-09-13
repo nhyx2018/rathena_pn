@@ -7,6 +7,7 @@
 
 #include <common/malloc.hpp>
 #include <common/mmo.hpp>
+#include <custom/multi_storage_protocol.hpp>
 #include <common/nullpo.hpp>
 #include <common/showmsg.hpp>
 #include <common/socket.hpp>
@@ -43,8 +44,8 @@ static const int32 packet_len_table[] = {
 	-1,-1, 7, 7,  7,11, 8,-1,  0, 0, 0, 0,  0, 0,  0, 0, //0x3850  Auctions [Zephyrus] itembound[Akinari]
 	-1, 7,-1, 7, 14, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3860  Quests [Kevin] [Inkfish] / Achievements [Aleos]
 	-1, 3, 3, 0,  0, 0, 0, 0,  0, 0, 0, 0, -1, 3,  3, 0, //0x3870  Mercenaries [Zephyrus] / Elemental [pakpil]
-	12,-1, 7, 3,  0, 0, 0, 0,  0, 0,-1, 9, -1,19, 35, 0, //0x3880  Pet System,  Storages
-	-1,-1, 7, 3,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3890  Homunculus [albator]
+	12,-1, 7, 3,  0, 0, 0, 0,  0, 0,-1, 9, -1,19, 35,-1, //0x3880  Pet System,  Storages
+	-1,-1, 7, 3, 38, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3890  Homunculus [albator]
 	-1,-1, 8, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x38A0  Clans
 };
 
@@ -395,7 +396,7 @@ int32 intif_wis_message_to_gm(char *wisp_name, int32 permission, char *mes)
  */
 int32 intif_saveregistry(map_session_data *sd)
 {
-	if (sd && sd->bank_ui.pending) return -1;
+	if (sd && pc_transaction_pending(sd)) return -1;
 	DBIterator *iter;
 	DBKey key;
 	DBData *data;
@@ -3571,7 +3572,7 @@ static void intif_parse_StorageSaved(int32 fd)
 						}
 					}
 
-					if( stor ){
+					if( stor && stor->stor_id == RFIFOB(fd,8) && !pc_transaction_pending(sd) ){
 						stor->dirty = false;
 					}
 				}
@@ -3652,7 +3653,7 @@ bool intif_storage_request( const map_session_data* sd, enum storage_type type, 
  */
 bool intif_storage_save( const map_session_data* sd, const s_storage* stor )
 {
-	if (sd && sd->bank_ui.pending) return false;
+	if (sd && pc_transaction_pending(sd)) return false;
 	int32 stor_size = sizeof(struct s_storage);
 
 	nullpo_retr(false, sd);
@@ -3727,6 +3728,7 @@ int32 intif_clan_requestclans(){
 }
 
 #include <custom/bank_inter.inc>
+#include <custom/multi_storage_inter.inc>
 
 void intif_parse_clans( int32 fd ){
 	clan_load_clandata( ( RFIFOW(fd, 2) - 4 ) / sizeof( struct clan ), (struct clan*)RFIFOP(fd,4) );
@@ -3926,6 +3928,8 @@ int32 intif_parse(int32 fd)
 	case 0x388b:	intif_parse_StorageSaved(fd); break;
 	case 0x388d:	intif_parse_InventoryCommitted(fd); break;
 	case 0x388e:	intif_parse_BankCommitted(fd); break;
+	case 0x388f: intif_parse_StoragePage(fd); break;
+	case 0x3894: intif_parse_StorageCommitted(fd); break;
 	case 0x388c:	intif_parse_StorageInfo_recv(fd); break;
 
 	// Homunculus System

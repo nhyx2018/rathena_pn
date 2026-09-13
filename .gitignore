@@ -121,6 +121,11 @@ Thumbs.db
 !/src/custom/bank_sql.inc
 !/src/custom/bank_state.hpp
 !/src/custom/bank_ui.inc
+!/src/custom/multi_storage.hpp
+!/src/custom/multi_storage_protocol.hpp
+!/src/custom/multi_storage_map.inc
+!/src/custom/multi_storage_inter.inc
+!/src/custom/multi_storage_sql.inc
 
 # /src/login/
 /src/login/Makefile

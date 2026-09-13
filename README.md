@@ -63,6 +63,22 @@ Sample values rendered by the same native panel. Deposits, withdrawals and item 
 
 </details>
 
+## Multi-storage
+
+Open **`@storage`**, **`@mstorage`**, or **Main Office Kafra → Open multi-storage** for the Mystic Box menu. Rename personal pages and reorder the menu to suit your inventory.
+
+| Storage | Initially available | Sharing |
+| --- | --- | --- |
+| Storage I–X | I–III | All characters on the same game login |
+| Master Storage I–VI | I | All characters on the same game login |
+| Card Storage | Yes; cards only | All characters on the same game login |
+| Character Bound Storage | Yes; character-bound items only | Current character |
+| Guild Storage | Native guild access rules | Authorized guild members |
+
+Each additional regular or Master page costs **50,000,000 character-held zeny** and unlocks **600 slots** permanently for that game login. Confirm the purchase under **Expand Storages**. Existing items remain in Storage I; names and menu order persist across character changes.
+
+Personal item transfers save their source and destination together. Expansion payment and ownership also commit together, with replay protection and retries after failed saves. The menu uses the existing game client. See the [storage guide and validation](doc/multi_storage_20260913.md).
+
 ## World and progression
 
 - **Quest navigation:** audited across all 16 loaded episode groups, **13.1 through 21**, with metadata for all **1,849 referenced episode quest IDs**. Repairs include long routes, map boundaries, 71 doorway/stair links, 48 elevator links, and 79 Episode 21 quest-book guides.
@@ -80,6 +96,7 @@ The [navigation audit](doc/quest_navigation_audit_20260913.md) documents route a
 | --- | --- | --- |
 | Main Office | `@office` · `pn_office,100,40` | Searchable directory across 52 lobby, training and fashion desks |
 | Account bank | `@bank` · Alt+B · Ctrl+B | Shared savings, wallet transfers, diamond and ticket exchanges |
+| Multi-storage | `@storage` · `@mstorage` · Office Kafra | Account pages, card storage, private bound items and 50M expansions |
 | Saved settings | `@settings` | Character overrides and game-account login preferences |
 | Loot presets | `@alc save 1 Farming` · `@als 1` | Ten named game-account autoloot sets |
 | Kill counter | `@kc 1002 1` · `@kc status` | Five persistent character tracking slots |
@@ -126,6 +143,8 @@ Deploy matching server binaries and client resources together. Follow the [bank 
 
 The current bank baseline includes **500,000 randomized arithmetic cases**, **49 SQL checks**, **14 isolated login/character/map scenarios**, and **38 release checks**. The Buy/Sell repair adds real Windows control clicks with a recording transport, alongside shipping DLL-loader, font, transport and rendering checks.
 
+Multi-storage adds **185 SQL assertions** and **13 authenticated storage scenarios**, including database and map crashes, exact expansion fees, shared/private pages and a full 600-slot page. The bank scenarios and all 38 release checks passed again with this server update. [Deployment evidence](doc/evidence/multi_storage_20260913.json) records unchanged player data and successful login verification.
+
 Navigation verification combines native route distances with client collision data across the loaded episode groups. Distribution checks test the multipart archive, compare every extracted file to its SHA-256 manifest, and run launcher preflight on the extracted client.
 
 Run relevant checks from the repository root:
@@ -147,6 +166,7 @@ Native tests need the documented compiler/runtime dependencies. Dated reports re
 | --- | --- |
 | Current client | [Release notes](doc/releases/client-2026-09-13.md) · [Bank controls](doc/bank_controls_20260913.md) |
 | Banking | [Build/install](client-patch/account_bank/README.md) · [64-bit persistence](doc/account_bank_64bit_20260913.md) |
+| Storage | [Pages, expansion, migration and validation](doc/multi_storage_20260913.md) |
 | Navigation | [Episode route audit](doc/quest_navigation_audit_20260913.md) · [Episode status](doc/episode_audit_status.md) |
 | Login | [Docker reconnect fix](doc/login_outage_20260913.md) · [Binary compatibility](doc/login_character_abi_repair_20260907.md) |
 | Druid | [Integration](doc/druid_integration.md) · [Client progression](doc/druid_client_progression.md) · [Gear and enchants](doc/druid_gear_enchants_audit.md) |

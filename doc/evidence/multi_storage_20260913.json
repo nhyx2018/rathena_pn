@@ -1,0 +1,59 @@
+{
+  "feature": "Mystic Box multi-storage",
+  "deployed_utc": "2026-09-13T12:07:54.141093+00:00",
+  "expansion": {
+    "zeny": 50000000,
+    "source": "character wallet",
+    "unlocks": "one 600-slot page for the game login"
+  },
+  "validation": {
+    "sql_assertions": 185,
+    "database_crash": {
+      "passed": true,
+      "kill_point": "After source, page and wallet writes; before journal/COMMIT",
+      "recovered_wallet": 2000000000,
+      "source_rows": 2,
+      "uncommitted_page_rows": 0,
+      "uncommitted_journal_rows": 0
+    },
+    "repeat_migration": {
+      "passed": true,
+      "ordered_data_sha256": "d36a2e98d65470c13b1f33981d5b1a22e64c99ab1349b3855fc1915eec24a5e2"
+    },
+    "native_storage_scenarios": [
+      "all screenshot menu entries and twelve initially locked pages",
+      "independent normal and premium pages, native deposit and withdrawal, immediate SQL persistence",
+      "card-only and character-bound filters preserve metadata and reject invalid deposits",
+      "rename and reorder keep the same page inventory and native window title",
+      "confirmed expansion charges exactly 50M character zeny and unlocks one 600-slot page",
+      "sibling shares account pages, names, order and unlocks; private bound page stays separate; insufficient funds rejected",
+      "failed transfer rolls back both containers, then retries safely after client disconnect",
+      "failed expansion and disconnected confirmation charge once after recovery",
+      "native storage-to-cart and cart-to-storage transfers commit both containers",
+      "invalid indices, negative/zero and oversized quantities cannot move items",
+      "guild page uses native membership and permission checks",
+      "all 600 slots load through split client packets and a full page rejects an extra item",
+      "committed transfer survives a map crash; an uncommitted transfer rolls back after a map crash"
+    ],
+    "native_bank_scenarios": 14,
+    "full_release_checks": 38,
+    "candidate_sha256": "f94716d8fef7e733d7fbb4f6eb62b8e89ff96701f3d93e787d7312cdfcd617f0"
+  },
+  "deployment": {
+    "preserved_player_financial_tables": 13,
+    "migration_rows_unchanged": true,
+    "restart_rows_unchanged": true,
+    "innodb_transaction_tables": 20,
+    "matching_running_binaries": {
+      "char": "7bbbba68ab98f9263e98a0fbbe456f67e4758d7984546e05eb395e5acad96286",
+      "map": "9320e488dbbe5c99a46137e5987e3bebfe2ee13658382b88106738914cdbbe60"
+    },
+    "login_authenticated": true,
+    "character_list_received": true,
+    "bank_protocol_version": 2,
+    "character_wallet_cap": 2147483647,
+    "temporary_probe_removed": true,
+    "account_allocator_unchanged": true
+  },
+  "manual_ragexe_playthrough": false
+}

@@ -79,8 +79,8 @@ OnInit:
 
 -	script	PN Office Storage	-1,{
 	mes "[Office Kafra]";
-	switch(select("Open storage:Save respawn in the office:Leave")) {
-	case 1: close2; openstorage; end;
+	switch(select("Open multi-storage:Save respawn in the office:Leave")) {
+	case 1: callfunc "PN_MultiStorageMenu"; end;
 	case 2:
 		mes "Save your respawn point in the Main Office lobby?";
 		if(select("Save here:Cancel") == 1) { savepoint "pn_office",100,40; mes "Respawn point saved."; }

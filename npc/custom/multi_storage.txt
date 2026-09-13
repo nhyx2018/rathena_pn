@@ -1,0 +1,134 @@
+// PN multi-storage. (C) 2026 PN Development Team. GPL-3.0-or-later.
+// Source: https://github.com/patnawa/rathena_pn/blob/main/npc/custom/multi_storage.txt
+
+function	script	PN_StorageLayout	{
+	// Validate the account permutation once, before building menus.
+	.@valid = (#PNStorageLayout == 1);
+	for (.@i=0; .@i<19 && .@valid; .@i++) {
+		.@value = #PNStorageOrder[.@i];
+		if (.@value < 0 || .@value >= 19) { .@valid=0; break; }
+		if (.@seen[.@value]) { .@valid=0; break; }
+		.@seen[.@value]=1;
+	}
+	if (!.@valid) {
+		for (.@i=0; .@i<19; .@i++) #PNStorageOrder[.@i]=.@i;
+		#PNStorageLayout=1;
+	}
+	return;
+}
+
+function	script	PN_StorageId	{
+	setarray .@ids[0],0,100,101,-1,110,102,103,104,105,106,107,108,111,112,113,114,115,116,117;
+	return .@ids[getarg(0)];
+}
+
+function	script	PN_StorageLabel	{
+	.@id=getarg(0);
+	if (.@id == -1) return "Guild Storage";
+	return pnstoragename(.@id);
+}
+
+function	script	PN_MultiStorageMenu	{
+	callfunc "PN_StorageLayout";
+	mes "[Mystic Box]";
+	while (1) {
+		clear;
+		mes "[Mystic Box]";
+		mes "Which storage would you like to open?";
+		mes "Guild Storage requires guild permission and the Guild Storage Expansion skill.";
+		mes "^FF0000Red pages^000000 can be unlocked for 50,000,000 zeny each.";
+		.@menu$="";
+		for (.@i=0; .@i<19; .@i++) {
+			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@i]);
+			.@name$=callfunc("PN_StorageLabel",.@id);
+			if (.@id != -1 && !pnstorageavailable(.@id)) .@name$="^FF0000"+.@name$+"^000000";
+			.@menu$+=.@name$+":";
+		}
+		.@pick=select(.@menu$+"Rename Storages:Reorder Storages:Expand Storages:Close")-1;
+		if (.@pick == 22) close;
+		if (.@pick < 19) {
+			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@pick]);
+			if (.@id == -1) {
+				close2;
+				.@result=guildopenstorage();
+				if (.@result) dispbottom "Guild Storage is unavailable. Check guild permission, the storage skill, and whether someone is using it.";
+				return;
+			}
+			if (!pnstorageavailable(.@id)) {
+				mes "Unlock this page through Expand Storages.";next;continue;
+			}
+			close2;
+			if (!openstorage2(.@id,STOR_MODE_ALL)) dispbottom "Storage is busy or unavailable. Close other services and try again.";
+			return;
+		}
+		if (.@pick == 19) {
+			clear;mes "[Rename Storages]";
+			mes "Choose a personal storage page to rename.";
+			.@choices$="";.@count=0;
+			for (.@i=0; .@i<19; .@i++) {
+				.@id=callfunc("PN_StorageId",#PNStorageOrder[.@i]);
+				if (.@id == -1) continue;
+				.@pages[.@count++]=.@id;
+				.@choices$+=callfunc("PN_StorageLabel",.@id)+":";
+			}
+			.@choice=select(.@choices$+"Cancel")-1;
+			if (.@choice==.@count) continue;
+			.@id=.@pages[.@choice];
+			mes "Enter up to 23 English characters. Colons and color codes are not allowed.";
+			mes "Leave the name empty to restore its default name.";
+			input .@name$;
+			if (pnstoragerename(.@id,.@name$)) mes "Storage name saved for this game login.";
+			else mes "Invalid name or storage is busy. Use 1-23 printable English characters with no leading/trailing spaces, colon, or ^ symbol.";
+			next;continue;
+		}
+		if (.@pick == 20) {
+			clear;mes "[Reorder Storages]";
+			mes "Choose the page to move.";
+			.@choices$="";
+			for (.@i=0; .@i<19; .@i++) .@choices$+=callfunc("PN_StorageLabel",callfunc("PN_StorageId",#PNStorageOrder[.@i]))+":";
+			.@from=select(.@choices$+"Cancel")-1;
+			if (.@from==19) continue;
+			mes "Choose its new position.";
+			.@choices$="";
+			for (.@i=0; .@i<19; .@i++) .@choices$+=(.@i+1)+" - "+callfunc("PN_StorageLabel",callfunc("PN_StorageId",#PNStorageOrder[.@i]))+":";
+			.@to=select(.@choices$+"Cancel")-1;
+			if (.@to==19) continue;
+			.@moving=#PNStorageOrder[.@from];
+			if (.@from<.@to) for (.@i=.@from; .@i<.@to; .@i++) #PNStorageOrder[.@i]=#PNStorageOrder[.@i+1];
+			if (.@from>.@to) for (.@i=.@from; .@i>.@to; .@i--) #PNStorageOrder[.@i]=#PNStorageOrder[.@i-1];
+			#PNStorageOrder[.@to]=.@moving;
+			mes "Menu order saved. Stored items stay in their original pages.";next;continue;
+		}
+		clear;mes "[Expand Storages]";
+		.@choices$="";.@count=0;
+		for (.@i=0; .@i<19; .@i++) {
+			.@id=callfunc("PN_StorageId",#PNStorageOrder[.@i]);
+			if (.@id == -1 || pnstorageavailable(.@id)) continue;
+			.@pages[.@count++]=.@id;
+			.@choices$+=callfunc("PN_StorageLabel",.@id)+":";
+		}
+		if (!.@count) { mes "All personal storage pages are unlocked.";next;continue; }
+		mes "Unlock one additional 600-slot page for 50,000,000 zeny from your character wallet.";
+		mes "The page is shared by all characters on this game login.";
+		.@choice=select(.@choices$+"Cancel")-1;
+		if (.@choice==.@count) continue;
+		.@id=.@pages[.@choice];
+		mes "Unlock "+callfunc("PN_StorageLabel",.@id)+"?";
+		if (select("Unlock for 50,000,000 zeny:Cancel")==2) continue;
+		if (Zeny<pnstorageprice()) { mes "You need 50,000,000 zeny in your character wallet.";next;continue; }
+		if (!pnstorageunlock(.@id)) { mes "The page could not be unlocked. Check your funds and close other services.";next;continue; }
+		mes "Saving your expansion. Please wait.";
+		while (pnstoragepending()) sleep2 100;
+		mes "Your storage page is now unlocked.";next;
+	}
+}
+
+-	script	PN Multi Storage	-1,{
+OnMenu:
+	callfunc "PN_MultiStorageMenu";
+	end;
+OnInit:
+	bindatcmd "storage",strnpcinfo(3)+"::OnMenu",0,99;
+	bindatcmd "mstorage",strnpcinfo(3)+"::OnMenu",0,99;
+	end;
+}

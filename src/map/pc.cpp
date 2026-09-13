@@ -5798,7 +5798,7 @@ uint8 pc_inventoryblank( const map_session_data* sd )
 char pc_payzeny(map_session_data *sd, int32 zeny, enum e_log_pick_type type, uint32 log_charid)
 {
 	nullpo_retr(2,sd);
-	if (sd->bank_ui.pending && !sd->bank_ui.applying) return 1;
+	if (pc_transaction_locked(sd)) return 1;
 
 	zeny = cap_value(zeny,-MAX_ZENY,MAX_ZENY); //prevent command UB
 	if( zeny < 0 )
@@ -6107,7 +6107,7 @@ enum e_additem_result pc_additem(map_session_data *sd,struct item *item,int32 am
 char pc_delitem(map_session_data *sd,int32 n,int32 amount,int32 type, int16 reason, e_log_pick_type log_type)
 {
 	nullpo_retr(1, sd);
-	if (sd->bank_ui.pending && !sd->bank_ui.applying) return 1;
+	if (pc_transaction_locked(sd)) return 1;
 
 	if(n < 0 || n >= MAX_INVENTORY || sd->inventory.u.items_inventory[n].nameid == 0 || amount <= 0 || sd->inventory.u.items_inventory[n].amount<amount || sd->inventory_data[n] == nullptr)
 		return 1;
@@ -6670,6 +6670,7 @@ enum e_additem_result pc_cart_additem(map_session_data *sd,struct item *item,int
 void pc_cart_delitem(map_session_data *sd,int32 n,int32 amount,int32 type,e_log_pick_type log_type)
 {
 	nullpo_retv(sd);
+	if (sd->multi_storage.pending && !sd->multi_storage.applying) return;
 
 	if(sd->cart.u.items_cart[n].nameid == 0 ||
 		sd->cart.u.items_cart[n].amount < amount)
@@ -6938,7 +6939,7 @@ bool pc_steal_item(map_session_data *sd,block_list *bl, uint16 skill_lv)
 enum e_setpos pc_setpos(map_session_data* sd, uint16 mapindex, int32 x, int32 y, clr_type clrtype)
 {
 	nullpo_retr(SETPOS_OK,sd);
-	if (sd->bank_ui.pending) return SETPOS_MAPINDEX;
+	if (pc_transaction_pending(sd) || sd->multi_storage.loading) return SETPOS_MAPINDEX;
 
 	if( !mapindex || !mapindex_id2name(mapindex) ) {
 		ShowDebug("pc_setpos: Passed mapindex(%d) is invalid!\n", mapindex);
@@ -10465,7 +10466,7 @@ int64 pc_readparam( const map_session_data* sd, int64 type )
 bool pc_setparam(map_session_data *sd,int64 type,int64 val_tmp)
 {
 	nullpo_retr(false,sd);
-	if (sd->bank_ui.pending && !sd->bank_ui.applying &&
+	if (pc_transaction_locked(sd) &&
 		(type == SP_BANK_VAULT || (type == SP_ZENY && val_tmp < sd->status.zeny))) return false;
 
 	int32 val = static_cast<uint32>(val_tmp);
@@ -11691,7 +11692,7 @@ bool pc_setreg2( map_session_data* sd, const char *reg, int64 val ) {
 	char prefix = reg[0];
 
 	nullpo_retr(false, sd);
-	if (sd->bank_ui.pending && !sd->bank_ui.applying && strcmp(reg, BANK_VAULT_VAR) == 0) return false;
+	if (pc_transaction_locked(sd) && strcmp(reg, BANK_VAULT_VAR) == 0) return false;
 
 	if( is_string_variable( reg ) ){
 		ShowError( "pc_setreg2: Invalid variable '%s'. String type variables are not supported.\n", reg );
@@ -14983,7 +14984,7 @@ void pc_expire_check(map_session_data *sd) {
 * @param money Amount of money to deposit
 **/
 enum e_BANKING_DEPOSIT_ACK pc_bank_deposit(map_session_data *sd, int32 money) {
-	if (sd->bank_ui.pending) return BDA_ERROR;
+	if (pc_transaction_pending(sd)) return BDA_ERROR;
 	if (battle_config.feature_banking_state_enforce && !sd->state.banking) {
 		return BDA_ERROR;
 	}
@@ -15003,7 +15004,7 @@ enum e_BANKING_DEPOSIT_ACK pc_bank_deposit(map_session_data *sd, int32 money) {
 * @param money Amount of money that will be withdrawn
 **/
 enum e_BANKING_WITHDRAW_ACK pc_bank_withdraw(map_session_data *sd, int32 money) {
-	if (sd->bank_ui.pending) return BWA_UNKNOWN_ERROR;
+	if (pc_transaction_pending(sd)) return BWA_UNKNOWN_ERROR;
 	if (battle_config.feature_banking_state_enforce && !sd->state.banking) {
 		return BWA_UNKNOWN_ERROR;
 	}

@@ -9,6 +9,7 @@
 
 #include <common/cbasetypes.hpp>
 #include <common/nullpo.hpp>
+#include <common/random.hpp>
 #include <common/showmsg.hpp>
 #include <common/utilities.hpp>
 
@@ -27,6 +28,9 @@
 using namespace rathena;
 
 std::unordered_map<uint16, std::shared_ptr<struct s_storage_table>> storage_db;
+static bool storage_transfer_ready(map_session_data&, const s_storage&);
+static void storage_commit_transfer(map_session_data&, s_storage&, bool);
+static bool storage_request_page(map_session_data&, uint8, uint8);
 
 ///Databases of guild_storage : int32 guild_id -> struct guild_storage
 std::map<int32, struct s_storage> guild_storage_db;
@@ -134,7 +138,7 @@ int32 storage_storageopen(map_session_data *sd)
 {
 	nullpo_ret(sd);
 
-	if(sd->state.storage_flag || sd->state.mail_writing)
+	if(pc_cant_act2(sd) || sd->state.mail_writing)
 		return 1; //Already open?
 
 	if( !pc_can_give_items(sd) ) { // check is this GM level is allowed to put items to storage
@@ -143,8 +147,10 @@ int32 storage_storageopen(map_session_data *sd)
 	}
 
 	sd->state.storage_flag = 1;
+	sd->storage.status = true;
+	sd->storage.state.put = sd->storage.state.get = 1;
 	storage_sortitem(sd->storage.u.items_storage, ARRAYLENGTH(sd->storage.u.items_storage));
-	clif_storagelist(sd, sd->storage.u.items_storage, ARRAYLENGTH(sd->storage.u.items_storage), storage_getName(0));
+	clif_storagelist(sd, sd->storage.u.items_storage, ARRAYLENGTH(sd->storage.u.items_storage), storage_page_name(*sd, 0));
 	clif_updatestorageamount(*sd, sd->storage.amount, sd->storage.max_amount);
 
 	return 0;
@@ -171,7 +177,8 @@ int32 compare_item(struct item *a, struct item *b)
 
 		for (i = 0; i < MAX_SLOTS && (a->card[i] == b->card[i]); i++);
 
-		return (i == MAX_SLOTS);
+		return i == MAX_SLOTS && a->enchantgrade == b->enchantgrade &&
+			memcmp(a->option, b->option, sizeof(a->option)) == 0;
 	}
 
 	return 0;
@@ -247,6 +254,13 @@ static int32 storage_additem(map_session_data* sd, struct s_storage *stor, struc
 		return 1;
 
 	data = itemdb_search(it->nameid);
+	if (stor->stor_id == pn_storage::cards && data->type != IT_CARD) {
+		clif_displaymessage(sd->fd, "Card Storage accepts card items only."); return 1;
+	}
+	if (stor->stor_id == pn_storage::character &&
+		(stor->id != sd->status.char_id || it->bound != BOUND_CHAR)) {
+		clif_displaymessage(sd->fd, "Character Bound Storage accepts this character's bound items only."); return 1;
+	}
 
 	if( data->stack.storage && amount > data->stack.amount ) // item stack limitation
 		return 2;
@@ -256,7 +270,8 @@ static int32 storage_additem(map_session_data* sd, struct s_storage *stor, struc
 		return 1;
 	}
 
-	if( (it->bound > BOUND_ACCOUNT) && !pc_can_give_bounded_items(sd) ) {
+	if( (it->bound > BOUND_ACCOUNT) && !pc_can_give_bounded_items(sd) &&
+		!(stor->stor_id == pn_storage::character && stor->id == sd->status.char_id && it->bound == BOUND_CHAR) ) {
 		clif_displaymessage(sd->fd, msg_txt(sd,294));
 		return 1;
 	}
@@ -336,14 +351,18 @@ void storage_storageadd(map_session_data* sd, struct s_storage *stor, int32 inde
 	enum e_storage_add result;
 
 	nullpo_retv(sd);
+	if (!storage_transfer_ready(*sd, *stor)) return;
 
 	result = storage_canAddItem(stor, index, sd->inventory.u.items_inventory, amount, MAX_INVENTORY);
 	if (result == STORAGE_ADD_INVALID)
 		return;
+	// pc_delitem requires this metadata. Reject before changing the destination.
+	if (!sd->inventory_data[index]) return;
 	else if (result == STORAGE_ADD_OK) {
 		switch( storage_additem(sd, stor, &sd->inventory.u.items_inventory[index], amount) ){
 			case 0:
 				pc_delitem(sd,index,amount,0,4,LOG_TYPE_STORAGE);
+				storage_commit_transfer(*sd, *stor, false);
 				return;
 			case 1:
 				break;
@@ -370,13 +389,17 @@ void storage_storageget(map_session_data *sd, struct s_storage *stor, int32 inde
 	enum e_storage_add result;
 
 	nullpo_retv(sd);
+	if (!storage_transfer_ready(*sd, *stor)) return;
 
 	result = storage_canGetItem(stor, index, amount);
 	if (result != STORAGE_ADD_OK)
 		return;
 
 	if ((flag = pc_additem(sd,&stor->u.items_storage[index],amount,LOG_TYPE_STORAGE, favorite)) == ADDITEM_SUCCESS)
+	{
 		storage_delitem(sd,stor,index,amount);
+		storage_commit_transfer(*sd, *stor, false);
+	}
 	else {
 		clif_storageitemremoved( *sd, index, 0 );
 		clif_additem(sd,0,0,flag);
@@ -395,6 +418,7 @@ void storage_storageaddfromcart(map_session_data *sd, struct s_storage *stor, in
 {
 	enum e_storage_add result;
 	nullpo_retv(sd);
+	if (!storage_transfer_ready(*sd, *stor)) return;
 
 	if (sd->state.prevend) {
 		return;
@@ -407,6 +431,7 @@ void storage_storageaddfromcart(map_session_data *sd, struct s_storage *stor, in
 		switch( storage_additem(sd, stor, &sd->cart.u.items_cart[index], amount) ){
 			case 0:
 				pc_cart_delitem(sd,index,amount,0,LOG_TYPE_STORAGE);
+				storage_commit_transfer(*sd, *stor, true);
 				return;
 			case 1:
 				break;
@@ -434,6 +459,7 @@ void storage_storagegettocart(map_session_data* sd, struct s_storage *stor, int3
 	enum e_storage_add result;
 
 	nullpo_retv(sd);
+	if (!storage_transfer_ready(*sd, *stor)) return;
 
 	if (sd->state.prevend) {
 		return;
@@ -444,7 +470,10 @@ void storage_storagegettocart(map_session_data* sd, struct s_storage *stor, int3
 		return;
 
 	if ((flag = pc_cart_additem(sd,&stor->u.items_storage[index],amount,LOG_TYPE_STORAGE)) == 0)
+	{
 		storage_delitem(sd,stor,index,amount);
+		storage_commit_transfer(*sd, *stor, true);
+	}
 	else {
 		clif_storageitemremoved( *sd, index, 0 );
 		if (flag == ADDITEM_INVALID)
@@ -483,6 +512,7 @@ void storage_storageclose(map_session_data *sd)
 	
 	if( sd->state.storage_flag == 1 ){
 		sd->state.storage_flag = 0;
+		sd->storage.status = false;
 		clif_storageclose( *sd );
 	}
 }
@@ -1119,12 +1149,15 @@ void storage_premiumStorage_open(map_session_data *sd) {
 	nullpo_retv(sd);
 
 	// The storage request may have returned after RODEX writing began.
-	if (sd->state.mail_writing)
+	if (sd->state.mail_writing || pc_transaction_pending(sd) || sd->multi_storage.loading ||
+		sd->state.storage_flag || sd->state.trading || sd->state.vending || sd->state.buyingstore ||
+		sd->state.prevend || sd->state.banking || sd->state.callshop)
 		return;
 
 	sd->state.storage_flag = 3;
+	sd->premiumStorage.status = true;
 	storage_sortitem(sd->premiumStorage.u.items_storage, ARRAYLENGTH(sd->premiumStorage.u.items_storage));
-	clif_storagelist(sd, sd->premiumStorage.u.items_storage, ARRAYLENGTH(sd->premiumStorage.u.items_storage), storage_getName(sd->premiumStorage.stor_id));
+	clif_storagelist(sd, sd->premiumStorage.u.items_storage, ARRAYLENGTH(sd->premiumStorage.u.items_storage), storage_page_name(*sd, sd->premiumStorage.stor_id));
 	clif_updatestorageamount(*sd, sd->premiumStorage.amount, sd->premiumStorage.max_amount);
 }
 
@@ -1139,7 +1172,7 @@ void storage_premiumStorage_open(map_session_data *sd) {
 bool storage_premiumStorage_load(map_session_data *sd, uint8 num, uint8 mode) {
 	nullpo_ret(sd);
 
-	if (sd->state.storage_flag || sd->state.mail_writing)
+	if (pc_cant_act2(sd) || sd->state.mail_writing)
 		return 0;
 
 	if (sd->state.vending || sd->state.buyingstore || sd->state.prevend || sd->state.autotrade)
@@ -1147,20 +1180,20 @@ bool storage_premiumStorage_load(map_session_data *sd, uint8 num, uint8 mode) {
 
 	if (sd->state.banking || sd->state.callshop)
 		return 0;
+	if (mode > STOR_MODE_ALL || !storage_page_available(*sd, num)) return false;
+	if (num == 0) {
+		if (storage_storageopen(sd) != 0) return false;
+		sd->storage.state.put = (mode & STOR_MODE_PUT) != 0;
+		sd->storage.state.get = (mode & STOR_MODE_GET) != 0;
+		return true;
+	}
 
 	if (!pc_can_give_items(sd)) { // check is this GM level is allowed to put items to storage
 		clif_displaymessage( sd->fd, msg_txt( sd, 246 ) ); // Your GM level doesn't authorize you to perform this action.
 		return 0;
 	}
 
-	if (sd->premiumStorage.stor_id != num)
-		return intif_storage_request(sd, TABLE_STORAGE, num, mode);
-	else {
-		sd->premiumStorage.state.put = (mode&STOR_MODE_PUT) ? 1 : 0;
-		sd->premiumStorage.state.get = (mode&STOR_MODE_GET) ? 1 : 0;
-		storage_premiumStorage_open(sd);
-	}
-	return 1;
+	return storage_request_page(*sd, num, mode);
 }
 
 /**
@@ -1191,6 +1224,7 @@ void storage_premiumStorage_close(map_session_data *sd) {
 
 	if( sd->state.storage_flag == 3 ){
 		sd->state.storage_flag = 0;
+		sd->premiumStorage.status = false;
 		clif_storageclose( *sd );
 	}
 }
@@ -1208,3 +1242,5 @@ void storage_premiumStorage_quit(map_session_data *sd) {
 	else
 		storage_premiumStorage_save(sd);
 }
+
+#include <custom/multi_storage_map.inc>

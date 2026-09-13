@@ -123,7 +123,8 @@ obj/npc.o: npc.cpp $(MAP_H) $(COMMON_H) $(LIBCONFIG_H) $(RAPIDYAML_H)
 
 # these have extra dependencies
 obj/clif.o obj-gen/clif.o: ../custom/bank_ui.inc
-obj/intif.o obj-gen/intif.o: ../custom/bank_inter.inc
+obj/intif.o obj-gen/intif.o: ../custom/bank_inter.inc ../custom/multi_storage_inter.inc
+obj/storage.o obj-gen/storage.o: ../custom/multi_storage_map.inc
 
 obj/atcommand.o: atcommand.cpp $(MAP_H) $(COMMON_H) $(LIBCONFIG_H) $(RAPIDYAML_H) ../custom/atcommand_def.inc ../custom/atcommand.inc
 	@echo "	CXX	$<"

@@ -14,6 +14,7 @@
 #include <common/strlib.hpp>// StringBuf
 #include <common/timer.hpp>
 #include <custom/bank_state.hpp>
+#include <custom/multi_storage.hpp>
 
 #include "battleground.hpp"
 #include "buyingstore.hpp" // struct s_buyingstore
@@ -910,6 +911,7 @@ public:
 	int32 respawn_tid;
 	int64 bank_vault; ///< Shared account bank, independent of the character wallet cap.
 	pn_bank_state bank_ui; ///< One account bank operation, locked until SQL commit.
+	pn_storage::State multi_storage; ///< Tagged personal storage loads and atomic transfers.
 
 #ifdef PACKET_OBFUSCATION
 	uint32 cryptKey; ///< Packet obfuscation key to be used for the next received packet
@@ -1160,8 +1162,15 @@ extern JobDatabase job_db;
 #define pc_isidle_hom(sd)     ( (sd)->hd && ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime_hom) >= battle_config.hom_idle_no_share ) )
 #define pc_isidle_mer(sd)     ( (sd)->md && ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime_mer) >= battle_config.mer_idle_no_share ) )
 #define pc_istrading(sd)      ( (sd)->npc_id || (sd)->state.vending || (sd)->state.buyingstore || (sd)->state.trading )
+static inline bool pc_transaction_pending(const map_session_data* sd) {
+	return sd->bank_ui.pending || sd->multi_storage.pending;
+}
+static inline bool pc_transaction_locked(const map_session_data* sd) {
+	return (sd->bank_ui.pending && !sd->bank_ui.applying) ||
+		(sd->multi_storage.pending && !sd->multi_storage.applying);
+}
 static bool pc_cant_act2( map_session_data* sd ){
-	return sd->bank_ui.pending || sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
+	return pc_transaction_pending(sd) || sd->multi_storage.loading || sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
 		|| sd->state.trading || sd->state.storage_flag || sd->state.prevend || sd->state.refineui_open
 		|| sd->state.stylist_open || sd->state.inventory_expansion_confirmation || sd->npc_shopid
 		|| sd->state.barter_open || sd->state.barter_extended_open

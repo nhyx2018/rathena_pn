@@ -19,6 +19,8 @@
 #include "int_guild.hpp"
 
 static bool bank_tables_transactional();
+static bool personal_storage_schema_ready();
+#include <custom/multi_storage.hpp>
 
 static bool inventory_is_transactional(){
 	// MyISAM would silently accept START/COMMIT without providing atomicity.
@@ -135,11 +137,11 @@ bool guild_storage_fromsql(int32 guild_id, struct s_storage* p)
 void inter_storage_checkDB(void) {
 	// Checking storage tables
 	for( auto storage_table : interServerDb ){
-		if (SQL_ERROR == Sql_Query(sql_handle, "SELECT  `id`,`account_id`,`nameid`,`amount`,`equip`,`identify`,`refine`,"
+		if (SQL_ERROR == Sql_Query(sql_handle, "SELECT  `id`,`%s`,`nameid`,`amount`,`equip`,`identify`,`refine`,"
 			"`attribute`,`card0`,`card1`,`card2`,`card3`,`option_id0`,`option_val0`,`option_parm0`,`option_id1`,`option_val1`,`option_parm1`,"
 			"`option_id2`,`option_val2`,`option_parm2`,`option_id3`,`option_val3`,`option_parm3`,`option_id4`,`option_val4`,`option_parm4`,"
 			"`expire_time`,`bound`,`unique_id`,`enchantgrade`"
-			" FROM `%s` LIMIT 1;", storage_table.second->table)) {
+			" FROM `%s` LIMIT 1;", storage_table.first == pn_storage::character ? "char_id" : "account_id", storage_table.second->table)) {
 			Sql_ShowDebug(sql_handle);
 		}else{
 			Sql_FreeResult(sql_handle);
@@ -157,6 +159,10 @@ void inter_storage_sql_init(void)
 	}
 	if (!bank_tables_transactional()) {
 		ShowFatalError("Account bank requires upgrade_20260913_account_bank.sql and InnoDB financial tables.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!personal_storage_schema_ready()) {
+		ShowFatalError("Personal storage requires upgrade_20260913_multi_storage.sql and InnoDB storage/cart tables.\n");
 		exit(EXIT_FAILURE);
 	}
 	inter_storage_checkDB();
@@ -498,7 +504,7 @@ bool mapif_parse_StorageLoad(int32 fd) {
 	switch (type) {
 		case TABLE_INVENTORY: res = inventory_fromsql(cid, &stor); break;
 		case TABLE_STORAGE:
-			res = storage_fromsql(aid, &stor);
+			res = stor_id != pn_storage::character && storage_fromsql(aid, &stor);
 			break;
 		case TABLE_CART:      res = cart_fromsql(cid, &stor);      break;
 		default:
@@ -537,7 +543,7 @@ bool mapif_parse_StorageSave(int32 fd) {
 			res = inventory_tosql(cid, &stor) == 0;
 			break;
 		case TABLE_STORAGE:
-			res = storage_tosql(aid, &stor) == 0;
+			res = stor.stor_id != pn_storage::character && storage_tosql(aid, &stor) == 0;
 			break;
 		case TABLE_CART:
 			res = cart_tosql(cid, &stor) == 0;
@@ -571,6 +577,7 @@ static void mapif_parse_InventoryCommit( int32 fd ){
 }
 
 #include <custom/bank_sql.inc>
+#include <custom/multi_storage_sql.inc>
 
 bool inter_storage_parse_frommap(int32 fd)
 {
@@ -584,6 +591,8 @@ bool inter_storage_parse_frommap(int32 fd)
 		case 0x308b: mapif_parse_StorageSave(fd); break;
 		case 0x308d: mapif_parse_InventoryCommit(fd); break;
 		case 0x308e: mapif_parse_BankCommit(fd); break;
+		case 0x308f: mapif_parse_StoragePageLoad(fd); break;
+		case 0x3094: mapif_parse_StorageCommit(fd); break;
 		default:
 			return false;
 	}

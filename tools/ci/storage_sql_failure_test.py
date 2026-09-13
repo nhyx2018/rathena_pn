@@ -32,6 +32,7 @@ prefix = r'''
 #include <memory>
 #include <string>
 #include <vector>
+#include "custom/multi_storage.hpp"
 using int8=int8_t; using uint8=uint8_t; using int16=int16_t;
 using int32=int32_t; using uint32=uint32_t; using uint64=uint64_t;
 using t_itemid=uint32;
@@ -133,5 +134,6 @@ with tempfile.TemporaryDirectory(prefix='pn-storage-fetch-') as tmp:
     binary = Path(tmp) / 'test'
     cpp.write_text(prefix + mmo[item_begin:item_end] + boundary + source[begin:end] + suffix)
     subprocess.run(['g++', '-std=c++17', '-O1', '-g', '-fsanitize=address,undefined',
+                    '-I', str(ROOT / 'src'),
                     '-o', str(binary), str(cpp)], check=True)
     raise SystemExit(subprocess.run([str(binary)]).returncode)
