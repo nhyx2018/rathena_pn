@@ -48,15 +48,15 @@ static pn_bank::Reply pn_bank_snapshot(map_session_data& sd) {
     result.result = sd.bank_ui.pending ? pn_bank::Saving : sd.bank_ui.result;
     if (!battle_config.feature_banking || map_getmapflag(sd.m, MF_NOBANK) || !chrif_isconnected())
         result.result = pn_bank::Unavailable;
-    if (result.bank < 0 || result.bank > pn_bank::limit || result.wallet < 0 || result.wallet > pn_bank::limit) {
+    if (result.bank < 0 || result.wallet < 0 || result.wallet > pn_bank::wallet_limit) {
         result.result = pn_bank::Unavailable; return result;
     }
-    result.max_deposit = std::min(result.wallet, pn_bank::limit - result.bank);
-    result.max_withdraw = std::min(result.bank, pn_bank::limit - result.wallet);
+    result.max_deposit = std::min(result.wallet, pn_bank::bank_limit - result.bank);
+    result.max_withdraw = std::min(result.bank, pn_bank::wallet_limit - result.wallet);
     for (int i = 0; i < 2; ++i) {
         result.counts[i] = pn_bank_count(sd, pn_bank::item_ids[i]);
         result.max_buy[i] = static_cast<uint32_t>(std::min<int64_t>(pn_bank_buy_capacity(sd, pn_bank::item_ids[i]), result.bank / result.buy[i]));
-        result.max_sell[i] = static_cast<uint32_t>(std::min<int64_t>(result.counts[i], (pn_bank::limit - result.bank) / result.sell[i]));
+        result.max_sell[i] = static_cast<uint32_t>(std::min<int64_t>(result.counts[i], (pn_bank::bank_limit - result.bank) / result.sell[i]));
     }
     return result;
 }
@@ -131,6 +131,37 @@ int32 clif_bank_native_transfer(map_session_data& sd, int32 amount, bool deposit
 // Called before game packet obfuscation, only on an unauthenticated companion
 // connection. Its credentials must match an already authenticated live player.
 static int32 clif_parse_bank_companion_session(int32 fd);
+// A companion owns only this small identity record, never a player pointer.
+// delete_session frees it. Validate the nonce as well as fd to prevent reuse
+// after logout or character selection from opening another player's panel.
+struct pn_bank_companion {
+    uint32_t account_id, char_id, login_id1, login_id2;
+    uint64_t nonce_hi, nonce_lo;
+};
+static bool pn_bank_companion_matches(const pn_bank_companion& peer, const map_session_data& sd) {
+    return peer.account_id == sd.status.account_id && peer.char_id == sd.status.char_id &&
+        peer.login_id1 == sd.login_id1 && peer.login_id2 == sd.login_id2 &&
+        peer.nonce_hi == sd.bank_ui.nonce_hi && peer.nonce_lo == sd.bank_ui.nonce_lo;
+}
+static bool clif_bank_open_custom(map_session_data& sd) {
+    sd.bank_ui.open_requested = true;
+    int fd = sd.bank_ui.companion_fd;
+    if (!session_isValid(fd) || session[fd]->flag.eof ||
+        session[fd]->func_parse != clif_parse_bank_companion_session ||
+        !session[fd]->session_data || !sd.state.active || !sd.prev ||
+        !session_isValid(sd.fd) || session[sd.fd]->flag.eof ||
+        session[fd]->client_addr != session[sd.fd]->client_addr ||
+        !pn_bank_companion_matches(*static_cast<pn_bank_companion*>(session[fd]->session_data), sd)) return false;
+    auto reply = pn_bank_snapshot(sd);
+    reply.flags = pn_bank::open_panel;
+    WFIFOHEAD(fd, sizeof(reply));
+    memcpy(WFIFOP(fd, 0), &reply, sizeof(reply));
+    WFIFOSET(fd, sizeof(reply));
+    sd.bank_ui.open_requested = false;
+    // Also dismiss a stock window opened before the companion authenticated.
+    clif_bank_close(sd);
+    return true;
+}
 static bool clif_parse_bank_companion(int32 fd) {
     if (RFIFOW(fd, 0) != (pn_bank::magic & 0xffff)) return false;
     session[fd]->func_parse = clif_parse_bank_companion_session;
@@ -144,11 +175,25 @@ static bool clif_parse_bank_companion(int32 fd) {
         set_eof(fd); return true;
     }
     auto* sd = map_id2sd(request.account_id);
+    bool authenticated = false;
     if (sd && sd->state.active && sd->prev && sd->status.char_id == request.char_id &&
         sd->login_id1 == request.login_id1 && sd->login_id2 == request.login_id2 &&
         session_isValid(sd->fd) && !session[sd->fd]->flag.eof &&
         session[sd->fd]->client_addr == session[fd]->client_addr) {
         reply = pn_bank_snapshot(*sd);
+        auto* peer = static_cast<pn_bank_companion*>(session[fd]->session_data);
+        if (!peer) {
+            peer = static_cast<pn_bank_companion*>(aCalloc(1, sizeof(pn_bank_companion)));
+            session[fd]->session_data = peer;
+        }
+        // Retire the previous attachment before replacing it. A new character
+        // or login must authenticate independently, even on a recycled fd.
+        if (auto* previous = map_id2sd(peer->account_id))
+            if (previous->bank_ui.companion_fd == fd) previous->bank_ui.companion_fd = 0;
+        *peer = {request.account_id, request.char_id, request.login_id1, request.login_id2,
+            reply.nonce_hi, reply.nonce_lo};
+        sd->bank_ui.companion_fd = fd;
+        authenticated = true;
         if (request.action != pn_bank::Refresh) {
             auto result = pn_bank_action(*sd, request);
             reply = pn_bank_snapshot(*sd); reply.result = result;
@@ -157,10 +202,20 @@ static bool clif_parse_bank_companion(int32 fd) {
     WFIFOHEAD(fd, sizeof(reply));
     memcpy(WFIFOP(fd, 0), &reply, sizeof(reply));
     WFIFOSET(fd, sizeof(reply));
+    // Keep the ordinary request/reply stream separate from open notifications.
+    if (authenticated && sd->bank_ui.open_requested) clif_bank_open_custom(*sd);
     return true;
 }
 static int32 clif_parse_bank_companion_session(int32 fd) {
-    if (session[fd]->flag.eof) { do_close(fd); return 0; }
+    if (session[fd]->flag.eof) {
+        auto* peer = static_cast<pn_bank_companion*>(session[fd]->session_data);
+        if (peer) {
+            auto* sd = map_id2sd(peer->account_id);
+            if (sd && sd->bank_ui.companion_fd == fd && pn_bank_companion_matches(*peer, *sd))
+                sd->bank_ui.companion_fd = 0;
+        }
+        do_close(fd); return 0;
+    }
     if (RFIFOREST(fd) < 2) return 0;
     if (!clif_parse_bank_companion(fd)) set_eof(fd);
     return 0;

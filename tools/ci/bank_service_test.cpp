@@ -9,19 +9,22 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cstdlib>
+#define aCalloc(n,s) calloc(n,s)
 struct ItemData { struct {bool inventory=false;int amount=30000;} stack; struct {bool guid=false,autoequip=false;} flag; int weight=10; };
 struct ItemDb { std::shared_ptr<ItemData> data=std::make_shared<ItemData>(); std::shared_ptr<ItemData> find(uint32){return data;} } item_db;
 struct map_session_data {
     struct {uint32 account_id=2000001,char_id=150001; int32 zeny=1000000000;uint16 inventory_slots=MAX_INVENTORY;} status;
     struct {bool active=true,autotrade=false,warping=false,changemap=false;} state;
     pn_bank_state bank_ui;
-    int32 bank_vault=1000000000,weight=0,max_weight=1000000,fd=2,m=0;
+    int64 bank_vault=1000000000;
+    int32 weight=0,max_weight=1000000,fd=2,m=0;
     uint32 login_id1=11,login_id2=22;
     void* prev=reinterpret_cast<void*>(1);
     s_storage inventory{};
     ItemData* inventory_data[MAX_INVENTORY]{};
 } player;
-struct Session {struct {bool eof=false;}flag;uint32 client_addr=123;int32(*func_parse)(int32)=nullptr;};
+struct Session {struct {bool eof=false;}flag;uint32 client_addr=123;int32(*func_parse)(int32)=nullptr;void* session_data=nullptr;};
 Session objects[4];Session* session[4]={&objects[0],&objects[1],&objects[2],&objects[3]};
 alignas(8) unsigned char incoming[4][65536]{},outgoing[4][65536]{};
 size_t in_size[4]{},in_pos[4]{},out_size[4]{};
@@ -35,7 +38,7 @@ size_t in_size[4]{},in_pos[4]{},out_size[4]{};
 int inter_fd=1; int64 clock_tick=10000;
 bool connected=true,disabled=false,world_busy=false,present=true,add_fails=false;
 int delete_failure=-1,save_count=0,timers=0,refreshes=0;
-int native_replies=0;
+int native_replies=0, native_closes=0;
 struct {bool feature_banking=true;} battle_config;
 enum {MF_NOBANK,SP_BANK_VAULT,SP_WEIGHT,LOG_TYPE_BANK,ADDITEM_SUCCESS,CSAVE_NORMAL=1,CSAVE_INVENTORY=2};
 enum {BDA_SUCCESS=0,BWA_SUCCESS=0};
@@ -51,7 +54,7 @@ int CheckForCharServer(){return !connected;}
 map_session_data* map_id2sd(int id){return present && id==int(player.status.account_id)?&player:nullptr;}
 bool session_isValid(int fd){return fd>0 && fd<4;}
 void set_eof(int fd){session[fd]->flag.eof=true;}
-void do_close(int fd){session[fd]->flag.eof=true;}
+void do_close(int fd){session[fd]->flag.eof=true;free(session[fd]->session_data);session[fd]->session_data=nullptr;}
 void ShowError(const char*){}
 void clif_updatestatus(map_session_data&,int){}
 void clif_inventorylist(map_session_data*){++refreshes;}
@@ -75,6 +78,7 @@ int32 add_timer(t_tick,TimerFunc,int32,intptr_t){return ++timers;}
 void chrif_save(map_session_data* sd,int){assert(!sd->bank_ui.pending);++save_count;}
 void clif_bank_deposit(map_session_data& sd,int){assert(!sd.bank_ui.pending);++native_replies;}
 void clif_bank_withdraw(map_session_data& sd,int){assert(!sd.bank_ui.pending);++native_replies;}
+void clif_bank_close(map_session_data&){++native_closes;}
 #include <custom/bank_inter.inc>
 #include <custom/bank_ui.inc>
 static pn_bank::Reply rpc(pn_bank::Request request,int length=sizeof(pn_bank::Request)) {
@@ -93,6 +97,13 @@ int main(){
     Request request; request.account_id=player.status.account_id;request.char_id=player.status.char_id;request.login_id1=11;request.login_id2=22;
     auto snapshot=rpc(request);assert(snapshot.result==Ok && snapshot.bank==1000000000 && snapshot.nonce_hi);
     assert(snapshot.char_id==player.status.char_id && valid_reply(snapshot));
+    assert(player.bank_ui.companion_fd==3 && clif_bank_open_custom(player) && native_closes==1);
+    Reply notification;memcpy(&notification,outgoing[3],sizeof(notification));
+    assert(notification.flags==open_panel && notification.char_id==request.char_id && valid_reply(notification));
+    auto* peer=static_cast<pn_bank_companion*>(session[3]->session_data);
+    peer->nonce_hi++;assert(!clif_bank_open_custom(player));peer->nonce_hi--;
+    session[3]->client_addr++;assert(!clif_bank_open_custom(player));session[3]->client_addr--;
+    assert(clif_bank_open_custom(player));
     rpc(request,9);assert(out_size[3]==0 && !session[3]->flag.eof);
     auto invalid=request;invalid.login_id1++;assert(rpc(invalid).result==Unauthorized);
     invalid=request;invalid.login_id2++;assert(rpc(invalid).result==Unauthorized);
@@ -139,6 +150,17 @@ int main(){
     ack(false,4);assert(native_replies==0);ack(true,4);assert(native_replies==1 && player.bank_vault==1497000200);
     clock_tick+=1000;assert(clif_bank_native_transfer(player,100,false)==Saving && native_replies==1);
     ack(true,5);assert(native_replies==2 && player.bank_vault==1497000100);
+    player.bank_vault=INT64_MAX-1;player.status.zeny=1;
+    request.request_id=6;request.action=Deposit;request.amount=1;clock_tick+=1000;
+    assert(rpc(request).result==Saving && player.bank_vault==INT64_MAX && player.status.zeny==0);
+    memcpy(&sent,outgoing[1],sizeof(sent));assert(sent.bank_after==INT64_MAX);ack(true,6);
+    request.request_id=7;request.action=Withdraw;request.amount=MAX_ZENY;clock_tick+=1000;
+    assert(rpc(request).result==Saving && player.status.zeny==MAX_ZENY && player.bank_vault==INT64_MAX-MAX_ZENY);ack(true,7);
+    request.request_id=8;request.amount=1;clock_tick+=1000;
+    assert(rpc(request).result==Limit && player.status.zeny==MAX_ZENY);
     session[2]->flag.eof=true;assert(rpc(Request{}).result==Unauthorized);
+    assert(!clif_bank_open_custom(player));
+    session[3]->flag.eof=true;clif_parse_bank_companion_session(3);
+    assert(player.bank_ui.companion_fd==0 && !session[3]->session_data);
     std::cout<<"PASS: production bank service authentication, packet fragmentation, funds/capacity, locked saves, duplicate and stale requests/replies, current-state retries, item eligibility, rollback and cache release\n";
 }

@@ -82,7 +82,7 @@ extern "C" int __wrap_main(int argc,char** argv) {
         if(bad==0) invalid.account_id=990014;
         if(bad==1) invalid.char_id=123;
         if(bad==2) invalid.bank_after=-1;
-        if(bad==3) invalid.bank_after=int64_t(MAX_BANK_ZENY)+1;
+        if(bad==3) invalid.wallet_after=int64_t(MAX_ZENY)+1;
         if(bad==4) invalid.wallet_after=-1;
         if(bad==5) invalid.request_id=0;
         if(bad==6) invalid.nonce_hi=invalid.nonce_lo=0;
@@ -106,6 +106,15 @@ extern "C" int __wrap_main(int argc,char** argv) {
     inventory.u.items_inventory[2].amount=1;
     assert(bank_tosql(request,inventory) && cached->zeny==499999900); ++checks;
     assert(result("SELECT COUNT(*) FROM pn_bank_commits")=="2|\n"); ++checks;
+    // SQL and the journal retain all 63 value bits across commit and reconnect.
+    request.request_id=3;request.bank_before=INT64_MAX-1;request.bank_after=INT64_MAX;
+    request.amount=1;request.wallet_before=499999900;request.wallet_after=499999899;
+    sql("UPDATE acc_reg_num SET value=9223372036854775806 WHERE account_id=990013 AND `key`='#BANKVAULT'");
+    assert(bank_tosql(request,inventory) && cached->zeny==499999899);++checks;
+    assert(result("SELECT value FROM acc_reg_num WHERE account_id=990013 AND `key`='#BANKVAULT'")=="9223372036854775807|\n");++checks;
+    assert(result("SELECT bank_before,bank_after FROM pn_bank_commits WHERE request_id=3")=="9223372036854775806|9223372036854775807|\n");++checks;
+    committed=snapshot();Sql_Free(sql_handle);connect_db();
+    request.bank_after=1;assert(bank_tosql(request,inventory));++checks;unchanged(committed);
     std::cout<<"BANK_SQL_PASS "<<checks<<" checks: actual InnoDB atomicity, failures at all four writes, journal retry, reconnect, ownership, caps, cache synchronization and unrelated item preservation\n";
     Sql_Free(sql_handle); sql_handle=nullptr; return 0;
 }

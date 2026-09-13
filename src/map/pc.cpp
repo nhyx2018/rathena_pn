@@ -2380,7 +2380,7 @@ void pc_reg_received(map_session_data *sd)
 	}
 
 	if (battle_config.feature_banking)
-		sd->bank_vault = static_cast<int32>(pc_readreg2(sd, BANK_VAULT_VAR));
+		sd->bank_vault = pc_readreg2(sd, BANK_VAULT_VAR);
 
 	if (battle_config.feature_roulette) {
 		sd->roulette_point.bronze = static_cast<int32>(pc_readreg2(sd, ROULETTE_BRONZE_VAR));
@@ -10653,10 +10653,12 @@ bool pc_setparam(map_session_data *sd,int64 type,int64 val_tmp)
 		clif_font(sd);
 		return true;
 	case SP_BANK_VAULT:
-		if (val < 0)
+		// Other parameters use the narrowed val above; bank balances must retain
+		// all 64 bits through script setters, transactions and registry saves.
+		if (val_tmp < 0 || sd->bank_vault < 0)
 			return false;
-		log_zeny(*sd, LOG_TYPE_BANK, sd->status.char_id, -(sd->bank_vault - cap_value(val, 0, MAX_BANK_ZENY)));
-		sd->bank_vault = cap_value(val, 0, MAX_BANK_ZENY);
+		log_zeny(*sd, LOG_TYPE_BANK, sd->status.char_id, val_tmp - sd->bank_vault);
+		sd->bank_vault = val_tmp;
 		pc_setreg2(sd, BANK_VAULT_VAR, sd->bank_vault);
 		return true;
 	case SP_ROULETTE_BRONZE:
@@ -11701,7 +11703,13 @@ bool pc_setreg2( map_session_data* sd, const char *reg, int64 val ) {
 		return false;
 	}
 
-	val = cap_value(val, INT_MIN, INT_MAX);
+	// The ordinary registry flush follows a bank commit. Its cached value must
+	// retain all 64 bits or it would overwrite the committed balance with INT_MAX.
+	if (strcmp(reg, BANK_VAULT_VAR) == 0) {
+		if (val < 0) return false;
+	} else {
+		val = cap_value(val, INT_MIN, INT_MAX);
+	}
 
 	switch (prefix) {
 		case '@':
@@ -14980,8 +14988,7 @@ enum e_BANKING_DEPOSIT_ACK pc_bank_deposit(map_session_data *sd, int32 money) {
 		return BDA_ERROR;
 	}
 
-	int64 limit_check = static_cast<int64>(money) + sd->bank_vault;
-	if( money <= 0 || limit_check > MAX_BANK_ZENY ) {
+	if( money <= 0 || sd->bank_vault < 0 || money > MAX_BANK_ZENY - sd->bank_vault ) {
 		return BDA_OVERFLOW;
 	} else if ( money > sd->status.zeny ) {
 		return BDA_NO_MONEY;

@@ -7,6 +7,14 @@
 using Callback=BOOL(WINAPI*)(GUID*,LPSTR,LPSTR,LPVOID,HMONITOR);
 using Draw=HRESULT(WINAPI*)(Callback,LPVOID,DWORD);
 BOOL WINAPI device(GUID*,LPSTR,LPSTR,LPVOID,HMONITOR) { return FALSE; }
+BOOL CALLBACK own_panel(HWND window,LPARAM result) {
+    DWORD pid=0;GetWindowThreadProcessId(window,&pid);
+    wchar_t name[64];GetClassNameW(window,name,64);
+    if(pid==GetCurrentProcessId() && !wcscmp(name,L"PNAccountBank")) {
+        *reinterpret_cast<HWND*>(result)=window;return FALSE;
+    }
+    return TRUE;
+}
 int main() {
     wchar_t file[MAX_PATH]; GetModuleFileNameW(nullptr,file,MAX_PATH);
     auto slash=wcsrchr(file,L'\\'); assert(slash); wcscpy(slash+1,L"FontScale.dll");
@@ -17,7 +25,7 @@ int main() {
     HWND panel=nullptr;
     auto deadline=GetTickCount64()+5000;
     while(GetTickCount64()<deadline) {
-        panel=FindWindowW(L"PNAccountBank",nullptr);
+        EnumWindows(own_panel,reinterpret_cast<LPARAM>(&panel));
         if(panel && GetModuleHandleW(L"FontScaleOriginal.dll") && GetModuleHandleW(L"BankUI.dll")) break;
         Sleep(10);
     }

@@ -133,7 +133,7 @@ def native(build,inputs):
     libs=[ROOT/p for p in ('src/common/obj/common.a','3rdparty/libconfig/obj/libconfig.a','3rdparty/rapidyaml/obj/ryml.a')]
     require(objects and all(p.is_file() for p in libs),'Existing native support objects required')
     wrappers=[w for w in WRAPPERS if w not in ('_Z12pc_equipitemP16map_session_datasib','_Z14pc_unequipitemP16map_session_dataii')]
-    wrappers+=['_Z20clif_equipswitch_addPK16map_session_datatjh','_Z23clif_equipswitch_removePK16map_session_datatjb','_Z8log_zenyRK16map_session_data15e_log_pick_typeji']
+    wrappers+=['_Z20clif_equipswitch_addPK16map_session_datatjh','_Z23clif_equipswitch_removePK16map_session_datatjb','_Z8log_zenyRK16map_session_data15e_log_pick_typejl']
     bins={}
     for mode in ('fixed','old'):
         binary=build/('equipswitch_'+mode);bins[mode]=binary

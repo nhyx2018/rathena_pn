@@ -86,8 +86,8 @@ extern "C" void switch_remove(const map_session_data* sd,uint16 index,uint32 mas
     for(int i:sd->equip_switch_index)check(i!=index,"native removal clears all cache entries before notification");
     switch_removes.push_back({index,mask,failed});
 }
-extern "C" void switch_zeny(const map_session_data&,e_log_pick_type,uint32,int32) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typeji");
-extern "C" void switch_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int32 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"native script payment log metadata");payments.push_back(amount);}
+extern "C" void switch_zeny(const map_session_data&,e_log_pick_type,uint32,int64) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typejl");
+extern "C" void switch_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int64 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"native script payment log metadata");payments.push_back(amount);}
 
 extern "C" int __wrap_main(int argc,char** argv){
     check(argc==3,"explicit artifact directory and mode");old_engine=std::string(argv[2])!="fixed";

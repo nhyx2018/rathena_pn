@@ -236,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `zenylog` (
   `char_id` int(11) NOT NULL default '0',
   `src_id` int(11) NOT NULL default '0',
   `type` enum('T','V','P','M','S','N','D','C','A','E','I','B','K','J','X','0','2') NOT NULL default 'S',
-  `amount` int(11) NOT NULL default '0',
+  `amount` bigint(20) NOT NULL default '0',
   `map` varchar(11) NOT NULL default '',
   PRIMARY KEY  (`id`),
   INDEX (`type`)

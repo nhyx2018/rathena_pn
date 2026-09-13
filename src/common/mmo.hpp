@@ -80,7 +80,7 @@ typedef uint32 t_itemid;
 #define MAX_SLOTS 4
 #define MAX_AMOUNT 30000 ////Max amount of a single stacked item
 #define MAX_ZENY INT_MAX ///Max zeny
-#define MAX_BANK_ZENY SINT32_MAX ///Max zeny in Bank
+#define MAX_BANK_ZENY SINT64_MAX /// Account bank; character wallet still uses MAX_ZENY.
 #ifndef MAX_CASHPOINT
 	#define MAX_CASHPOINT INT_MAX
 #endif

@@ -231,7 +231,7 @@ def native(build, inputs, reuse=False, prepare=False):
         wrappers=[w for w in OLD_WRAPPERS if w not in ('_Z17pc_show_questinfoP16map_session_data',
             '_Z28achievement_update_objectiveP16map_session_data19e_achievement_grouphz')]
         wrappers+=['_Z16clif_scriptinputR16map_session_dataj','_Z9map_id2bli',
-            '_Z8log_zenyRK16map_session_data15e_log_pick_typeji','_Z14pc_setregistryP16map_session_datall',
+            '_Z8log_zenyRK16map_session_data15e_log_pick_typejl','_Z14pc_setregistryP16map_session_datall',
             '_Z27achievement_check_conditionP11script_codeP16map_session_data',
             '_Z21clif_quest_show_eventPK16map_session_dataPK10block_list17e_questinfo_types21e_questinfo_markcolor']
         command=['g++']+san+['-o',str(executable)]+[str(p) for p in fresh+objects+libs]

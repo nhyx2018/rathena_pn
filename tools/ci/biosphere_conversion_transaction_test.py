@@ -175,7 +175,7 @@ def native(build, inputs, reuse=False):
         wrappers += ['_Z16clif_scriptinputR16map_session_dataj',
                      '_Z9map_id2bli',
                      '_Z13map_charid2sdi',
-                     '_Z8log_zenyRK16map_session_data15e_log_pick_typeji',
+                     '_Z8log_zenyRK16map_session_data15e_log_pick_typejl',
                      '_Z14pc_setregistryP16map_session_datall']
         command = ['g++']+san+['-o',str(executable)]+[str(p) for p in fresh+objects+libs]
         command += ['-Wl,--wrap='+w for w in wrappers]

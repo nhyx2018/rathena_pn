@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
-#include <string>
 #include <vector>
 
 namespace {
@@ -19,7 +18,7 @@ LONG bank_generation=0;
 HWND panel_window = nullptr;
 uint16_t char_port = 6121, map_port = 5121;
 struct Auth { uint32_t account=0, character=0, one=0, two=0; sockaddr_in peer{}; SOCKET socket=INVALID_SOCKET; LONG generation=0; bool ready=false; } auth;
-struct Capture { SOCKET socket=INVALID_SOCKET; std::vector<char> start; std::string tail; bool initial=false; };
+struct Capture { SOCKET socket=INVALID_SOCKET; std::vector<char> start; bool initial=false; };
 std::array<Capture, 16> captures;
 uint32_t u32(const char* p) { uint32_t value; memcpy(&value,p,4); return value; }
 uint16_t u16(const char* p) { uint16_t value; memcpy(&value,p,2); return value; }
@@ -42,7 +41,7 @@ void capture_send(SOCKET socket, const char* data, int length) {
             if(u16(c.start.data())==0x0065) {
                 auth.account=u32(c.start.data()+2); auth.one=u32(c.start.data()+6); auth.two=u32(c.start.data()+10);
                 auth.ready=false; ++auth.generation;
-                PostMessage(panel_window,BANK_SESSION,0,0);
+                PostMessage(panel_window,BANK_SESSION,static_cast<WPARAM>(auth.generation),0);
             }
         }
         if(port==map_port && c.start.size()>=19) {
@@ -52,15 +51,9 @@ void capture_send(SOCKET socket, const char* data, int length) {
             if(auth.account && u32(c.start.data()+2)==auth.account && u32(c.start.data()+10)==auth.one) {
                 auth.character=u32(c.start.data()+6); auth.peer=peer; auth.socket=socket;
                 auth.ready=true; ++auth.generation;
-                PostMessage(panel_window,BANK_SESSION,0,0);
+                PostMessage(panel_window,BANK_SESSION,static_cast<WPARAM>(auth.generation),0);
             }
         }
-    }
-    if(port==map_port && auth.ready && auth.socket==socket) {
-        std::string text=c.tail+std::string(data,static_cast<size_t>(length));
-        auto pos=text.find(" : @bank");
-        if(pos!=std::string::npos && pos+8<text.size() && text[pos+8]=='\0') PostMessage(panel_window,BANK_OPEN,0,0);
-        c.tail=text.substr(text.size()>64 ? text.size()-64 : 0);
     }
     LeaveCriticalSection(&lock);
 }
@@ -73,7 +66,7 @@ int WSAAPI observed_send(SOCKET socket,const char* data,int length,int flags) {
 int WSAAPI observed_close(SOCKET socket) {
     EnterCriticalSection(&lock);
     for(auto& c:captures) if(c.socket==socket) c=Capture{};
-    if(auth.socket==socket) { auth.ready=false; auth.socket=INVALID_SOCKET; ++auth.generation; PostMessage(panel_window,BANK_SESSION,0,0); }
+    if(auth.socket==socket) { auth.ready=false; auth.socket=INVALID_SOCKET; ++auth.generation; PostMessage(panel_window,BANK_SESSION,static_cast<WPARAM>(auth.generation),0); }
     LeaveCriticalSection(&lock);
     // Never block the game thread behind a network receive. An active worker
     // closes a stale companion itself; an idle companion can close immediately.
@@ -86,6 +79,50 @@ int WSAAPI observed_close(SOCKET socket) {
     return game_close(socket);
 }
 struct Work { HWND panel; Auth auth; pn_bank::Request request; };
+// Both the request worker and idle receiver hold exchange_lock while reading.
+// Notifications can arrive before a transaction reply and never count as its
+// acknowledgement. A single deadline also bounds fragmented or excessive input.
+bool read_reply(SOCKET socket,pn_bank::Reply& reply,ULONGLONG deadline) {
+    int received=0;
+    while(received<static_cast<int>(sizeof(reply))) {
+        auto now=GetTickCount64(); if(now>=deadline) return false;
+        auto remaining=deadline-now;
+        timeval timeout{static_cast<long>(remaining/1000),static_cast<long>((remaining%1000)*1000)};
+        fd_set readable; FD_ZERO(&readable); FD_SET(socket,&readable);
+        if(select(0,&readable,nullptr,nullptr,&timeout)<=0) return false;
+        int n=recv(socket,reinterpret_cast<char*>(&reply)+received,sizeof(reply)-received,0);
+        if(n<=0) return false;
+        received+=n;
+    }
+    return pn_bank::valid_reply(reply);
+}
+bool notify_open(HWND panel,const pn_bank::Reply& reply,LONG generation) {
+    return reply.flags==pn_bank::open_panel && reply.result!=pn_bank::Unauthorized &&
+        bank_current_generation(generation) && PostMessage(panel,BANK_REMOTE_OPEN,static_cast<WPARAM>(generation),0);
+}
+DWORD WINAPI watch_companion(void*) {
+    while(IsWindow(panel_window)) {
+        if(TryEnterCriticalSection(&exchange_lock)) {
+            if(bank_socket!=INVALID_SOCKET) {
+                bool ok=bank_current_generation(bank_generation);
+                fd_set readable; FD_ZERO(&readable); FD_SET(bank_socket,&readable); timeval timeout{};
+                int ready=ok?select(0,&readable,nullptr,nullptr,&timeout):SOCKET_ERROR;
+                if(ready>0) {
+                    pn_bank::Reply reply;
+                    ok=read_reply(bank_socket,reply,GetTickCount64()+5000);
+                    EnterCriticalSection(&lock);
+                    ok=ok && reply.char_id==auth.character;
+                    LeaveCriticalSection(&lock);
+                    ok=ok && notify_open(panel_window,reply,bank_generation);
+                } else if(ready<0) ok=false;
+                if(!ok) { game_close(bank_socket); bank_socket=INVALID_SOCKET; }
+            }
+            LeaveCriticalSection(&exchange_lock);
+        }
+        Sleep(100);
+    }
+    return 0;
+}
 bool exchange(const Work& work,pn_bank::Reply& reply) {
     // Reuse one connection per game session. Opening a socket for every refresh
     // would trip the server's normal flood protection, especially behind NAT.
@@ -121,14 +158,15 @@ bool exchange(const Work& work,pn_bank::Reply& reply) {
             sent+=n;
         }
         if(sent!=sizeof(work.request)) break;
-        int received=0; ULONGLONG deadline=GetTickCount64()+5000;
-        while(received<static_cast<int>(sizeof(reply)) && GetTickCount64()<deadline) {
-            int n=recv(socket,reinterpret_cast<char*>(&reply)+received,sizeof(reply)-received,0);
-            if(n<=0) break;
-            received+=n;
+        ULONGLONG deadline=GetTickCount64()+5000;
+        while(read_reply(socket,reply,deadline)) {
+            if(reply.char_id!=work.auth.character && reply.result!=pn_bank::Unauthorized) break;
+            if(reply.flags) {
+                if(!notify_open(work.panel,reply,work.auth.generation)) break;
+                continue;
+            }
+            ok=true; break;
         }
-        ok=received==sizeof(reply) && pn_bank::valid_reply(reply) &&
-            (reply.char_id==work.auth.character || reply.result==pn_bank::Unauthorized);
     } while(false);
     if(bank_socket!=INVALID_SOCKET && (!ok || !bank_current_generation(work.auth.generation))) {
         game_close(bank_socket); bank_socket=INVALID_SOCKET;
@@ -168,10 +206,18 @@ void bank_install_transport(HWND panel) {
     if(MH_Initialize()!=MH_OK) return;
     if(MH_CreateHookApi(L"ws2_32.dll","send",reinterpret_cast<void*>(observed_send),reinterpret_cast<void**>(&game_send))!=MH_OK ||
         MH_CreateHookApi(L"ws2_32.dll","closesocket",reinterpret_cast<void*>(observed_close),reinterpret_cast<void**>(&game_close))!=MH_OK) return;
-    MH_EnableHook(MH_ALL_HOOKS);
+    if(MH_EnableHook(MH_ALL_HOOKS)!=MH_OK) return;
+    HANDLE thread=CreateThread(nullptr,0,watch_companion,nullptr,0,nullptr);
+    if(thread) CloseHandle(thread);
 }
 bool bank_authenticated() { EnterCriticalSection(&lock); bool ready=auth.ready; LeaveCriticalSection(&lock); return ready; }
-bool bank_current_generation(LONG generation) { EnterCriticalSection(&lock); bool same=auth.ready && generation==auth.generation; LeaveCriticalSection(&lock); return same; }
+bool bank_current_generation(LONG generation,bool active) { EnterCriticalSection(&lock); bool same=(!active || auth.ready) && generation==auth.generation; LeaveCriticalSection(&lock); return same; }
+bool bank_connection_ready() {
+    // The UI timer must not wait behind a transaction receive.
+    if(!TryEnterCriticalSection(&exchange_lock)) return true;
+    bool ready=bank_socket!=INVALID_SOCKET && bank_current_generation(bank_generation);
+    LeaveCriticalSection(&exchange_lock); return ready;
+}
 bool bank_submit(HWND panel,const pn_bank::Reply& state,uint32_t action,int64_t amount,uint64_t sequence) {
     auto work=new Work; work->panel=panel;
     EnterCriticalSection(&lock); work->auth=auth; LeaveCriticalSection(&lock);

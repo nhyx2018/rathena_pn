@@ -908,7 +908,7 @@ public:
 	int16 last_addeditem_index; /// Index of latest item added
 	int32 autotrade_tid;
 	int32 respawn_tid;
-	int32 bank_vault; ///< Bank Vault
+	int64 bank_vault; ///< Shared account bank, independent of the character wallet cap.
 	pn_bank_state bank_ui; ///< One account bank operation, locked until SQL commit.
 
 #ifdef PACKET_OBFUSCATION

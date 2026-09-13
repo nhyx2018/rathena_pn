@@ -7390,7 +7390,9 @@ void clif_cart_additem_ack( const map_session_data& sd, e_ack_additem_to_cart fl
 }
 
 // 09B7 <unknow data> (ZC_ACK_OPEN_BANKING)
+static bool clif_bank_open_custom(map_session_data& sd);
 void clif_bank_open( map_session_data& sd ){
+    if (clif_bank_open_custom(sd)) return;
 #if PACKETVER >= 20130717
 	PACKET_ZC_ACK_OPEN_BANKING p = {};
 
@@ -7459,6 +7461,7 @@ void clif_parse_BankClose(int32 fd, map_session_data* sd) {
 	}
 	if(sd->status.account_id == p->AID){
 		sd->state.banking = 0;
+		sd->bank_ui.open_requested = false;
 		clif_bank_close( *sd );
 	}
 #endif
@@ -7499,8 +7502,12 @@ void clif_parse_BankCheck(int32 fd, map_session_data* sd) {
 		return;
 	}
 	else {
-		if(sd->status.account_id == p->AID) //since we have it let check it for extra security
+		if(sd->status.account_id == p->AID) {
+            // Some clients open the stock panel locally and request only its
+            // balance. Route that entry point through the custom panel too.
+            if (clif_bank_open_custom(*sd)) return;
 			clif_Bank_Check( *sd );
+        }
 	}
 #endif
 }
@@ -21982,6 +21989,12 @@ void clif_parse_changedress( int32 fd, map_session_data* sd ){
 /// Opens an UI window of the given type and initializes it with the given data
 /// 0AE2 <type>.B <data>.L
 void clif_ui_open( map_session_data& sd, enum out_ui_type ui_type, int32 data ){
+    if (ui_type == OUT_UI_BANK) {
+        if (!battle_config.feature_banking || map_getmapflag(sd.m, MF_NOBANK)) return;
+        sd.state.banking = 1;
+        clif_bank_open(sd);
+        return;
+    }
 #if PACKETVER >= 20151202
 	// If the UI requires state tracking
 	switch( ui_type ){

@@ -79,7 +79,7 @@ enum e_log_feeding_type : uint8
 /// new logs
 void log_pick_pc( const map_session_data* sd, e_log_pick_type type, int32 amount, const item* itm );
 void log_pick_mob( const mob_data* md, e_log_pick_type type, int32 amount, const item* itm);
-void log_zeny( const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int32 amount);
+void log_zeny( const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int64 amount);
 void log_cash( const map_session_data* sd, e_log_pick_type type, e_log_cash_type cash_type, int32 amount );
 void log_npc( npc_data* nd, const char* message );
 void log_npc( map_session_data* sd, const char *message );

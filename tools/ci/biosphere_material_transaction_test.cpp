@@ -132,8 +132,8 @@ extern "C" void crown_log(const map_session_data* sd,e_log_pick_type type,int32 
 }
 extern "C" void material_input(map_session_data&,uint32) asm("__wrap__Z16clif_scriptinputR16map_session_dataj");
 extern "C" void material_input(map_session_data&,uint32){waiting_input=true;++input_count;}
-extern "C" void material_zeny(const map_session_data&,e_log_pick_type,uint32,int32) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typeji");
-extern "C" void material_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int32 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"native Zeny log context");zeny_log.push_back(amount);}
+extern "C" void material_zeny(const map_session_data&,e_log_pick_type,uint32,int64) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typejl");
+extern "C" void material_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int64 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"native Zeny log context");zeny_log.push_back(amount);}
 extern "C" bool material_registry(map_session_data*,int64,int64) asm("__wrap__Z14pc_setregistryP16map_session_datall");
 extern "C" bool material_registry(map_session_data* sd,int64 key,int64 value){check(sd==attached&&std::strcmp(get_str(script_getvarid(key)),"ARG0")==0,"only transient achievement ARG0 persistence");nums[key]=value;++argument_writes;return true;}
 extern "C" void qi_packet(const map_session_data*,const block_list*,e_questinfo_types,e_questinfo_markcolor) asm("__wrap__Z21clif_quest_show_eventPK16map_session_dataPK10block_list17e_questinfo_types21e_questinfo_markcolor");

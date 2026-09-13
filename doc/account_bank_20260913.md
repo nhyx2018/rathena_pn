@@ -1,5 +1,7 @@
 # Account bank delivery ? 2026-09-13
 
+Historical report for the initial delivery. Bank opening and capacity were subsequently corrected; see [the 64-bit bank update](account_bank_64bit_20260913.md) for current behavior and verification.
+
 Implemented the supplied bank panel with account-wide character sharing and the exact diamond/note exchange prices. Installed on 192.168.10.18 and the current Windows client. Use @bank or Alt+B after login.
 
 ## Correctness fixes and evidence

@@ -274,14 +274,15 @@ void log_pick_mob( const mob_data* md, e_log_pick_type type, int32 amount, const
 
 /// logs zeny transactions
 // ids are char_ids
-void log_zeny( const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int32 amount )
+void log_zeny( const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int64 amount )
 {
-	if( !log_config.zeny || ( log_config.zeny != 1 && abs(amount) < log_config.zeny ) )
+	// Compare both signs directly; abs(INT64_MIN) would overflow.
+	if( !log_config.zeny || ( log_config.zeny != 1 && amount > -static_cast<int64>(log_config.zeny) && amount < log_config.zeny ) )
 		return;
 
 	if( log_config.sql_logs )
 	{
-		if (SQL_ERROR == Sql_Query(logmysql_handle, LOG_QUERY " INTO `%s` (`time`, `char_id`, `src_id`, `type`, `amount`, `map`) VALUES (NOW(), '%d', '%d', '%c', '%d', '%s')",
+		if (SQL_ERROR == Sql_Query(logmysql_handle, LOG_QUERY " INTO `%s` (`time`, `char_id`, `src_id`, `type`, `amount`, `map`) VALUES (NOW(), '%d', '%d', '%c', '%" PRId64 "', '%s')",
 			log_config.log_zeny, target_sd.status.char_id, src_id, log_picktype2char(type), amount, mapindex_id2name(target_sd.mapindex)))
 		{
 			Sql_ShowDebug(logmysql_handle);
@@ -298,7 +299,7 @@ void log_zeny( const map_session_data &target_sd, e_log_pick_type type, uint32 s
 			return;
 		time(&curtime);
 		strftime(timestring, sizeof(timestring), log_timestamp_format, localtime(&curtime));
-		fprintf(logfp, "%s - [%d] ->\t%s[%d]\t%d\t\n", timestring, src_id, target_sd.status.name, target_sd.status.char_id, amount);
+		fprintf(logfp, "%s - [%d] ->\t%s[%d]\t%" PRId64 "\t\n", timestring, src_id, target_sd.status.name, target_sd.status.char_id, amount);
 		fclose(logfp);
 	}
 }

@@ -20,6 +20,11 @@
 
 ACMD_FUNC(bank)
 {
-	clif_displaymessage(fd, "Bank: the account panel opens with @bank or Alt+B in the PN client.");
+	if (!battle_config.feature_banking || map_getmapflag(sd->m, MF_NOBANK)) {
+		clif_displaymessage(fd, "Banking is unavailable here.");
+		return -1;
+	}
+	sd->state.banking = 1;
+	clif_bank_open(*sd);
 	return 0;
 }

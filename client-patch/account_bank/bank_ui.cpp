@@ -87,7 +87,7 @@ void paint(HDC dc) {
     SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(0,0,0));
     gradient(dc,RECT{0,0,520,27},RGB(188,200,255),RGB(225,232,255));
     text(dc,12,3,420,L"\x25cf  Bank");
-    text(dc,10,32,495,L"Account Bank");
+    text(dc,10,32,495,L"Master Account");
     for(auto range:{std::pair<int,int>{55,181},{185,346},{350,511}}) {
         RECT box{9,range.first,511,range.second}; FrameRect(dc,&box,reinterpret_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH)));
     }
@@ -118,7 +118,7 @@ void paint(HDC dc) {
     }
     SetTextColor(dc,RGB(95,95,95));
     text(dc,10,520,500,L"Shared by all characters on this game login.");
-    text(dc,10,538,500,L"Bank limit: "+commas(state.bank_limit)+L"z");
+    text(dc,10,538,500,L"On-hand limit: "+commas(state.wallet_limit)+L"z");
     text(dc,10,556,500,L"Favorite, bound, modified and rental items cannot be sold.");
     SetTextColor(dc,RGB(0,0,0)); text(dc,10,610,498,status);
 }
@@ -228,18 +228,22 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             if(index==(row==0?4:3)) max_menu(row,reinterpret_cast<HWND>(l));
             else {
                 int64_t cash[]={1000000,10000000,100000000,1000000000}, item[]={1,10,100};
-                int64_t value=std::min<int64_t>(pn_bank::limit,std::max<int64_t>(0,amount(row)));
-                set_amount(row,std::min<int64_t>(pn_bank::limit,value+(row==0?cash[index]:item[index])));
+                int64_t value=std::min<int64_t>(pn_bank::wallet_limit,std::max<int64_t>(0,amount(row)));
+                set_amount(row,std::min<int64_t>(pn_bank::wallet_limit,value+(row==0?cash[index]:item[index])));
             }
             return 0;
         }
         break;
     }
     case BANK_OPEN: show(); return 0;
+    case BANK_REMOTE_OPEN:
+        if(bank_current_generation(static_cast<LONG>(w))) show();
+        return 0;
     case BANK_SESSION:
+        if(!bank_current_generation(static_cast<LONG>(w),false)) return 0;
         busy=false; verified=false; state=pn_bank::Reply{}; sequence=0;
         status=L"Log in to a character to use the bank.";
-        if(IsWindowVisible(window)) submit(pn_bank::Refresh);
+        if(bank_authenticated()) submit(pn_bank::Refresh);
         update(); return 0;
     case BANK_RESULT: {
         auto result=reinterpret_cast<BankResult*>(l);
@@ -261,14 +265,18 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             game=bank_find_game_window();
             if(game) previous_game_proc=reinterpret_cast<WNDPROC>(SetWindowLongPtr(game,GWLP_WNDPROC,reinterpret_cast<LONG_PTR>(game_proc)));
         }
-        if(!preview && IsWindowVisible(window) && !busy && GetTickCount64()-last_refresh>(state.result==pn_bank::Saving?500:3000)) submit(pn_bank::Refresh);
+        // Authenticate while hidden so the game's bank button/NPC/@bank can
+        // open this panel through a server notification. Hidden keepalives are
+        // infrequent; failed early logins and disconnected sockets retry.
+        if(!preview && bank_authenticated() && !busy && GetTickCount64()-last_refresh>
+            (state.result==pn_bank::Saving?500:(!verified || IsWindowVisible(window) || !bank_connection_ready()?3000:15000))) submit(pn_bank::Refresh);
         return 0;
     case WM_CLOSE: ShowWindow(window,SW_HIDE); return 0;
     case WM_DESTROY: KillTimer(window,1); PostQuitMessage(0); return 0;
     }
     return DefWindowProcW(window,message,w,l);
 }
-void save_preview() {
+void save_preview(const char* path="bank-preview.bmp") {
     // Render our own hidden window and its controls, without capturing the desktop.
     HDC screen=GetDC(nullptr), memory=CreateCompatibleDC(screen);
     BITMAPINFO info{}; info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
@@ -278,7 +286,7 @@ void save_preview() {
     SendMessage(panel,WM_PRINT,reinterpret_cast<WPARAM>(memory),PRF_CLIENT|PRF_CHILDREN|PRF_ERASEBKGND);
     BITMAPFILEHEADER header{}; header.bfType=0x4d42; header.bfOffBits=sizeof(header)+sizeof(info.bmiHeader);
     header.bfSize=header.bfOffBits+520*640*4;
-    FILE* output=fopen("bank-preview.bmp","wb");
+    FILE* output=fopen(path,"wb");
     if(output) { fwrite(&header,sizeof(header),1,output); fwrite(&info.bmiHeader,sizeof(info.bmiHeader),1,output); fwrite(bits,520*640*4,1,output); fclose(output); }
     SelectObject(memory,old); DeleteObject(bitmap); DeleteDC(memory); ReleaseDC(nullptr,screen);
 }
@@ -299,10 +307,13 @@ int bank_window_main(HINSTANCE module,bool render) {
         for(int i=0;i<2;++i) state.max_buy[i]=state.bank/state.buy[i];
         verified=true; status=L"Choose a banking action.";
         set_amount(0,INT64_MAX); assert(!IsWindowEnabled(actions[0]) && !IsWindowEnabled(actions[1]));
-        SendMessage(panel,WM_COMMAND,500,0); assert(amount(0)==pn_bank::limit);
+        SendMessage(panel,WM_COMMAND,500,0); assert(amount(0)==pn_bank::wallet_limit);
         set_amount(1,3); assert(IsWindowEnabled(actions[2]));
         set_amount(1,4); assert(!IsWindowEnabled(actions[2]));
         set_amount(0,0); set_amount(1,0); update(); save_preview();
+        state.bank=INT64_MAX;state.wallet=INT32_MAX;state.max_deposit=state.max_withdraw=0;
+        set_amount(0,1);assert(!IsWindowEnabled(actions[0]) && !IsWindowEnabled(actions[1]));
+        save_preview("bank-preview-max.bmp");
         DestroyWindow(panel); return 0;
     }
     update();

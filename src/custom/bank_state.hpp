@@ -9,6 +9,8 @@ struct pn_bank_state {
     int64_t amount = 0, bank_before = 0, wallet_before = 0;
     int64_t last_action_tick = 0;
     bool pending = false, applying = false;
+    int32_t companion_fd = 0;
+    bool open_requested = false;
     uint32_t result = pn_bank::Ok;
 };
 #endif

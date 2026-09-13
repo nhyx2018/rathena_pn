@@ -120,8 +120,8 @@ extern "C" map_session_data* conversion_character(int32) asm("__wrap__Z13map_cha
 extern "C" map_session_data* conversion_character(int32 id){return attached&&attached->status.char_id==id?attached:nullptr;}
 extern "C" void conversion_input(map_session_data&,uint32) asm("__wrap__Z16clif_scriptinputR16map_session_dataj");
 extern "C" void conversion_input(map_session_data&,uint32){waiting_input=true;++input_count;}
-extern "C" void conversion_zeny(const map_session_data&,e_log_pick_type,uint32,int32) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typeji");
-extern "C" void conversion_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int32 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"actual script Zeny log metadata");zeny_log.push_back(amount);}
+extern "C" void conversion_zeny(const map_session_data&,e_log_pick_type,uint32,int64) asm("__wrap__Z8log_zenyRK16map_session_data15e_log_pick_typejl");
+extern "C" void conversion_zeny(const map_session_data& sd,e_log_pick_type type,uint32 id,int64 amount){check(&sd==attached&&type==LOG_TYPE_SCRIPT&&id==sd.status.char_id,"actual script Zeny log metadata");zeny_log.push_back(amount);}
 extern "C" bool conversion_registry(map_session_data*,int64,int64) asm("__wrap__Z14pc_setregistryP16map_session_datall");
 extern "C" bool conversion_registry(map_session_data* sd,int64 key,int64 value){check(sd==attached&&std::strcmp(get_str(script_getvarid(key)),"ARG0")==0,"only actual achievement transient ARG0 persistence");nums[key]=value;++argument_writes;return true;}
 
