@@ -45,6 +45,26 @@ int64_t amount(int row) {
     return value;
 }
 void set_amount(int row,int64_t value) { auto text=std::to_wstring(value); SetWindowTextW(inputs[row],text.c_str()); }
+std::wstring exchange_block_reason(int row,bool buy) {
+    const std::wstring label=buy?L"Buy: ":L"Sell: ";
+    if(!verified) return label+L"Log in, then Refresh to connect to the bank.";
+    if(busy || state.result==pn_bank::Saving) return label+L"Waiting for the bank. Please wait...";
+    if(state.result==pn_bank::Unavailable) return label+L"Banking is unavailable here.";
+    const uint32_t action=(row==1?pn_bank::BuyDiamond:pn_bank::BuyNote)+(buy?0:1);
+    const auto count=amount(row);
+    const auto result=pn_bank::plan(state,action,count).result;
+    switch(result) {
+    case pn_bank::Ok: return L"";
+    case pn_bank::Funds:
+        return label+L"Deposit "+commas(count*state.buy[row-1]-state.bank)+L" more Zeny into the bank.";
+    case pn_bank::Items:
+        return label+(state.counts[row-1]?L"Only "+commas(state.counts[row-1])+L" eligible items on hand.":
+            L"No eligible items in your character inventory.");
+    case pn_bank::Capacity: return label+L"Free inventory space/weight, or lower the quantity.";
+    case pn_bank::Limit: return label+L"Bank balance or transaction limit would be exceeded.";
+    default: return label+L"Enter a whole quantity of 1 or more.";
+    }
+}
 void text(HDC dc,int x,int y,int width,const std::wstring& value,bool right=false) {
     RECT box{x,y,x+width,y+20}; DrawTextW(dc,value.c_str(),-1,&box,DT_SINGLELINE|DT_VCENTER|(right?DT_RIGHT:DT_LEFT));
 }
@@ -87,6 +107,7 @@ void paint(HDC dc) {
     SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(0,0,0));
     gradient(dc,RECT{0,0,520,27},RGB(188,200,255),RGB(225,232,255));
     text(dc,12,3,420,L"\x25cf  Bank");
+    text(dc,390,3,90,L"v2.1",true);
     text(dc,10,32,495,L"Master Account");
     for(auto range:{std::pair<int,int>{55,181},{185,346},{350,511}}) {
         RECT box{9,range.first,511,range.second}; FrameRect(dc,&box,reinterpret_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH)));
@@ -113,10 +134,17 @@ void paint(HDC dc) {
         int64_t count=amount(row);
         bool safe=count>=0 && count<=INT64_MAX/state.buy[row-1];
         int py=row==1?307:472;
-        text(dc,17,py,290,L"Zeny paid from bank");
-        text(dc,307,py,195,safe?commas(count*state.buy[row-1],true):L"Invalid amount",true);
-        text(dc,17,py+18,290,L"Zeny added to bank");
-        text(dc,307,py+18,195,safe?commas(count*state.sell[row-1],true):L"Invalid amount",true);
+        for(int action=0;action<2;++action) {
+            const auto reason=exchange_block_reason(row,action==0);
+            if(!reason.empty()) {
+                SetTextColor(dc,RGB(160,48,34)); text(dc,17,py+action*18,485,reason);
+                SetTextColor(dc,RGB(0,0,0));
+            } else {
+                text(dc,17,py+action*18,290,action==0?L"Zeny paid from bank":L"Zeny added to bank");
+                const auto price=action==0?state.buy[row-1]:state.sell[row-1];
+                text(dc,307,py+action*18,195,safe?commas(count*price,true):L"Invalid amount",true);
+            }
+        }
     }
     SetTextColor(dc,RGB(95,95,95));
     text(dc,10,520,500,L"Shared by all characters on this game login.");
@@ -329,6 +357,10 @@ int bank_window_main(HINSTANCE module,bool render) {
         for(int i=0;i<2;++i) { state.max_buy[i]=30000; state.max_sell[i]=0; }
         set_amount(0,1);assert(!IsWindowEnabled(actions[0]) && !IsWindowEnabled(actions[1]));
         save_preview("bank-preview-max.bmp");
+        state.bank=1000000;state.wallet=1000000000;state.max_deposit=state.wallet;
+        state.max_withdraw=state.bank;
+        for(int i=0;i<2;++i) state.counts[i]=state.max_buy[i]=state.max_sell[i]=0;
+        update(); save_preview("bank-preview-needs-deposit.bmp");
         DestroyWindow(panel); return 0;
     }
     update();

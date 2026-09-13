@@ -56,6 +56,8 @@ The initial storage release passed all **38 release checks**, including sanitize
 
 The unlock dialog and visible Mystic Box update was deployed at **12:45:14 UTC on 13 September 2026**, after the 17 native scenarios passed. A fresh full database backup was retained; ordered hashes of **31 player, financial and storage tables** were unchanged across deployment. All three game services completed startup, and the map/character binaries still match the validated storage build. See the [dialog verification record](evidence/storage_dialog_20260913.json).
 
+A focused Card Storage audit rejected **48 non-card deposits** and accepted **12 card deposits** through real inventory/cart packets for both normal players and GMs. Coverage includes consumables, materials, ammunition, card albums, pet items, shadow gear, diamonds, Zeny tickets and equipment containing a card. Renaming the page and the GM bulk-storage command cannot bypass the item-type check. Normal and six-digit-ID cards stack and withdraw correctly. The isolated fixture used matching production binaries and database files; no player data was modified. See the [card-only verification](evidence/card_storage_only_20260913.json).
+
 To reproduce against a compiled Linux checkout, use a local `rathena:local` builder/runtime image with MariaDB client libraries and the `mariadb:noble` database image. The live tests also need host Python, Docker and `nsenter` privileges. Tests create fresh databases on internal Docker networks, refuse existing fixture names, and remove only their own fixtures.
 
 ```sh
@@ -63,6 +65,8 @@ export PN_STORAGE_CANDIDATE="$PWD"
 export PN_STORAGE_TEST_ROOT=/tmp/pn-multi-storage-proof
 python3 tools/ci/multi_storage_sql_test.py
 python3 tools/ci/multi_storage_live_test.py
+# Focused card-only inventory/cart matrix using the same isolated fixture:
+PN_STORAGE_LIVE_CLIENT="$PWD/tools/ci/card_storage_live_client.py" python3 tools/ci/multi_storage_live_test.py
 ```
 
 `PN_STORAGE_IMAGE` can select an equivalent local runtime image. Evidence stays under the test root. Native assertions are in [multi_storage_sql_runtime.cpp](../tools/ci/multi_storage_sql_runtime.cpp); authenticated client scenarios are in [multi_storage_live_client.py](../tools/ci/multi_storage_live_client.py).

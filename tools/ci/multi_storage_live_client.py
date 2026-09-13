@@ -49,6 +49,7 @@ class Client(bank.Client):
         try: super().__init__(slot, attach=False)
         finally: bank.drain = drain
         self.inventory = items(b''.join(captured), 0)
+        self.cart = items(b''.join(captured), 1)
         self.slot = slot
 
     def chat(self, text):

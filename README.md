@@ -43,6 +43,8 @@ One bank balance is shared by **all characters on the same game login**. Open it
 
 Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**, show the current maximum buy/sell quantities, and display the bank cost or proceeds before you click.
 
+**Bank v2.1** shows the reason inside each disabled Buy/Sell row, including the exact extra bank funds required. A bank holding 1,000,000 Zeny needs **2,000 more deposited** to buy one ticket. Get the small v2.1 patch from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64), or see the [feedback guide](doc/bank_feedback_20260913.md).
+
 | Item | Buy one | Sell one |
 | --- | ---: | ---: |
 | 17Carat Diamond — item `6024` | 501,000,000z | 499,000,000z |
@@ -78,6 +80,8 @@ Open **`@storage`**, **`@mstorage`**, **Mystic Box in Prontera (158, 185)**, or 
 Each additional regular or Master page costs **50,000,000 character-held zeny** and unlocks **600 slots** permanently for that game login. Choose **Expand Storages**, the first menu option, or select any **red locked page** to see its purchase confirmation. Cancelling costs nothing. Existing items remain in Storage I; names and menu order persist across character changes.
 
 Personal item transfers save their source and destination together. Expansion payment and ownership also commit together, with replay protection and retries after failed saves. The menu uses the existing game client. See the [storage guide and validation](doc/multi_storage_20260913.md).
+
+Card Storage enforces the server's **Card** item type for inventory and cart deposits, including GM accounts. The focused audit rejected **48 non-card deposits** and accepted **12 card deposits**, covering equipment with inserted cards, consumables, materials, card albums and six-digit card IDs. [Card-only evidence](doc/evidence/card_storage_only_20260913.json).
 
 ## World and progression
 

@@ -1,0 +1,52 @@
+{
+  "feature": "Bank v2.1 disabled-action feedback",
+  "validation": {
+    "passed": true,
+    "manual_Ragexe_playthrough": false,
+    "utc": "2026-09-13T13:11:17.465401+00:00",
+    "tests": {
+      "BankUITest.exe": {
+        "exit_code": 0,
+        "output": "PASS: default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n"
+      },
+      "BankTransportTest.exe": {
+        "exit_code": 0,
+        "output": "PASS: real Windows API hooks, fragmented authentication, unmodified game bytes, idle and interleaved open notifications, exact 64-bit balances, authenticated companion exchange, short reply rejection, logout and stale-session rejection\n"
+      },
+      "BankLoaderTest.exe": {
+        "exit_code": 0,
+        "output": "PASS: shipping FontScale export forwards DirectDraw, original font scaling preserved, BankUI loads hidden with unauthenticated transactions disabled\n"
+      },
+      "BankPreview.exe": {
+        "exit_code": 0,
+        "output": ""
+      }
+    },
+    "sha256": {
+      "bank-preview-max.bmp": "7bd19c4be882221707eb68bb2fc6a06af4114957de4304af1d39f2c379b82c0b",
+      "bank-preview-needs-deposit.bmp": "2431130fa766b35218ee1cf64d34609e67f52c3c8e05b02384263584bf5365bb",
+      "bank-preview.bmp": "507ab504efc814724c62675e9bac3f5feb33dfb2a5178873764ed81181a12ff3",
+      "BankLoaderTest.exe": "014f62bc67b256b4fb3669cf0aaec5436315a9b37720bb87523e6e994bfbac83",
+      "BankPreview.exe": "eefe42fe203a9c24d960946697fd95e9d7bc1c0c7a0597e16347a6867bf961c9",
+      "BankTransportTest.exe": "535dd9dbf26d113b5c5aa231260d3c004bf4430df58c3cab2b216d6b6f2d2735",
+      "BankUI.dll": "80af8748adee9b8b55f379d3094aad3968206fa2d71104540fff804ac6fcd4a2",
+      "BankUITest.exe": "2d1ca817391967c33a2af6e8fd7c03b49cf6af85c00a78e0f00c02e32b3a8153",
+      "FontScale.dll": "8c309c04e65df6b59b99f4fd6183e0bbb1934c5fe823e833a0439f9b5f811b1f",
+      "FontScaleOriginal.dll": "ca4820f0a86c06cf2cea7fc4173ae3f6fd1b362cab9dcfa703c8319891510d82"
+    },
+    "source_sha256": {
+      "client-patch/account_bank/bank_ui.cpp": "b860163540c9c46a4b6aced7dc6257805139bcb0f872c013cdd8386b4b7fce48",
+      "client-patch/account_bank/bank_transport.cpp": "53ad9c344037688aeb7b77bdabc5be760153b8edcfddcc23e81c2f907afdcccf",
+      "src/custom/bank_protocol.hpp": "080fad3bb7c5908f831fc435d498b491184ad6343c3c5eb09491edc2aafbf2ba",
+      "tools/ci/bank_ui_test.cpp": "632a6817cc62c3a01d3f45b110996c33c0af15bee6c920e14a150e606b1c738d"
+    }
+  },
+  "installation": {
+    "installed": true,
+    "file_backups_retained": true,
+    "launcher_check_passed": true,
+    "installed_dll_sha256": "80af8748adee9b8b55f379d3094aad3968206fa2d71104540fff804ac6fcd4a2",
+    "client_executable_and_font_settings_preserved": true
+  },
+  "player_bank_or_wallet_modified_for_testing": false
+}

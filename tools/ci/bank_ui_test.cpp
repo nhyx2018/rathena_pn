@@ -45,6 +45,7 @@ int main() {
     update();for(auto control:actions) assert(!IsWindowEnabled(control));
     auto value=funded();reply(value);
     for(int i=2;i<6;++i) assert(IsWindowEnabled(actions[i]));
+    for(int row=1;row<3;++row) for(bool buy:{true,false}) assert(exchange_block_reason(row,buy).empty());
     for(int id=402;id<=405;++id) {
         reply(value);const auto before=fixture::requests.size();click(id);
         assert(fixture::requests.size()==before+1);
@@ -74,16 +75,39 @@ int main() {
     reply(empty);
     assert(!IsWindowEnabled(actions[2]) && !IsWindowEnabled(actions[4]));
     assert(IsWindowEnabled(actions[3]) && IsWindowEnabled(actions[5]));
+    assert(exchange_block_reason(1,true).find(L"501,000,000 more Zeny")!=std::wstring::npos);
+    assert(exchange_block_reason(2,true).find(L"1,002,000 more Zeny")!=std::wstring::npos);
     empty=value;
     for(int i=0;i<2;++i) empty.counts[i]=empty.max_sell[i]=0;
     reply(empty);
     assert(IsWindowEnabled(actions[2]) && IsWindowEnabled(actions[4]));
     assert(!IsWindowEnabled(actions[3]) && !IsWindowEnabled(actions[5]));
+    assert(exchange_block_reason(1,false).find(L"No eligible items")!=std::wstring::npos);
     empty=value;for(int i=0;i<2;++i) empty.max_buy[i]=0;reply(empty);
     assert(!IsWindowEnabled(actions[2]) && !IsWindowEnabled(actions[4]));
     auto full=value;full.bank=INT64_MAX;full.max_deposit=0;
     for(int i=0;i<2;++i) full.max_sell[i]=0;
     reply(full);assert(!IsWindowEnabled(actions[3]) && !IsWindowEnabled(actions[5]));
+    assert(exchange_block_reason(2,false).find(L"limit")!=std::wstring::npos);
+    // Reproduce the reported state: on-hand funds do not pay for bank purchases.
+    auto unfunded=value;unfunded.bank=1000000;unfunded.wallet=1000000000;
+    unfunded.max_deposit=unfunded.wallet;unfunded.max_withdraw=unfunded.bank;
+    for(int i=0;i<2;++i) unfunded.counts[i]=unfunded.max_buy[i]=unfunded.max_sell[i]=0;
+    reply(unfunded);
+    for(int i=2;i<6;++i) assert(!IsWindowEnabled(actions[i]));
+    assert(exchange_block_reason(1,true)==L"Buy: Deposit 500,000,000 more Zeny into the bank.");
+    assert(exchange_block_reason(2,true)==L"Buy: Deposit 2,000 more Zeny into the bank.");
+    set_amount(0,2000);click(400);
+    assert(fixture::requests.back().action==pn_bank::Deposit && fixture::requests.back().amount==2000);
+    unfunded.bank+=2000;unfunded.wallet-=2000;unfunded.max_deposit=unfunded.wallet;unfunded.max_withdraw=unfunded.bank;
+    unfunded.max_buy[1]=1;reply(unfunded);
+    assert(!IsWindowEnabled(actions[2]) && IsWindowEnabled(actions[4]));
+    assert(exchange_block_reason(2,true).empty());
+    click(404);assert(fixture::requests.back().action==pn_bank::BuyNote && fixture::requests.back().amount==1);
+    unfunded.bank-=1002000;unfunded.max_withdraw=unfunded.bank;unfunded.max_buy[1]=0;
+    unfunded.counts[1]=unfunded.max_sell[1]=1;reply(unfunded);
+    assert(IsWindowEnabled(actions[5]) && exchange_block_reason(2,false).empty());
+    click(405);assert(fixture::requests.back().action==pn_bank::SellNote && fixture::requests.back().amount==1);
     for(auto result:{pn_bank::Unavailable,pn_bank::Saving,pn_bank::Unauthorized}) {
         auto blocked=value;blocked.result=result;reply(blocked);
         const auto before=fixture::requests.size();
@@ -99,5 +123,5 @@ int main() {
     reply(value,true,fixture::generation-1);
     for(auto control:actions) assert(!IsWindowEnabled(control));
     DestroyWindow(panel);
-    std::cout<<"PASS: default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
+    std::cout<<"PASS: default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
 }

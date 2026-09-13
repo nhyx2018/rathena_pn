@@ -88,7 +88,8 @@ wait
         (OUT/f'{role}-startup.log').write_text(text)
     print('Fresh-schema startup passed; running real authenticated multi-storage sessions.',flush=True)
     pid=run(['docker','inspect','--format','{{.State.Pid}}',GAME],capture_output=True,text=True).stdout.strip()
-    completed=subprocess.run(['nsenter','-t',pid,'-n','python3',str(CAND/'tools/ci/multi_storage_live_client.py')],
+    client = Path(os.environ.get('PN_STORAGE_LIVE_CLIENT', str(CAND/'tools/ci/multi_storage_live_client.py'))).resolve()
+    completed=subprocess.run(['nsenter','-t',pid,'-n','python3',str(client)],
                              text=True,capture_output=True,timeout=600,env=dict(os.environ,BANK_FIXTURE_ROOT=str(ROOT)))
     (OUT/'client.log').write_text(completed.stdout+completed.stderr)
     completed.check_returncode()
