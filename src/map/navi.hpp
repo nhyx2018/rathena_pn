@@ -36,7 +36,7 @@ struct navi_link {
 #define MAX_WALKPATH_NAVI 1024
 
 struct navi_walkpath_data {
-	uint8 path_len, path_pos;
+	uint16 path_len, path_pos;
 	uint8 path[MAX_WALKPATH_NAVI];
 };
 

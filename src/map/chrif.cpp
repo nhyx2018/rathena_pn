@@ -275,6 +275,9 @@ int32 chrif_isconnected(void) {
  *  CSAVE_CART: Character changed cart data
  */
 int32 chrif_save(map_session_data *sd, int32 flag) {
+	// The bank commits inventory, wallet and account registry together. Ordinary
+	// saves resume after its acknowledgement; sending them now breaks atomicity.
+	if (sd && sd->bank_ui.pending) return -1;
 	uint16 mmo_charstatus_len = 0;
 
 	nullpo_retr(-1, sd);

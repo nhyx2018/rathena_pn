@@ -73,6 +73,11 @@ struct Sql* Sql_Malloc(void);
 /// Retrieves the last error number.
 uint32 Sql_GetError( Sql* self );
 
+// Disable automatic reconnection while executing an atomic transaction. A lost
+// connection must fail the transaction, never continue it on a new session.
+int32 Sql_BeginTransaction( Sql* self );
+int32 Sql_EndTransaction( Sql* self, bool commit );
+
 
 
 /// Establishes a connection.

@@ -14,27 +14,46 @@ import argparse
 import configparser
 import hashlib
 import json
+import re
+import struct
 from pathlib import Path
 
 
 def inspect(root, expected_packetver, hash_archives=False):
     root = Path(root).resolve()
     issues = []
-    ini = configparser.ConfigParser()
-    ini.read(root / 'DATA.INI')
+    ini = configparser.ConfigParser(interpolation=None)
+    try:
+        ini.read(root / 'DATA.INI', encoding='utf-8-sig')
+    except (configparser.Error, UnicodeError, OSError) as exc:
+        issues.append('Invalid DATA.INI: ' + str(exc))
+        ini = configparser.ConfigParser(interpolation=None)
     archives = []
     if not ini.has_section('Data'):
         issues.append('DATA.INI missing [Data] section')
     else:
-        entries = sorted(ini.items('Data'), key=lambda row: int(row[0]))
+        entries = []
+        for key, name in ini.items('Data'):
+            if not re.fullmatch(r'[0-9]+', key):
+                issues.append('Invalid archive priority: ' + key)
+                continue
+            entries.append((key, name))
+        entries.sort(key=lambda row: int(row[0]))
+        if not entries:
+            issues.append('DATA.INI has no archives in its [Data] section')
         if len(entries) > 10 or any(int(key) > 9 for key, _ in entries):
             issues.append('Client archive limit exceeded: DATA.INI supports only slots 0 through 9')
         if [int(k) for k, _ in entries] != list(range(len(entries))):
             issues.append('GRF priorities must be contiguous from zero')
         seen = set()
         for priority, name in entries:
+            if re.search(r'[/\\:]', name) or not name.lower().endswith('.grf'):
+                issues.append('Use a GRF filename in DATA.INI: ' + name)
+                continue
             path = (root / name).resolve()
-            path.relative_to(root)  # Reject paths escaping the client directory.
+            if not path.is_relative_to(root):
+                issues.append('Archive escapes client directory: ' + name)
+                continue
             record = {'priority': int(priority), 'file': name}
             if name.lower() in seen:
                 issues.append('Duplicate archive: ' + name)
@@ -44,10 +63,13 @@ def inspect(root, expected_packetver, hash_archives=False):
             else:
                 record['bytes'] = path.stat().st_size
                 with path.open('rb') as stream:
-                    signature = stream.read(16)
-                    if not signature.startswith((b'Master of Magic', b'Event Horizon')):
-                        issues.append('Invalid GRF signature: ' + name)
-                    record['format'] = 'GRF v3' if signature.startswith(b'Event Horizon') else 'GRF standard'
+                    header = stream.read(46)
+                    version = struct.unpack_from('<I', header, 42)[0] if len(header) == 46 else None
+                    classic = header.startswith(b'Master of Magic\0') and version == 0x200
+                    modern = header.startswith(b'Event Horizon\0') and version == 0x300
+                    if not (classic or modern):
+                        issues.append('Unreadable GRF header: ' + name)
+                    record['format'] = 'GRF v3' if modern else 'GRF standard' if classic else 'invalid'
                     if hash_archives:
                         stream.seek(0)
                         digest = hashlib.sha256()
@@ -56,8 +78,8 @@ def inspect(root, expected_packetver, hash_archives=False):
                         record['sha256'] = digest.hexdigest()
             archives.append(record)
     executables = [p.name for p in root.glob('*.exe')]
-    if not executables:
-        issues.append('No client executable found')
+    if not (root / 'Ragexe.exe').is_file():
+        issues.append('Missing game executable: Ragexe.exe')
     return {'issues': issues, 'archives': archives, 'executables': executables,
             'server_packetver_to_verify': expected_packetver,
             'not_verified': ['EXE packet date (filename/PE date is not proof)',

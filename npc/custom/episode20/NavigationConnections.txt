@@ -1,0 +1,39 @@
+// Restore missing physical doors/stairs from this client's original navigation data.
+// Coordinates were checked against both client GAT and server map cache.
+// Existing quest NPCs still own all progression, rewards and instance admission.
+
+icas_in2,250,109,0	warp	ep20_door_18089	1,1,icecastle,160,203
+icas_in2,33,109,0	warp	ep20_door_18107	1,1,icecastle,51,164
+jor_maze,198,58,0	warp	ep20_door_18042	1,1,jor_maze,268,116
+jor_maze,268,113,0	warp	ep20_door_18043	1,1,jor_maze,198,54
+jor_maze,264,187,0	warp	ep20_door_18044	1,1,jor_maze,85,256
+jor_maze,89,256,0	warp	ep20_door_18045	1,1,jor_maze,268,187
+jor_maze,46,275,0	warp	ep20_door_18046	1,1,jor_maze,16,16
+jor_maze,16,12,0	warp	ep20_door_18047	1,1,jor_maze,46,271
+jor_maze,88,28,0	warp	ep20_door_18048	1,1,jor_maze,151,281
+jor_maze,151,285,0	warp	ep20_door_18049	1,1,jor_maze,88,32
+jor_maze,182,206,0	warp	ep20_door_18050	1,1,jor_maze,192,153
+jor_maze,192,157,0	warp	ep20_door_18051	1,1,jor_maze,182,210
+jor_maze,164,138,0	warp	ep20_door_18052	1,1,jor_maze,49,162
+jor_maze,53,162,0	warp	ep20_door_18053	1,1,jor_maze,168,138
+jor_maze,50,125,0	warp	ep20_door_18054	1,1,jor_maze,192,106
+jor_maze,192,102,0	warp	ep20_door_18055	1,1,jor_maze,50,121
+jor_maze,34,189,0	warp	ep20_door_18056	1,1,jor_maze,104,156
+jor_maze,104,152,0	warp	ep20_door_18057	1,1,jor_maze,34,185
+jor_maze,104,207,0	warp	ep20_door_18058	1,1,jor_maze,148,28
+jor_maze,148,24,0	warp	ep20_door_18059	1,1,jor_maze,104,203
+jor_maze,136,176,0	warp	ep20_door_18062	1,1,jor_maze,260,46
+jor_maze,260,50,0	warp	ep20_door_18063	1,1,jor_maze,136,180
+jor_maze,14,283,0	warp	ep20_door_18064	1,1,jor_maze,282,246
+jor_maze,282,242,0	warp	ep20_door_18065	1,1,jor_maze,14,279
+jor_maze,217,289,0	warp	ep20_door_18066	1,1,jor_maze,243,156
+jor_maze,243,152,0	warp	ep20_door_18067	1,1,jor_maze,217,285
+
+// Voglinde's office becomes public at the existing Episode 20 access step.
+icecastle,157,206,0	script	#ep20_voglinde_office	WARPNPC,1,1,{
+	end;
+OnTouch:
+	if (!callfunc("EP20_WarperAccess","icas_in2")) end;
+	warp "icas_in2",248,112;
+	end;
+}

@@ -11,6 +11,7 @@
 #include <ctime>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include <common/cbasetypes.hpp>
 #include <common/cli.hpp>
@@ -608,7 +609,7 @@ int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, en
 	stmt.BindColumn(5, SQLDT_CHAR, &item.refine);
 	stmt.BindColumn(6, SQLDT_CHAR, &item.attribute);
 	stmt.BindColumn(7, SQLDT_UINT32, &item.expire_time);
-	stmt.BindColumn(8, SQLDT_UINT32, &item.bound);
+	stmt.BindColumn(8, SQLDT_CHAR, &item.bound);
 	stmt.BindColumn(9, SQLDT_UINT64, &item.unique_id);
 	stmt.BindColumn(10, SQLDT_INT8, &item.enchantgrade);
 	if (tableswitch == TABLE_INVENTORY){
@@ -622,11 +623,24 @@ int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, en
 		stmt.BindColumn(12+offset+MAX_SLOTS+i*3, SQLDT_INT16, &item.option[i].value);
 		stmt.BindColumn(13+offset+MAX_SLOTS+i*3, SQLDT_CHAR, &item.option[i].param);
 	}
+	// Validate the complete result before writing anything. A failed fetch is
+	// not end-of-data: treating it as such inserts unmatched items again and
+	// can acknowledge a save which never read all existing inventory rows.
+	std::vector<struct item> stored_items;
+	int32 fetch_result;
+	while( (fetch_result = stmt.NextRow()) == SQL_SUCCESS )
+		stored_items.push_back(item);
+	if( fetch_result != SQL_NO_DATA ) {
+		SqlStmt_ShowDebug(stmt);
+		return 1;
+	}
+
 	// bit array indicating which inventory items have already been matched
 	flag = (bool*) aCalloc(max, sizeof(bool));
 
-	while( SQL_SUCCESS == stmt.NextRow() )
+	for( const auto& stored_item : stored_items )
 	{
+		item = stored_item;
 		found = false;
 		// search for the presence of the item in the char's inventory
 		for( i = 0; i < max; ++i )
@@ -849,8 +863,22 @@ bool char_memitemdata_from_sql(struct s_storage* p, int32 max, int32 id, enum st
 		stmt.BindColumn(13+offset+MAX_SLOTS+i*3, SQLDT_CHAR, &item.option[i].param);
  	}
 
-	for( i = 0; i < max && SQL_SUCCESS == stmt.NextRow(); ++i )
+	// Keep a failed or oversized result from becoming a partial inventory that
+	// a later save could use to delete the rows which were never loaded.
+	int32 fetch_result;
+	for( i = 0; (fetch_result = stmt.NextRow()) == SQL_SUCCESS; ++i ) {
+		if( i >= max || i >= max2 ) {
+			ShowError("Too many %s entries in table %s for %s: %d; refusing partial load.\n", printname, tablename, selectoption, id);
+			memset(&p->u, 0, sizeof(p->u));
+			return false;
+		}
 		memcpy(&storage[i], &item, sizeof(item));
+	}
+	if( fetch_result != SQL_NO_DATA ) {
+		SqlStmt_ShowDebug(stmt);
+		memset(&p->u, 0, sizeof(p->u));
+		return false;
+	}
 
 	p->amount = i;
 	ShowInfo("Loaded %s data from table %s for %s: %d (total: %d)\n", printname, tablename, selectoption, id, p->amount);

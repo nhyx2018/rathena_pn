@@ -7543,7 +7543,7 @@ void clif_parse_BankDeposit(int32 fd, map_session_data* sd) {
 	else {
 		if(sd->status.account_id == p->AID){
 			enum e_BANKING_DEPOSIT_ACK reason = pc_bank_deposit(sd,max(0,p->zeny));
-			clif_bank_deposit( *sd, reason );
+			if (!sd->bank_ui.pending) clif_bank_deposit( *sd, reason );
 		}
 	}
 #endif
@@ -7586,7 +7586,7 @@ void clif_parse_BankWithdraw(int32 fd, map_session_data* sd) {
 	else {
 		if(sd->status.account_id == p->AID){
 			enum e_BANKING_WITHDRAW_ACK reason = pc_bank_withdraw(sd,max(0,p->zeny));
-			clif_bank_withdraw( *sd, reason );
+			if (!sd->bank_ui.pending) clif_bank_withdraw( *sd, reason );
 		}
 	}
 #endif
@@ -24321,6 +24321,8 @@ void clif_reputation_open( map_session_data& sd, uint64 tabID, uint64 repID ) {
 
 void clif_item_reform_open( map_session_data& sd, t_itemid item, int16 consume_index ){
 #if PACKETVER_MAIN_NUM >= 20201118 || PACKETVER_RE_NUM >= 20211103 || PACKETVER_ZERO_NUM >= 20221024
+	if( sd.state.item_reform_save_id != 0 )
+		return;
 	PACKET_ZC_OPEN_REFORM_UI p = {};
 
 	p.PacketType = HEADER_ZC_OPEN_REFORM_UI;
@@ -24360,7 +24362,7 @@ void clif_item_reform_result( map_session_data& sd, uint16 index, uint8 result )
 void clif_parse_item_reform_start( int32 fd, map_session_data* sd ){
 #if PACKETVER_MAIN_NUM >= 20200916 || PACKETVER_RE_NUM >= 20211103 || PACKETVER_ZERO_NUM >= 20221024
 	// Not opened
-	if( sd->state.item_reform == 0 ){
+	if( sd->state.item_reform == 0 || sd->state.item_reform_save_id != 0 || !chrif_isconnected() ){
 		return;
 	}
 
@@ -24536,7 +24538,8 @@ void clif_parse_item_reform_start( int32 fd, map_session_data* sd ){
 	// Make it visible for the client again
 	clif_additem( sd, index, 1, 0 );
 
-	clif_item_reform_result( *sd, index, 0 );
+	// The character server acknowledges only after committing the entire inventory.
+	intif_reform_save( *sd, index );
 #endif
 }
 
@@ -25697,6 +25700,8 @@ void clif_parse_MoveFromKafraFav( int32 fd, map_session_data* sd ){
 /*==========================================
  * Main client packet processing function
  *------------------------------------------*/
+#include <custom/bank_ui.inc>
+
 static int32 clif_parse(int32 fd)
 {
 	int32 cmd, packet_len;
@@ -25713,6 +25718,9 @@ static int32 clif_parse(int32 fd)
 	{ // begin main client packet processing loop
 
 	sd = (TBL_PC *)session[fd]->session_data;
+	// Keep pending bank users attached even after a cable pull, until the SQL
+	// commit is acknowledged. Queued gameplay input resumes afterwards.
+	if (sd && sd->bank_ui.pending) return 0;
 
 	if (session[fd]->flag.eof) {
 		if (sd) {
@@ -25742,6 +25750,7 @@ static int32 clif_parse(int32 fd)
 		return 0;
 
 	cmd = RFIFOW(fd, 0);
+	if (!sd && clif_parse_bank_companion(fd)) return 0;
 
 #ifdef PACKET_OBFUSCATION
 	// Check if it is a player that tries to connect to the map server.

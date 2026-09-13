@@ -66,6 +66,8 @@ obj:
 	@echo "	MKDIR	obj"
 	@-mkdir obj
 	
+obj/int_storage.o: ../custom/bank_sql.inc ../custom/bank_commit.hpp ../custom/bank_protocol.hpp
+
 obj/%.o: %.cpp $(CHAR_H) $(COMMON_H) $(LIBCONFIG_H) $(RAPIDYAML_H)
 	@echo "	CXX	$<"
 	@@CXX@ @CXXFLAGS@ $(COMMON_INCLUDE) $(RA_INCLUDE) $(LIBCONFIG_INCLUDE) $(RAPIDYAML_INCLUDE) @MYSQL_CFLAGS@ @CPPFLAGS@ -c $(OUTPUT_OPTION) $<

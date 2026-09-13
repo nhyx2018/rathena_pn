@@ -1465,6 +1465,7 @@ void clif_reputation_open( map_session_data& sd, uint64 tabID, uint64 repID );
 
 // Item Reform UI
 void clif_item_reform_open( map_session_data& sd, t_itemid item, int16 consume_index = -1 );
+void clif_item_reform_result( map_session_data& sd, uint16 index, uint8 result );
 
 // Item Enchant UI
 void clif_enchantwindow_open( map_session_data& sd, uint64 clientLuaIndex );
@@ -1515,4 +1516,7 @@ void clif_rune_ui_open(map_session_data& sd);
 void clif_parse_rune_ui(int32 fd, map_session_data* sd);
 void clif_parse_rune_list(int32 fd, map_session_data* sd);
 void clif_parse_rune_action(int32 fd, map_session_data* sd);
+int32 clif_bank_native_transfer(map_session_data& sd, int32 amount, bool deposit);
+void clif_bank_deposit(map_session_data& sd, e_BANKING_DEPOSIT_ACK reason);
+void clif_bank_withdraw(map_session_data& sd, e_BANKING_WITHDRAW_ACK reason);
 #endif /* CLIF_HPP */

@@ -144,24 +144,24 @@ OnInit:
 icecastle,46,164,4	script	Iwin Soldier#ep20_home	4_M_REPAIR,{
 	mes "[Iwin Soldier]";
 	if (EP20_Step < 5) { mes "We cannot shelter a captured Rgan until the Sacred Roots route is understood."; close; }
-	if (!EP20_Side_Home && isbegin_quest(17712) == 0) {
+	if (!EP20_Side_Home && isbegin_quest(17712) == 0 && isbegin_quest(17713) == 0 && isbegin_quest(17714) == 0 && isbegin_quest(17715) == 0 && isbegin_quest(17716) == 0) {
 		setquest 17712;
 		mes "The captured high-ranking Rgan refuses to cooperate. Speak with Nadyagand inside Ice Castle.";
-		close;
+		close2; warp "icas_in2",33,114; end;
 	}
-	if (!EP20_Side_Home) { mes "Nadyagand is waiting inside Ice Castle."; close; }
+	if (!EP20_Side_Home) { mes "Nadyagand is waiting inside Ice Castle."; close2; warp "icas_in2",33,114; end; }
 	mes "Nadyagand has begun a new life. His Taste of Leisure daily is available inside.";
-	close;
+	close2; warp "icas_in2",33,114; end;
 	end;
 
 OnInit:
-	questinfo QTYPE_QUEST,QMARK_YELLOW,"EP20_Step >= 5 && !EP20_Side_Home && isbegin_quest(17712) == 0";
+	questinfo QTYPE_QUEST,QMARK_YELLOW,"EP20_Step >= 5 && !EP20_Side_Home && isbegin_quest(17712) == 0 && isbegin_quest(17713) == 0 && isbegin_quest(17714) == 0 && isbegin_quest(17715) == 0 && isbegin_quest(17716) == 0";
 	end;
 }
 
 icas_in2,33,114,4	script	Nadyagand#ep20_home	4_M_SCIENCE,{
 	mes "[Nadyagand]";
-	if (isbegin_quest(17712) == 1) { callfunc "EP20_MoveQuest",17712,17713; mes "I am starving. Horr will explain what food can be gathered."; close; }
+	if (isbegin_quest(17712) == 1) { callfunc "EP20_MoveQuest",17712,17713; mes "I am starving. Speak to me again and I will explain what food can be gathered."; close; }
 	if (isbegin_quest(17713) == 1) { callfunc "EP20_MoveQuest",17713,17714; mes "Bring ten Snake Strawberries from Root F2."; close; }
 	if (isbegin_quest(17714) == 1) {
 		if (countitem(1001154) < 10) { mes "I still need ten Snake Strawberries."; close; }

@@ -42,6 +42,7 @@ try {
             }
             $priority = [int]$Matches[1]
             $name = $Matches[2].Trim()
+            if ($priority -gt 9) { $problems.Add('Client archive limit exceeded: DATA.INI supports only slots 0 through 9.') }
             if ($archives.ContainsKey($priority)) { $problems.Add("Duplicate archive priority: $priority") }
             if ($archiveNames.ContainsKey($name)) { $problems.Add("Archive listed twice: $name") }
             $archives[$priority] = $name
@@ -90,6 +91,11 @@ try {
             $problems.Add('FontScale.ini needs a Scale between 1.00 and 2.00.')
         }
         $null = Require-ClientFile 'FontScale.dll'
+    }
+    if ((Test-Path -LiteralPath (Join-Path $gameRoot 'BankUI.ini')) -or (Test-Path -LiteralPath (Join-Path $gameRoot 'BankUI.dll'))) {
+        foreach ($name in @('BankUI.ini', 'BankUI.dll', 'FontScale.dll', 'FontScaleOriginal.dll', 'SystemEN/AccountBankInfo.lua')) {
+            $null = Require-ClientFile $name
+        }
     }
     if ($problems.Count -gt 0) {
         Write-Host 'The client needs attention before starting:' -ForegroundColor Yellow

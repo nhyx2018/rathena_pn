@@ -1,0 +1,14 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 12781
+    AegisName: 1M_Zeny_Check
+    Name: 1M Zeny
+    Type: Etc
+    Buy: 1002000
+    Sell: 998000
+    Weight: 10
+    Trade:
+      NoSell: true

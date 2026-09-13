@@ -17,3 +17,9 @@
 //	clif_specialeffect(&sd->bl, EF_HEARTCASTING, AREA);
 //	return 0;
 //}
+
+ACMD_FUNC(bank)
+{
+	clif_displaymessage(fd, "Bank: the account panel opens with @bank or Alt+B in the PN client.");
+	return 0;
+}

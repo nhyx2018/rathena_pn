@@ -47,6 +47,7 @@ Body:
     Level: 0
     Commands:
       # PN player conveniences: native self-service only; no charcommands or GM permissions.
+      bank: true
       commands: true
       help: true
       rates: true

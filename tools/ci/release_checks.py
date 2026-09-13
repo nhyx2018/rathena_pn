@@ -21,17 +21,23 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = (
+    'bank_core_test.py',
+    'bank_service_test.py',
     'release_checks_test.py',
+    'bug_hunt_test.py',
     'scdata_reload_test.py', 'rodex_operation_test.py',
     'hotfix_bonus_regression.py', 'fly_wing_rental_regression.py',
     'aquila_cast_time_test.py',
     'equipment_progression_test.py',
-    'equipment_reform_transaction_test.py',
+      'equipment_reform_transaction_test.py',
+      'reform_commit_test.py',
     'refine_transaction_test.py',
     'episode_party_progression_test.py',
     'database_backup_test.py',
+    'storage_sql_failure_test.py',
     'mob_sql_schema_test.py',
     'client_archive_stack_test.py',
+    'client_preflight_test.py',
     'instance_access_manifest_test.py',
     'bioresearch_geometry_test.py',
     'alice_geometry_test.py',
@@ -44,6 +50,8 @@ def candidate_digest(root):
     """Include local import overrides as well as tracked candidate inputs."""
     digest = hashlib.sha256()
     files = [root / 'map-server']
+    files.extend(root / name for name in ('char-server', 'login-server', 'web-server')
+                 if (root / name).is_file())
     for directory in ('src', 'db', 'npc', 'conf', 'sql-files', 'tools', 'client-patch'):
         files.extend(p for p in (root / directory).rglob('*') if p.is_file()
                      and not any(part in ('obj', '__pycache__') for part in p.parts)

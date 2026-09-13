@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "server_installed": true,
+  "client_installed": true,
+  "finished_utc": "2026-09-13T08:05:37.892719+00:00",
+  "quest_records": 11473,
+  "referenced_episode_quest_ids": 1849,
+  "missing_episode_metadata": [],
+  "text_links": 4071,
+  "structured_destinations": 318,
+  "episode_groups": 16,
+  "episode_target_records": 1208,
+  "episode_target_attributions": 1227,
+  "episode_coverage": {
+    "18": {
+      "quests": 148,
+      "links": 190,
+      "maps": 12
+    },
+    "19": {
+      "quests": 201,
+      "links": 221,
+      "maps": 23
+    },
+    "17.2": {
+      "quests": 114,
+      "links": 114,
+      "maps": 10
+    },
+    "13.1": {
+      "quests": 77,
+      "links": 101,
+      "maps": 17
+    },
+    "16.1": {
+      "quests": 36,
+      "links": 37,
+      "maps": 5
+    },
+    "14.2": {
+      "quests": 52,
+      "links": 62,
+      "maps": 10
+    },
+    "14.3": {
+      "quests": 18,
+      "links": 19,
+      "maps": 3
+    },
+    "21": {
+      "quests": 88,
+      "links": 114,
+      "maps": 13
+    },
+    "15.1": {
+      "quests": 22,
+      "links": 28,
+      "maps": 5
+    },
+    "16.2": {
+      "quests": 33,
+      "links": 34,
+      "maps": 10
+    },
+    "13.2": {
+      "quests": 32,
+      "links": 36,
+      "maps": 9
+    },
+    "20": {
+      "quests": 105,
+      "links": 129,
+      "maps": 16
+    },
+    "13.3": {
+      "quests": 15,
+      "links": 20,
+      "maps": 6
+    },
+    "14.1": {
+      "quests": 28,
+      "links": 31,
+      "maps": 3
+    },
+    "15.2": {
+      "quests": 17,
+      "links": 24,
+      "maps": 2
+    },
+    "17.1": {
+      "quests": 55,
+      "links": 67,
+      "maps": 7
+    }
+  },
+  "native_route_failures": [],
+  "native_lua_callbacks": 302124,
+  "maximum_native_distance": 1021,
+  "new_guides": 79,
+  "corrected_existing_guides": [
+    17713,
+    19200
+  ],
+  "restored_doorways": 71,
+  "elevator_links": 48,
+  "native_access_test": {
+    "cases": 70,
+    "checks": 253,
+    "failures": 0,
+    "before_fix_failures": 33
+  },
+  "checkpoint_checks": 113,
+  "finale_checks": 46,
+  "bank_binaries_unchanged": true,
+  "player_quest_financial_rows_unchanged": true,
+  "manual_gameplay_tested": false
+}

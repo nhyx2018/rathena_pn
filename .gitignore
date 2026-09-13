@@ -69,6 +69,8 @@ Thumbs.db
 # directory made fresh clones silently omit required Episode 20, Thanatos, and
 # legacy-quest databases even though an existing developer checkout worked.
 /db/import/*
+!/db/import/item_db.yml
+!/db/import/account_bank_items.yml
 !/db/import/grademk_item_enchant.yml
 !/db/import/grademk_service_enchants.yml
 !/db/import/perfect_item_enchant.yml
@@ -112,7 +114,13 @@ Thumbs.db
 /src/common/version.hpp
 
 # /src/custom/
-/src/custom
+/src/custom/*
+!/src/custom/bank_commit.hpp
+!/src/custom/bank_inter.inc
+!/src/custom/bank_protocol.hpp
+!/src/custom/bank_sql.inc
+!/src/custom/bank_state.hpp
+!/src/custom/bank_ui.inc
 
 # /src/login/
 /src/login/Makefile

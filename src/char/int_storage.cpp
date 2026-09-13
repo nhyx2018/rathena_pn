@@ -18,6 +18,23 @@
 #include "inter.hpp"
 #include "int_guild.hpp"
 
+static bool bank_tables_transactional();
+
+static bool inventory_is_transactional(){
+	// MyISAM would silently accept START/COMMIT without providing atomicity.
+	char* engine = nullptr;
+	if( Sql_Query( sql_handle, "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='%s'", schema_config.inventory_db ) != SQL_SUCCESS )
+		return false;
+	bool transactional = Sql_NextRow( sql_handle ) == SQL_SUCCESS &&
+		Sql_GetData( sql_handle, 0, &engine, nullptr ) == SQL_SUCCESS && engine != nullptr && strcmpi( engine, "InnoDB" ) == 0;
+	Sql_FreeResult( sql_handle );
+	if( !transactional ){
+		ShowError( "Inventory saves require InnoDB; apply upgrade_20260911_inventory_atomic.sql to the configured inventory table.\n" );
+		return false;
+	}
+	return true;
+}
+
 /**
  * Save inventory entries to SQL
  * @param char_id: Character ID to save
@@ -26,7 +43,14 @@
  */
 int32 inventory_tosql(uint32 char_id, struct s_storage* p)
 {
-	return char_memitemdata_to_sql(p->u.items_inventory, MAX_INVENTORY, char_id, TABLE_INVENTORY, p->stor_id);
+	if( !inventory_is_transactional() )
+		return 1;
+	if( Sql_BeginTransaction( sql_handle ) != SQL_SUCCESS )
+		return 1;
+	int32 errors = char_memitemdata_to_sql(p->u.items_inventory, MAX_INVENTORY, char_id, TABLE_INVENTORY, p->stor_id);
+	if( Sql_EndTransaction( sql_handle, errors == 0 ) != SQL_SUCCESS )
+		++errors;
+	return errors;
 }
 
 /**
@@ -127,6 +151,14 @@ void inter_storage_checkDB(void) {
 // storage data initialize
 void inter_storage_sql_init(void)
 {
+	if( !inventory_is_transactional() ){
+		ShowFatalError( "Refusing character startup with non-transactional inventory storage.\n" );
+		exit( EXIT_FAILURE );
+	}
+	if (!bank_tables_transactional()) {
+		ShowFatalError("Account bank requires upgrade_20260913_account_bank.sql and InnoDB financial tables.\n");
+		exit(EXIT_FAILURE);
+	}
 	inter_storage_checkDB();
 	return;
 }
@@ -522,6 +554,24 @@ bool mapif_parse_StorageSave(int32 fd) {
 /*==========================================
  * Parse packet from map-server
  *------------------------------------------*/
+// Tagged inventory commit: success is returned only after the SQL commit.
+static void mapif_parse_InventoryCommit( int32 fd ){
+	if( RFIFOW( fd, 2 ) != 20 + sizeof( s_storage ) )
+		return;
+	s_storage stor;
+	memcpy( &stor, RFIFOP( fd, 20 ), sizeof( stor ) );
+	bool saved = stor.type == TABLE_INVENTORY && inventory_tosql( RFIFOL( fd, 8 ), &stor ) == 0;
+	WFIFOHEAD( fd, 19 );
+	WFIFOW( fd, 0 ) = 0x388d;
+	WFIFOL( fd, 2 ) = RFIFOL( fd, 4 );
+	WFIFOL( fd, 6 ) = RFIFOL( fd, 8 );
+	WFIFOQ( fd, 10 ) = RFIFOQ( fd, 12 );
+	WFIFOB( fd, 18 ) = saved;
+	WFIFOSET( fd, 19 );
+}
+
+#include <custom/bank_sql.inc>
+
 bool inter_storage_parse_frommap(int32 fd)
 {
 	switch(RFIFOW(fd,0)){
@@ -532,6 +582,8 @@ bool inter_storage_parse_frommap(int32 fd)
 #endif
 		case 0x308a: mapif_parse_StorageLoad(fd); break;
 		case 0x308b: mapif_parse_StorageSave(fd); break;
+		case 0x308d: mapif_parse_InventoryCommit(fd); break;
+		case 0x308e: mapif_parse_BankCommit(fd); break;
 		default:
 			return false;
 	}

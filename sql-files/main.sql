@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `acc_reg_num` (
   `value` bigint(11) NOT NULL default '0',
   PRIMARY KEY (`account_id`,`key`,`index`),
   KEY `account_id` (`account_id`)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 --
 -- Table structure for table `acc_reg_str`
@@ -293,7 +293,7 @@ CREATE TABLE IF NOT EXISTS `char` (
   KEY `party_id` (`party_id`),
   KEY `guild_id` (`guild_id`),
   KEY `online` (`online`)
-) ENGINE=MyISAM AUTO_INCREMENT=150000; 
+) ENGINE=InnoDB AUTO_INCREMENT=150000;
 
 --
 -- Table structure for table `char_reg_num`
@@ -749,7 +749,7 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   `enchantgrade` tinyint unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `char_id` (`char_id`)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 --
 -- Table structure for table `ipbanlist`
@@ -1155,3 +1155,21 @@ CREATE TABLE IF NOT EXISTS `vendings` (
   `autotrade` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM;
+
+-- PN account-bank transaction journal.
+CREATE TABLE IF NOT EXISTS `pn_bank_commits` (
+  `account_id` INT UNSIGNED NOT NULL,
+  `nonce_hi` BIGINT UNSIGNED NOT NULL,
+  `nonce_lo` BIGINT UNSIGNED NOT NULL,
+  `request_id` BIGINT UNSIGNED NOT NULL,
+  `char_id` INT UNSIGNED NOT NULL,
+  `action` INT UNSIGNED NOT NULL,
+  `amount` BIGINT NOT NULL,
+  `bank_before` BIGINT NOT NULL,
+  `bank_after` BIGINT NOT NULL,
+  `wallet_before` BIGINT NOT NULL,
+  `wallet_after` BIGINT NOT NULL,
+  `committed_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`account_id`,`nonce_hi`,`nonce_lo`,`request_id`),
+  KEY `character_history` (`char_id`,`committed_at`)
+) ENGINE=InnoDB;

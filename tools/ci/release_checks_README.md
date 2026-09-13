@@ -29,8 +29,9 @@ Only continue deployment when the command succeeds and the full report says
 `passed: true`. The runner rejects missing readiness markers, server errors,
 fatal errors, and sanitizer failures even if map-server exits successfully.
 The startup log is overwritten by this invocation. The runner fingerprints the
-candidate source, database, NPC, configuration, tools, client patches, and map executable before
-validation, rejects file changes during validation, and records both candidate
+candidate source, database, NPC, configuration, tools, client patches, and map
+executable, including any character, login, and web executables present. It rejects
+file changes during validation and records both candidate
 and startup-log hashes in the report. Keep build artifacts and reports outside
 those fingerprinted directories. Keep the build, startup log, report, and
 deployment manifest together. Any subsequent candidate change requires a new run.

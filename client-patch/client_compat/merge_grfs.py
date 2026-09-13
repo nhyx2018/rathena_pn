@@ -46,9 +46,17 @@ def read(data):
 
 def merge(archives):
     entries = {}
+    seen = set()
     for archive in archives:
         for name, raw in read(archive).items():
-            entries.setdefault(name, raw)
+            # GRF lookup is case-insensitive. Keep the first archive's payload
+            # and original filename bytes even when a later spelling differs.
+            # bytes.lower() only folds ASCII; decoding as Latin-1 and using
+            # str.lower() would corrupt legacy Korean resource-name bytes.
+            key = name.lower()
+            if key not in seen:
+                seen.add(key)
+                entries[name] = raw
     body, table = bytearray(), bytearray()
     for name, raw in sorted(entries.items()):
         packed = zlib.compress(raw, 9)

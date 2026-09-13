@@ -43,7 +43,7 @@ static const int32 packet_len_table[] = {
 	-1,-1, 7, 7,  7,11, 8,-1,  0, 0, 0, 0,  0, 0,  0, 0, //0x3850  Auctions [Zephyrus] itembound[Akinari]
 	-1, 7,-1, 7, 14, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3860  Quests [Kevin] [Inkfish] / Achievements [Aleos]
 	-1, 3, 3, 0,  0, 0, 0, 0,  0, 0, 0, 0, -1, 3,  3, 0, //0x3870  Mercenaries [Zephyrus] / Elemental [pakpil]
-	12,-1, 7, 3,  0, 0, 0, 0,  0, 0,-1, 9, -1, 0,  0, 0, //0x3880  Pet System,  Storages
+	12,-1, 7, 3,  0, 0, 0, 0,  0, 0,-1, 9, -1,19, 35, 0, //0x3880  Pet System,  Storages
 	-1,-1, 7, 3,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3890  Homunculus [albator]
 	-1,-1, 8, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x38A0  Clans
 };
@@ -395,6 +395,7 @@ int32 intif_wis_message_to_gm(char *wisp_name, int32 permission, char *mes)
  */
 int32 intif_saveregistry(map_session_data *sd)
 {
+	if (sd && sd->bank_ui.pending) return -1;
 	DBIterator *iter;
 	DBKey key;
 	DBData *data;
@@ -3651,6 +3652,7 @@ bool intif_storage_request( const map_session_data* sd, enum storage_type type, 
  */
 bool intif_storage_save( const map_session_data* sd, const s_storage* stor )
 {
+	if (sd && sd->bank_ui.pending) return false;
 	int32 stor_size = sizeof(struct s_storage);
 
 	nullpo_retr(false, sd);
@@ -3670,6 +3672,51 @@ bool intif_storage_save( const map_session_data* sd, const s_storage* stor )
 	return true;
 }
 
+// Retries always save the current inventory, never an obsolete snapshot that
+// could overwrite items granted by a script while the commit was pending.
+static void intif_reform_save_request( const map_session_data& sd ){
+	if( CheckForCharServer() || !chrif_isconnected() )
+		return;
+	const size_t length = 20 + sizeof( s_storage );
+	WFIFOHEAD( inter_fd, length );
+	WFIFOW( inter_fd, 0 ) = 0x308d;
+	WFIFOW( inter_fd, 2 ) = length;
+	WFIFOL( inter_fd, 4 ) = sd.status.account_id;
+	WFIFOL( inter_fd, 8 ) = sd.status.char_id;
+	WFIFOQ( inter_fd, 12 ) = sd.state.item_reform_save_id;
+	memcpy( WFIFOP( inter_fd, 20 ), &sd.inventory, sizeof( s_storage ) );
+	WFIFOSET( inter_fd, length );
+}
+
+static TIMER_FUNC( intif_reform_save_retry ){
+	map_session_data* sd = map_id2sd( id );
+	if( sd == nullptr || sd->state.item_reform_save_id == 0 ||
+		sd->state.item_reform_save_id != static_cast<uint64>( data ) )
+		return 0;
+	intif_reform_save_request( *sd );
+	add_timer( tick + 1000, intif_reform_save_retry, id, data );
+	return 0;
+}
+
+void intif_reform_save( map_session_data& sd, uint16 index ){
+	static uint64 next_id = 0;
+	sd.state.item_reform_save_id = ++next_id;
+	sd.state.item_reform_save_index = index;
+	intif_reform_save_request( sd );
+	add_timer( gettick() + 1000, intif_reform_save_retry, sd.status.account_id,
+		static_cast<intptr_t>( sd.state.item_reform_save_id ) );
+}
+
+static void intif_parse_InventoryCommitted( int32 fd ){
+	map_session_data* sd = map_id2sd( RFIFOL( fd, 2 ) );
+	if( sd == nullptr || sd->status.char_id != RFIFOL( fd, 6 ) ||
+		sd->state.item_reform_save_id == 0 || sd->state.item_reform_save_id != RFIFOQ( fd, 10 ) ||
+		RFIFOB( fd, 18 ) != 1 )
+		return;
+	sd->state.item_reform_save_id = 0;
+	clif_item_reform_result( *sd, sd->state.item_reform_save_index, 0 );
+}
+
 int32 intif_clan_requestclans(){
 	if (CheckForCharServer())
 		return 0;
@@ -3678,6 +3725,8 @@ int32 intif_clan_requestclans(){
 	WFIFOSET(inter_fd, 2);
 	return 1;
 }
+
+#include <custom/bank_inter.inc>
 
 void intif_parse_clans( int32 fd ){
 	clan_load_clandata( ( RFIFOW(fd, 2) - 4 ) / sizeof( struct clan ), (struct clan*)RFIFOP(fd,4) );
@@ -3875,6 +3924,8 @@ int32 intif_parse(int32 fd)
 	// Storage
 	case 0x388a:	intif_parse_StorageReceived(fd); break;
 	case 0x388b:	intif_parse_StorageSaved(fd); break;
+	case 0x388d:	intif_parse_InventoryCommitted(fd); break;
+	case 0x388e:	intif_parse_BankCommitted(fd); break;
 	case 0x388c:	intif_parse_StorageInfo_recv(fd); break;
 
 	// Homunculus System

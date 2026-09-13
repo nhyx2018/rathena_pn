@@ -1,0 +1,3 @@
+LIBRARY FontScale
+EXPORTS
+    "_DirectDrawEnumerateExA@12"=ForwardDirectDraw@12

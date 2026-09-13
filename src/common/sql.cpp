@@ -66,6 +66,29 @@ uint32 Sql_GetError( Sql* self ){
 	return mysql_errno( &self->handle );
 }
 
+int32 Sql_BeginTransaction( Sql* self ){
+	// Reconnect before START, if needed, while no transaction is active.
+	if( Sql_Ping( self ) != SQL_SUCCESS )
+		return SQL_ERROR;
+	my_bool reconnect = 0;
+	if( mysql_options( &self->handle, MYSQL_OPT_RECONNECT, &reconnect ) != 0 )
+		return SQL_ERROR;
+	if( Sql_Query( self, "START TRANSACTION" ) == SQL_SUCCESS )
+		return SQL_SUCCESS;
+	reconnect = 1;
+	mysql_options( &self->handle, MYSQL_OPT_RECONNECT, &reconnect );
+	return SQL_ERROR;
+}
+
+int32 Sql_EndTransaction( Sql* self, bool commit ){
+	int32 result = Sql_Query( self, commit ? "COMMIT" : "ROLLBACK" );
+	if( commit && result != SQL_SUCCESS )
+		Sql_Query( self, "ROLLBACK" );
+	my_bool reconnect = 1;
+	mysql_options( &self->handle, MYSQL_OPT_RECONNECT, &reconnect );
+	return result;
+}
+
 static int32 Sql_P_Keepalive(Sql* self);
 
 /**

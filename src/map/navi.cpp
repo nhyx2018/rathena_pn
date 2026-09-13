@@ -162,15 +162,15 @@ bool navi_path_search(struct navi_walkpath_data *wpd, const struct navi_pos *fro
 	if (from->m != dest->m)
 		return false;
 
-	if (!mapdata->cell)
+	if (mapdata == nullptr || !mapdata->cell)
 		return false;
 	
 	//Do not check starting cell as that would get you stuck.
-	if (from->x < 0 || from->x > mapdata->xs || from->y < 0 || from->y > mapdata->ys /*|| map_getcellp(mapdata,x0,y0,cell)*/)
+	if (from->x < 0 || from->x >= mapdata->xs || from->y < 0 || from->y >= mapdata->ys /*|| map_getcellp(mapdata,x0,y0,cell)*/)
 		return false;
 
 	// Check destination cell
-	if (dest->x < 0 || dest->x > mapdata->xs || dest->y < 0 || dest->y > mapdata->ys || map_getcellp(mapdata, dest->x, dest->y, cell))
+	if (dest->x < 0 || dest->x >= mapdata->xs || dest->y < 0 || dest->y >= mapdata->ys || map_getcellp(mapdata, dest->x, dest->y, cell))
 		return false;
 
 
@@ -282,6 +282,51 @@ bool navi_path_search(struct navi_walkpath_data *wpd, const struct navi_pos *fro
 	return true;
 }
 
+// NPCs may stand in furniture and warp centers may lie inside a wall. The
+// player reaches their interaction/touch area, not the blocked center tile.
+// Keep exported NPC/portal coordinates intact and use only the closest
+// walkable cells inside that actual area for the generated walking distances.
+static std::vector<navi_pos> navi_approaches(const navi_pos& pos, int32 rx, int32 ry) {
+	auto* m = map_getmapdata(pos.m);
+	if (m == nullptr || !m->cell || pos.x < 0 || pos.x >= m->xs || pos.y < 0 || pos.y >= m->ys)
+		return {};
+	if (!map_getcellp(m, pos.x, pos.y, CELL_CHKNOREACH) || (rx == 0 && ry == 0))
+		return {pos};
+	for (int32 radius = 1; radius <= std::max(rx, ry); ++radius) {
+		std::vector<navi_pos> result;
+		for (int32 y = std::max(0, pos.y - std::min(radius, ry)); y <= std::min(m->ys - 1, pos.y + std::min(radius, ry)); ++y)
+			for (int32 x = std::max(0, pos.x - std::min(radius, rx)); x <= std::min(m->xs - 1, pos.x + std::min(radius, rx)); ++x)
+				if (!map_getcellp(m, x, y, CELL_CHKNOREACH)) result.push_back({pos.m, x, y});
+		if (!result.empty()) return result;
+	}
+	return {};
+}
+
+static std::pair<int32, int32> navi_link_area(const navi_link& link) {
+	const auto* nd = link.npc;
+	if (nd != nullptr && nd->subtype == NPCTYPE_WARP)
+		return {std::max<int32>(0, nd->u.warp.xs), std::max<int32>(0, nd->u.warp.ys)};
+	if (nd != nullptr && nd->class_ == JT_WARPNPC)
+		return {std::max<int32>(0, nd->u.scr.xs), std::max<int32>(0, nd->u.scr.ys)};
+	return {3, 3}; // Conservative clickable-NPC approach, inside the talk range.
+}
+
+static bool navi_approach_search(navi_walkpath_data* result, const navi_pos& from, const navi_pos& dest,
+	std::pair<int32, int32> from_area, std::pair<int32, int32> dest_area) {
+	bool found = false;
+	navi_walkpath_data best{};
+	for (const auto& a : navi_approaches(from, from_area.first, from_area.second))
+		for (const auto& b : navi_approaches(dest, dest_area.first, dest_area.second)) {
+			navi_walkpath_data path{};
+			if (navi_path_search(&path, &a, &b, CELL_CHKNOREACH) && (!found || path.path_len < best.path_len)) {
+				best = path;
+				found = true;
+			}
+		}
+	if (found && result != nullptr) *result = best;
+	return found;
+}
+
 bool fileExists(const std::string& path) {
 	std::ifstream in;
 	in.open(path);
@@ -322,7 +367,7 @@ int32 map_type(const struct map_data * m) {
 	if (std::find_if(m->navi.warps_outof.begin(), m->navi.warps_outof.end(), [&m](const navi_link* link) {
 		return std::find_if(m->navi.warps_outof.begin(), m->navi.warps_outof.end(), [&link](const navi_link* link2) {
 			// find if any two warps in a map cannot be reached
-			return !navi_path_search(nullptr, &link->pos, &link2->pos, CELL_CHKNOREACH);
+			return !navi_approach_search(nullptr, link->pos, link2->pos, navi_link_area(*link), navi_link_area(*link2));
 		}) != m->navi.warps_outof.end();
 	}) != m->navi.warps_outof.end())
 		segmented = true;
@@ -532,7 +577,7 @@ void write_npc_distance(std::ostream &os, const npc_data * nd, const struct map_
 
 		// Find a path from the npc to the warp destination
 		// The warp is into the map, so this makes sense
-		if (!navi_path_search(&wpd, &nd->navi.pos, &warp->warp_dest, CELL_CHKNOREACH)) {
+		if (!navi_approach_search(&wpd, nd->navi.pos, warp->warp_dest, {3, 3}, {0, 0})) {
 			continue;
 		}
 
@@ -603,7 +648,7 @@ void write_map_distance(std::ostream &os, const struct navi_link * warp1, const 
 	for (const auto warp3 : map_getmapdata(warp1->warp_dest.m)->navi.warps_outof) {
 		struct navi_walkpath_data wpd = {0};
 
-		if (!navi_path_search(&wpd, &warp1->warp_dest, &warp3->pos, CELL_CHKNOREACH))
+		if (!navi_approach_search(&wpd, warp1->warp_dest, warp3->pos, {0, 0}, navi_link_area(*warp3)))
 			continue;
 		
 		os << "\t\t\t{ \"E\", " << warp3->id << ", " << std::to_string(wpd.path_len) << "}, -- ReachableFromDst warp (" << map_getmapdata(warp3->pos.m)->name << ", " << warp3->pos.x << ", " << warp3->pos.y << ")\n";

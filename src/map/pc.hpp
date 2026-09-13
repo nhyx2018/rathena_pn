@@ -13,6 +13,7 @@
 #include <common/mmo.hpp> // JOB_*, MAX_FAME_LIST, struct fame_list, struct mmo_charstatus
 #include <common/strlib.hpp>// StringBuf
 #include <common/timer.hpp>
+#include <custom/bank_state.hpp>
 
 #include "battleground.hpp"
 #include "buyingstore.hpp" // struct s_buyingstore
@@ -459,6 +460,8 @@ public:
 		bool roulette_open;
 		t_itemid item_reform;
 		int16 item_reform_index; // Delayed-consume cell, or -1 for NPC reform.
+		uint64 item_reform_save_id; // Nonzero until the character server commits.
+		uint16 item_reform_save_index;
 		uint64 item_enchant_index;
 	} state;
 	struct {
@@ -906,6 +909,7 @@ public:
 	int32 autotrade_tid;
 	int32 respawn_tid;
 	int32 bank_vault; ///< Bank Vault
+	pn_bank_state bank_ui; ///< One account bank operation, locked until SQL commit.
 
 #ifdef PACKET_OBFUSCATION
 	uint32 cryptKey; ///< Packet obfuscation key to be used for the next received packet
@@ -1157,13 +1161,13 @@ extern JobDatabase job_db;
 #define pc_isidle_mer(sd)     ( (sd)->md && ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime_mer) >= battle_config.mer_idle_no_share ) )
 #define pc_istrading(sd)      ( (sd)->npc_id || (sd)->state.vending || (sd)->state.buyingstore || (sd)->state.trading )
 static bool pc_cant_act2( map_session_data* sd ){
-	return sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
+	return sd->bank_ui.pending || sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
 		|| sd->state.trading || sd->state.storage_flag || sd->state.prevend || sd->state.refineui_open
 		|| sd->state.stylist_open || sd->state.inventory_expansion_confirmation || sd->npc_shopid
 		|| sd->state.barter_open || sd->state.barter_extended_open
 		|| sd->state.laphine_synthesis || sd->state.laphine_upgrade
 		|| sd->state.roulette_open || sd->state.enchantgrade_open
-		|| sd->state.item_reform || sd->state.item_enchant_index;
+		|| sd->state.item_reform || sd->state.item_reform_save_id || sd->state.item_enchant_index;
 }
 // equals pc_cant_act2 and additionally checks for chat rooms and npcs
 static bool pc_cant_act( map_session_data* sd ){

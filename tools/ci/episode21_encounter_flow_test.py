@@ -67,6 +67,11 @@ CPP = r'''
 #include <sys/syscall.h>
 #include <sys/socket.h>
 #include <unistd.h>
+// Alpine GCC 15's shared ASan references this missing musl platform size.
+// Supply the actual platform type size; instrumentation stays fully enabled.
+#if defined(__linux__) && !defined(__GLIBC__)
+namespace __sanitizer { unsigned struct_sock_fprog_sz = sizeof(sock_fprog); }
+#endif
 #include "common/core.hpp"
 #include "common/database.hpp"
 #include "common/db.hpp"

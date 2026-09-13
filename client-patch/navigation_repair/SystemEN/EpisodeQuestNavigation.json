@@ -1,0 +1,1674 @@
+[
+  {
+    "id": 18334,
+    "title": "Detected Rift on the North",
+    "summary": "Join the Scale Island expedition",
+    "steps": [
+      {
+        "npc": "Shufapa#ep21_start",
+        "label": "Shufapa",
+        "text": "Begin the expedition. Requires Base Level 230 and completion of Episode 20.",
+        "map": "jor_tail",
+        "x": 233,
+        "y": 41,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 129
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18335,
+    "title": "Rift on Scale Island",
+    "summary": "Examine the present-day rift",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_rift_now",
+        "label": "Nyar",
+        "text": "Speak with Nyar and cross the rift.",
+        "map": "jor_crk",
+        "x": 105,
+        "y": 108,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 158
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18336,
+    "title": "First Meeting",
+    "summary": "Meet Nyar in the past",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_rift_past",
+        "label": "Nyar",
+        "text": "Speak with Nyar on the past Scale Island.",
+        "map": "jor_crk_p",
+        "x": 105,
+        "y": 108,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 175
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18337,
+    "title": "Lunaforma",
+    "summary": "Meet Ivan",
+    "steps": [
+      {
+        "npc": "Ivan#ep21_first_meeting",
+        "label": "Ivan",
+        "text": "Introduce yourself to Ivan and enter the resistance route.",
+        "map": "jor_crk_p",
+        "x": 100,
+        "y": 95,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 189
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18338,
+    "title": "Gathering Eyewitness",
+    "summary": "Resistance investigation record",
+    "steps": [
+      {
+        "npc": "Tris#ep21_arrival",
+        "label": "Tris",
+        "text": "This is a legacy investigation record. Continue the active Gaebolg Resistance stage in your quest log.",
+        "map": "jor_mbase",
+        "x": 56,
+        "y": 152,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 242
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23240,
+    "title": "Gaebolg Resistance",
+    "summary": "Follow Ivan to the resistance",
+    "steps": [
+      {
+        "npc": "Ivan#ep21_safe_arrival",
+        "label": "Ivan",
+        "text": "Meet Ivan in the safe area before entering Lunaforma.",
+        "map": "luna_sf1",
+        "x": 258,
+        "y": 151,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 205
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23241,
+    "title": "Gaebolg Resistance",
+    "summary": "Meet the Resistance Soldier",
+    "steps": [
+      {
+        "npc": "Resistance Soldier#ep21_prog",
+        "label": "Resistance Soldier",
+        "text": "Speak to the soldier at the west gate.",
+        "map": "jor_mbase",
+        "x": 54,
+        "y": 155,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 221
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23242,
+    "title": "Gaebolg Resistance",
+    "summary": "Introduce yourself to Tris",
+    "steps": [
+      {
+        "npc": "Tris#ep21_arrival",
+        "label": "Tris",
+        "text": "Hear Tris's instructions.",
+        "map": "jor_mbase",
+        "x": 56,
+        "y": 152,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 242
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23243,
+    "title": "Gaebolg Resistance",
+    "summary": "Complete the resistance introductions",
+    "steps": [
+      {
+        "npc": "Tan#ep21_arrival",
+        "label": "Tan",
+        "text": "Start with Tan at the west gate.",
+        "map": "jor_mbase",
+        "x": 57,
+        "y": 150,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 256
+      },
+      {
+        "npc": "Tan#ep21_east_tent",
+        "label": "Tan",
+        "text": "Meet Tan at the eastern tent.",
+        "map": "jor_mbase",
+        "x": 313,
+        "y": 106,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 270
+      },
+      {
+        "npc": "Pile of Documents#ep21",
+        "label": "Pile of Documents",
+        "text": "Inspect the reports inside.",
+        "map": "mbase_in",
+        "x": 299,
+        "y": 126,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 285
+      },
+      {
+        "npc": "Valdaris#ep21_resistance",
+        "label": "Valdaris",
+        "text": "Speak with Valdaris.",
+        "map": "mbase_in",
+        "x": 302,
+        "y": 123,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 292
+      },
+      {
+        "npc": "Richard#ep21_resistance",
+        "label": "Richard",
+        "text": "Meet Richard in the central barracks.",
+        "map": "mbase_in",
+        "x": 167,
+        "y": 128,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 306
+      },
+      {
+        "npc": "Lee#ep21_resistance_in",
+        "label": "Lee",
+        "text": "Speak to Lee inside.",
+        "map": "mbase_in",
+        "x": 167,
+        "y": 79,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 319
+      },
+      {
+        "npc": "Lee#ep21_resistance_out",
+        "label": "Lee",
+        "text": "Finish the introduction with Lee outside.",
+        "map": "jor_mbase",
+        "x": 163,
+        "y": 196,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 332
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23247,
+    "title": "Calculating Profit and Loss",
+    "summary": "Hunt 10 Skipskippers and bring 1 Bright Eye",
+    "steps": [
+      {
+        "npc": "Tris#ep21_profit",
+        "label": "Tris",
+        "text": "Hunt 10 Skipskippers in Southern Raised Land (jor_raise2), bring 1 Bright Eye, then report to Tris.",
+        "map": "jor_mbase",
+        "x": 168,
+        "y": 200,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 351
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23248,
+    "title": "Calculating Profit and Loss",
+    "summary": "The sea route to Alberta is open",
+    "steps": [
+      {
+        "npc": "Nillem#ep21_alberta",
+        "label": "Nillem",
+        "text": "Continue with Nillem, then help Yohan and Iana Operta in Old Alberta.",
+        "map": "jor_albe",
+        "x": 192,
+        "y": 209,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 385
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17752,
+    "title": "Cult Infiltration",
+    "summary": "Ask Lehar about the cult.",
+    "steps": [
+      {
+        "npc": "Lehar#ep21_cult",
+        "label": "Lehar",
+        "text": "Ask Lehar about the cult.",
+        "map": "jor_mbase",
+        "x": 214,
+        "y": 316,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 498
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17753,
+    "title": "Cult Infiltration",
+    "summary": "Hear Lyriq's report.",
+    "steps": [
+      {
+        "npc": "Lyriq#ep21_cult",
+        "label": "Lyriq",
+        "text": "Hear Lyriq's report.",
+        "map": "jor_mbase",
+        "x": 185,
+        "y": 311,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 511
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17754,
+    "title": "Cult Infiltration",
+    "summary": "Consult the Wigner archive.",
+    "steps": [
+      {
+        "npc": "Lalaila Wigner#ep21",
+        "label": "Lalaila Wigner",
+        "text": "Consult the Wigner archive.",
+        "map": "jalbe_in",
+        "x": 56,
+        "y": 138,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 524
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17755,
+    "title": "Cult Infiltration",
+    "summary": "Examine the dusty box upstairs.",
+    "steps": [
+      {
+        "npc": "Dusty Box#ep21",
+        "label": "Dusty Box",
+        "text": "Examine the dusty box upstairs.",
+        "map": "jalbe_in",
+        "x": 73,
+        "y": 187,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 537
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17756,
+    "title": "Cult Infiltration",
+    "summary": "Show the Walter manifest to Maristella.",
+    "steps": [
+      {
+        "npc": "Maristella Walter#ep21gimli_report",
+        "label": "Maristella Walter",
+        "text": "Show the Walter manifest to Maristella.",
+        "map": "jalbe_in",
+        "x": 68,
+        "y": 46,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 235
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17757,
+    "title": "Cult Infiltration",
+    "summary": "Report your findings to Ivan.",
+    "steps": [
+      {
+        "npc": "Ivan#ep21_cult",
+        "label": "Ivan",
+        "text": "Report your findings to Ivan.",
+        "map": "jor_mbase",
+        "x": 233,
+        "y": 277,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 468
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17758,
+    "title": "Recruiting Talent for Success",
+    "summary": "Take the small boat to Scale Island.",
+    "steps": [
+      {
+        "npc": "Small Boat#ep21_recruit",
+        "label": "Small Boat",
+        "text": "Take the small boat to Scale Island.",
+        "map": "jor_mbase",
+        "x": 124,
+        "y": 27,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 544
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17759,
+    "title": "Recruiting Talent for Success",
+    "summary": "Speak with Tan on Scale Island.",
+    "steps": [
+      {
+        "npc": "Tan#ep21_recruit",
+        "label": "Tan",
+        "text": "Speak with Tan on Scale Island.",
+        "map": "jor_crk_p",
+        "x": 71,
+        "y": 86,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 558
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17760,
+    "title": "Recruiting Talent for Success",
+    "summary": "Ask Ivan to arrange the high-priest disguise.",
+    "steps": [
+      {
+        "npc": "Ivan#ep21_recruit",
+        "label": "Ivan",
+        "text": "Ask Ivan to arrange the high-priest disguise.",
+        "map": "jor_mbase",
+        "x": 166,
+        "y": 302,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 572
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17763,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Report the three believers' accounts to Tris.",
+    "steps": [
+      {
+        "npc": "Tris#ep21gimli_report",
+        "label": "Tris",
+        "text": "Report the three believers' accounts to Tris.",
+        "map": "jor_mbase",
+        "x": 143,
+        "y": 272,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 165
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17766,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Deliver Nadoyo's infiltration report.",
+    "steps": [
+      {
+        "npc": "Tris#ep21gimli_report",
+        "label": "Tris",
+        "text": "Deliver Nadoyo's infiltration report.",
+        "map": "jor_mbase",
+        "x": 143,
+        "y": 272,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 165
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17767,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Speak with Wilhelm upstairs.",
+    "steps": [
+      {
+        "npc": "Wilhelm#ep21gimli_report",
+        "label": "Wilhelm",
+        "text": "Speak with Wilhelm upstairs.",
+        "map": "mbase_in",
+        "x": 116,
+        "y": 186,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 195
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17768,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Hear Reinhardt's account of the Ghost Ship.",
+    "steps": [
+      {
+        "npc": "Reinhardt#ep21gimli_report",
+        "label": "Reinhardt",
+        "text": "Hear Reinhardt's account of the Ghost Ship.",
+        "map": "mbase_in",
+        "x": 120,
+        "y": 186,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 211
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17769,
+    "title": "Ghost Ship Report",
+    "summary": "Report to Maristella inside the Alberta office.",
+    "steps": [
+      {
+        "npc": "Maristella Walter#ep21gimli_report",
+        "label": "Maristella Walter",
+        "text": "Report to Maristella inside the Alberta office.",
+        "map": "jalbe_in",
+        "x": 68,
+        "y": 46,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 235
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17761,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Enter the first temple safe spot",
+    "steps": [
+      {
+        "npc": "#EP21_TempleSafe1",
+        "label": "First prayer room",
+        "text": "Approach the marked spot on temple floor 1.",
+        "map": "jor_tmple1",
+        "x": 186,
+        "y": 72,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 592
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17762,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Gather the three believers' reports",
+    "steps": [
+      {
+        "npc": "Ivan#ep21_temple_safe1",
+        "label": "Ivan",
+        "text": "Speak with Ivan, then return to temple floor 1.",
+        "map": "luna_sf2",
+        "x": 113,
+        "y": 257,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 598
+      },
+      {
+        "npc": "#EP21_TempleSafe2",
+        "label": "Second prayer room",
+        "text": "Visit the second safe spot and speak with the believer.",
+        "map": "jor_tmple1",
+        "x": 110,
+        "y": 190,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 609
+      },
+      {
+        "npc": "#EP21_TempleSafe3",
+        "label": "Third prayer room",
+        "text": "Visit the third safe spot after the first report.",
+        "map": "jor_tmple1",
+        "x": 186,
+        "y": 228,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 626
+      },
+      {
+        "npc": "#EP21_TempleSafe4",
+        "label": "Fourth prayer room",
+        "text": "Visit the fourth safe spot after the second report.",
+        "map": "jor_tmple1",
+        "x": 238,
+        "y": 268,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 643
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17764,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Complete Gimli Infiltration",
+    "steps": [
+      {
+        "npc": "#EP21_TempleSafe4",
+        "label": "Fourth prayer room",
+        "text": "Use the fourth safe spot to reach the disguised guard.",
+        "map": "jor_tmple1",
+        "x": 238,
+        "y": 268,
+        "file": "npc/custom/episode21/Progression.txt",
+        "line": 643
+      },
+      {
+        "npc": "Disguised Temple Guard#ep21gimli",
+        "label": "Disguised Temple Guard",
+        "text": "Form a party and enter Gimli Infiltration. Follow Nadoyo through both floors. Re-enter through this guard after a disconnect.",
+        "map": "luna_sf2",
+        "x": 187,
+        "y": 254,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 84
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17765,
+    "title": "2nd Floor Cult Infiltration",
+    "summary": "Report the escape to Nadoyo",
+    "steps": [
+      {
+        "npc": "#EP21_GimliSafeSpot",
+        "label": "Northern safe spot",
+        "text": "Use the northern safe spot after leaving Gimli.",
+        "map": "jor_raise1",
+        "x": 322,
+        "y": 69,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 118
+      },
+      {
+        "npc": "Nadoyo#ep21gimli_report",
+        "label": "Nadoyo",
+        "text": "Speak with Nadoyo in the safe area.",
+        "map": "luna_sf1",
+        "x": 48,
+        "y": 265,
+        "file": "npc/custom/episode21/GimliInfiltration.txt",
+        "line": 141
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23249,
+    "title": "Black-Haired Beast",
+    "summary": "Examine the failing tablet.",
+    "steps": [
+      {
+        "npc": "Heine's Tablet#ep21_repair",
+        "label": "Heine's Tablet",
+        "text": "Examine the failing tablet.",
+        "map": "mbase_in",
+        "x": 71,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 158
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23250,
+    "title": "Black-Haired Beast",
+    "summary": "Bring 2 Vellelopy from Velellings in Northern Raised Land.",
+    "steps": [
+      {
+        "npc": "Heine's Tablet#ep21_repair",
+        "label": "Heine's Tablet",
+        "text": "Bring 2 Vellelopy from Velellings in Northern Raised Land.",
+        "map": "mbase_in",
+        "x": 71,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 158
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23251,
+    "title": "Black-Haired Beast",
+    "summary": "Listen to Heine's story.",
+    "steps": [
+      {
+        "npc": "Heine's Tablet#ep21_repair",
+        "label": "Heine's Tablet",
+        "text": "Listen to Heine's story.",
+        "map": "mbase_in",
+        "x": 71,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 158
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23252,
+    "title": "Black-Haired Beast",
+    "summary": "Finish repairing the tablet; leave room for the repaired item.",
+    "steps": [
+      {
+        "npc": "Heine's Tablet#ep21_repair",
+        "label": "Heine's Tablet",
+        "text": "Finish repairing the tablet; leave room for the repaired item.",
+        "map": "mbase_in",
+        "x": 71,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 158
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23253,
+    "title": "Black-Haired Beast",
+    "summary": "Report to Tris",
+    "steps": [
+      {
+        "npc": "Tris#ep21_finale",
+        "label": "Tris",
+        "text": "Return with the repaired tablet.",
+        "map": "jor_mbase",
+        "x": 203,
+        "y": 186,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 91
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23254,
+    "title": "Black-Haired Beast",
+    "summary": "Speak to Nadoyo",
+    "steps": [
+      {
+        "npc": "Nadoyo#ep21_reports",
+        "label": "Nadoyo",
+        "text": "Ask Nadoyo about the serpent.",
+        "map": "jor_mbase",
+        "x": 209,
+        "y": 186,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 204
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 23255,
+    "title": "Black-Haired Beast",
+    "summary": "Collect three eyewitness reports",
+    "steps": [
+      {
+        "npc": "Wounded Soldier#ep21_report",
+        "label": "Wounded Soldier",
+        "text": "Hear the wounded soldier.",
+        "map": "jor_mbase",
+        "x": 62,
+        "y": 194,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 221
+      },
+      {
+        "npc": "Exhausted Soldier#ep21_report",
+        "label": "Exhausted Soldier",
+        "text": "Hear the exhausted soldier.",
+        "map": "jor_mbase",
+        "x": 186,
+        "y": 250,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 229
+      },
+      {
+        "npc": "Cult Escapee#ep21_report",
+        "label": "Cult Escapee",
+        "text": "Hear the escapee.",
+        "map": "jor_mbase",
+        "x": 216,
+        "y": 297,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 237
+      },
+      {
+        "npc": "Tris#ep21_finale",
+        "label": "Tris",
+        "text": "Return after collecting all three reports.",
+        "map": "jor_mbase",
+        "x": 203,
+        "y": 186,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 91
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18343,
+    "title": "Find Tan and Nadoyo",
+    "summary": "Find Tan and Nadoyo",
+    "steps": [
+      {
+        "npc": "Rock Crevice#ep21",
+        "label": "Rock Crevice",
+        "text": "Enter the Rock Crevice in Northern Raised Land.",
+        "map": "jor_raise1",
+        "x": 198,
+        "y": 189,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 260
+      },
+      {
+        "npc": "Nadoyo#ep21_crevice",
+        "label": "Nadoyo",
+        "text": "Speak with Nadoyo inside the safe area.",
+        "map": "luna_sf1",
+        "x": 47,
+        "y": 264,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 268
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18344,
+    "title": "Suspicion Location in the Temple",
+    "summary": "Investigate the sealed temple chamber",
+    "steps": [
+      {
+        "npc": "Decorative Door#ep21",
+        "label": "Decorative Door",
+        "text": "Enter the Decorative Door in Northern Raised Land.",
+        "map": "jor_raise1",
+        "x": 128,
+        "y": 323,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 285
+      },
+      {
+        "npc": "Cult Priest#ep21_serpent",
+        "label": "Cult Priest",
+        "text": "Listen to the cult priest inside.",
+        "map": "jor_tmple1",
+        "x": 170,
+        "y": 304,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 294
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18345,
+    "title": "Serpent's Lair?",
+    "summary": "Warn Tris about the serpent",
+    "steps": [
+      {
+        "npc": "Nadoyo#ep21_temple",
+        "label": "Nadoyo",
+        "text": "Ask Nadoyo to return you to command.",
+        "map": "jor_tmple1",
+        "x": 174,
+        "y": 304,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 311
+      },
+      {
+        "npc": "Tris#ep21_finale",
+        "label": "Tris",
+        "text": "Report what you learned.",
+        "map": "jor_mbase",
+        "x": 203,
+        "y": 186,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 91
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18346,
+    "title": "Excluded from the Final Battle",
+    "summary": "Meet Nyar beside Heine's room",
+    "steps": [
+      {
+        "npc": "Small Door#ep21",
+        "label": "Small Door",
+        "text": "Approach the small door upstairs.",
+        "map": "mbase_in",
+        "x": 75,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 333
+      },
+      {
+        "npc": "Nyar#ep21_plan",
+        "label": "Nyar",
+        "text": "Discuss how to join the battle without changing history.",
+        "map": "mbase_in",
+        "x": 80,
+        "y": 126,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 342
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18347,
+    "title": "I can't miss it!",
+    "summary": "Return to Nadoyo in the temple",
+    "steps": [
+      {
+        "npc": "Decorative Door#ep21",
+        "label": "Decorative Door",
+        "text": "Enter through the Decorative Door.",
+        "map": "jor_raise1",
+        "x": 128,
+        "y": 323,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 285
+      },
+      {
+        "npc": "Nadoyo#ep21_temple",
+        "label": "Nadoyo",
+        "text": "Hear Nadoyo's plan.",
+        "map": "jor_tmple1",
+        "x": 174,
+        "y": 304,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 311
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18348,
+    "title": "Join the Final Battle",
+    "summary": "Complete the story Final Battle",
+    "steps": [
+      {
+        "npc": "Heine's Tablet#ep21_final",
+        "label": "Heine's Tablet",
+        "text": "Enter the story Final Battle. Activate the four channels, finish the encounters, then speak with Nyar at the end. Re-entry uses this tablet.",
+        "map": "jor_tmple1",
+        "x": 178,
+        "y": 304,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 366
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18349,
+    "title": "Cat Led Adventures",
+    "summary": "Follow Nyar's altar lead",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_after_final",
+        "label": "Nyar",
+        "text": "Speak with Nyar outside the final battle.",
+        "map": "jor_tmple1",
+        "x": 182,
+        "y": 304,
+        "file": "npc/custom/episode21/BlackHairedBeast.txt",
+        "line": 384
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18350,
+    "title": "Suspicious Book of Gimli",
+    "summary": "Read the Suspicious Book",
+    "steps": [
+      {
+        "npc": "Suspicious Book#ep21",
+        "label": "Suspicious Book",
+        "text": "Read the book on the past Scale Island.",
+        "map": "jor_crk_p",
+        "x": 87,
+        "y": 95,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 7
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18351,
+    "title": "Shining Door",
+    "summary": "Enter and complete Secret Altar",
+    "steps": [
+      {
+        "npc": "Shining Door#ep21",
+        "label": "Shining Door",
+        "text": "Enter Secret Altar and follow Lehar through the encounters. Finish the Giant Egg dialogue to receive story credit. Re-enter through this door if needed.",
+        "map": "jor_crk_p",
+        "x": 90,
+        "y": 95,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 23
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18352,
+    "title": "Finally, A Real Mission!",
+    "summary": "Enter and complete Secret Altar",
+    "steps": [
+      {
+        "npc": "Shining Door#ep21",
+        "label": "Shining Door",
+        "text": "Enter Secret Altar and follow Lehar through the encounters. Finish the Giant Egg dialogue to receive story credit. Re-enter through this door if needed.",
+        "map": "jor_crk_p",
+        "x": 90,
+        "y": 95,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 23
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18353,
+    "title": "Successfully Blocked the Source",
+    "summary": "Report that the source is blocked",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_altar_route",
+        "label": "Nyar",
+        "text": "Speak with Nyar after leaving Secret Altar.",
+        "map": "jor_crk_p",
+        "x": 83,
+        "y": 95,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 43
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18354,
+    "title": "Heine's Gift",
+    "summary": "Find Heine's gift",
+    "steps": [
+      {
+        "npc": "Small Boat#ep21",
+        "label": "Small Boat",
+        "text": "Take the small boat to the hidden Lunaforma dock.",
+        "map": "jor_crk_p",
+        "x": 80,
+        "y": 90,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 66
+      },
+      {
+        "npc": "Bushes#ep21_heine",
+        "label": "Bushes",
+        "text": "Search the bushes and leave room for the costume.",
+        "map": "luna_sf1",
+        "x": 44,
+        "y": 40,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 78
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18355,
+    "title": "Return to Scale Island",
+    "summary": "Return to Scale Island",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_altar_route",
+        "label": "Nyar",
+        "text": "Return to Nyar on the past Scale Island.",
+        "map": "jor_crk_p",
+        "x": 83,
+        "y": 95,
+        "file": "npc/custom/episode21/SecretAltar.txt",
+        "line": 43
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18356,
+    "title": "Time to Confirm Casualty",
+    "summary": "Check the present-day sanctuary",
+    "steps": [
+      {
+        "npc": "Rift Disturbance#ep21",
+        "label": "Rift Disturbance",
+        "text": "Use the disturbance at the present-day rift.",
+        "map": "jor_crk",
+        "x": 137,
+        "y": 138,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 8
+      },
+      {
+        "npc": "Nyar Clone#ep21_sanctuary",
+        "label": "Nyar Clone",
+        "text": "Speak to Nyar's clone at the sanctuary entrance.",
+        "map": "jor_twig",
+        "x": 187,
+        "y": 198,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18357,
+    "title": "Settling the Curse",
+    "summary": "Wait 10 minutes for the curse to settle",
+    "steps": [
+      {
+        "npc": "Nyar Clone#ep21_sanctuary",
+        "label": "Nyar Clone",
+        "text": "Wait until this quest timer expires, then speak to the clone again.",
+        "map": "jor_twig",
+        "x": 187,
+        "y": 198,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 17
+      }
+    ],
+    "timed": true
+  },
+  {
+    "id": 18358,
+    "title": "Lasgand?",
+    "summary": "Confirm Lasgand's condition",
+    "steps": [
+      {
+        "npc": "Nyar Clone#ep21_sanctuary",
+        "label": "Nyar Clone",
+        "text": "Enter Silent Sanctuary, follow Aurelie, examine Lasgand, then finish Aurelie's final dialogue. Re-entry uses this clone.",
+        "map": "jor_twig",
+        "x": 187,
+        "y": 198,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18359,
+    "title": "Butterfly Effect",
+    "summary": "Report the sanctuary findings",
+    "steps": [
+      {
+        "npc": "Nyar Clone#ep21_sanctuary",
+        "label": "Nyar Clone",
+        "text": "Speak to the clone after leaving Silent Sanctuary.",
+        "map": "jor_twig",
+        "x": 187,
+        "y": 198,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 18361,
+    "title": "Nyar's Primal Pouch",
+    "summary": "Episode 21 completion record",
+    "steps": [
+      {
+        "npc": "Nyar#ep21_complete",
+        "label": "Nyar",
+        "text": "The campaign is complete. Normal Final Battle is unlocked. Hard mode requires 1,000 reputation with each of the seven families.",
+        "map": "jor_crk",
+        "x": 140,
+        "y": 138,
+        "file": "npc/custom/episode21/SilentSanctuary.txt",
+        "line": 61
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17770,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Reinhardt#ep21_lugenburg",
+        "label": "Reinhardt",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "mbase_in",
+        "x": 118,
+        "y": 186,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 60
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17771,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Wilhelm#ep21_lugenburg",
+        "label": "Wilhelm",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "jor_mbase",
+        "x": 140,
+        "y": 201,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 21
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17772,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Reinhardt#ep21_lugenburg",
+        "label": "Reinhardt",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "mbase_in",
+        "x": 118,
+        "y": 186,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 60
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17773,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Tris#ep21_lugenburg",
+        "label": "Tris",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "jor_mbase",
+        "x": 197,
+        "y": 277,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 74
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17774,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Reinhardt#ep21_lugenburg",
+        "label": "Reinhardt",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "mbase_in",
+        "x": 118,
+        "y": 186,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 60
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17775,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Wilhelm#ep21_lugenburg",
+        "label": "Wilhelm",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "jor_mbase",
+        "x": 140,
+        "y": 201,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 21
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17776,
+    "title": "Lugenburg Brothers",
+    "summary": "Help the Lugenburg brothers reconcile",
+    "steps": [
+      {
+        "npc": "Tris#ep21_lugenburg",
+        "label": "Tris",
+        "text": "Continue the brothers' discussion with this NPC.",
+        "map": "jor_mbase",
+        "x": 197,
+        "y": 277,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 74
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17777,
+    "title": "Safe Escape Route 1",
+    "summary": "Defeat 300 monsters in Northern Raised Land (jor_raise1)",
+    "steps": [
+      {
+        "npc": "Wilhelm#ep21_lugenburg",
+        "label": "Wilhelm",
+        "text": "Defeat 300 monsters on Northern Raised Land (jor_raise1), then report to Wilhelm. Patrols reset at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 140,
+        "y": 201,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 21
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17778,
+    "title": "Safe Escape Route 2",
+    "summary": "Defeat 300 monsters in Southern Raised Land (jor_raise2)",
+    "steps": [
+      {
+        "npc": "Wilhelm#ep21_lugenburg",
+        "label": "Wilhelm",
+        "text": "Defeat 300 monsters on Southern Raised Land (jor_raise2), then report to Wilhelm. Patrols reset at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 140,
+        "y": 201,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 21
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17781,
+    "title": "Supply Procurement",
+    "summary": "Supply Procurement unlocked",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Choose a family supply contract after completing Episode 21. One family contract may be completed per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17782,
+    "title": "Gaebolg Supply Request",
+    "summary": "Deliver supplies for Gaebolg",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001629 for the Gaebolg family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17783,
+    "title": "Nerius Supply Request",
+    "summary": "Deliver supplies for Nerius",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001648 for the Nerius family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17785,
+    "title": "Heine Supply Request",
+    "summary": "Deliver supplies for Heine",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001639 for the Heine family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17786,
+    "title": "Lugenburg Supply Request",
+    "summary": "Deliver supplies for Lugenburg",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001637 for the Lugenburg family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17787,
+    "title": "Walter Supply Request",
+    "summary": "Deliver supplies for Walter",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001646 for the Walter family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17784,
+    "title": "Wigner Supply Request",
+    "summary": "Deliver supplies for Wigner",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001642 for the Wigner family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 17788,
+    "title": "Richard Supply Request",
+    "summary": "Deliver supplies for Richard",
+    "steps": [
+      {
+        "npc": "Mandel#ep21_reputation",
+        "label": "Mandel",
+        "text": "Deliver 10 units of item 1001645 for the Richard family. Mandel confirms the required material. One family contract per day; reset is at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 219,
+        "y": 315,
+        "file": "npc/custom/episode21/FamilyReputation.txt",
+        "line": 17
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 19198,
+    "title": "Vallen Wok",
+    "summary": "Food procurement unlocked",
+    "steps": [
+      {
+        "npc": "Volunteer Vallen Wok#ep21",
+        "label": "Volunteer Vallen Wok",
+        "text": "Ask Vallen Wok for the current food assignment. Deliveries reset at 04:00 server time.",
+        "map": "jor_mbase",
+        "x": 211,
+        "y": 280,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 114
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 19201,
+    "title": "Food Procurement(Herb Gathering)",
+    "summary": "Gather 10 Wide Grass",
+    "steps": [
+      {
+        "npc": "Volunteer Vallen Wok#ep21",
+        "label": "Volunteer Vallen Wok",
+        "text": "Bring 10 Wide Grass (item 1001625) to Vallen Wok.",
+        "map": "jor_mbase",
+        "x": 211,
+        "y": 280,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 114
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24019,
+    "title": "We're the Mercenaries, but...",
+    "summary": "Meet the four mercenary members",
+    "steps": [
+      {
+        "npc": "Mercenary Member#ep21_1",
+        "label": "Mercenary Member",
+        "text": "Speak with this mercenary.",
+        "map": "jor_mbase",
+        "x": 300,
+        "y": 151,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 204
+      },
+      {
+        "npc": "Mercenary Member#ep21_2",
+        "label": "Mercenary Member",
+        "text": "Speak with this mercenary.",
+        "map": "jor_mbase",
+        "x": 198,
+        "y": 251,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 205
+      },
+      {
+        "npc": "Mercenary Member#ep21_3",
+        "label": "Mercenary Member",
+        "text": "Speak with this mercenary.",
+        "map": "jor_mbase",
+        "x": 133,
+        "y": 128,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 206
+      },
+      {
+        "npc": "Mercenary Member#ep21_4",
+        "label": "Mercenary Member",
+        "text": "Speak with this mercenary.",
+        "map": "jor_mbase",
+        "x": 248,
+        "y": 103,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 207
+      },
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Report after speaking to all four members to unlock contracts.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24031,
+    "title": "Fresh Food!",
+    "summary": "Bring 10 Skipskipper Fins and 10 Thick Flesh.",
+    "steps": [
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Bring 10 Skipskipper Fins and 10 Thick Flesh. Return to Valdaris. Contracts reset at 04:00 server time.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24033,
+    "title": "Clamshell for Injuries!",
+    "summary": "Defeat 50 Scallegs in Northern Raised Land.",
+    "steps": [
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Defeat 50 Scallegs in Northern Raised Land. Return to Valdaris. Contracts reset at 04:00 server time.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24035,
+    "title": "For the Children.",
+    "summary": "Defeat 50 Velellings in Northern Raised Land.",
+    "steps": [
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Defeat 50 Velellings in Northern Raised Land. Return to Valdaris. Contracts reset at 04:00 server time.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24037,
+    "title": "Clean Finish(1)",
+    "summary": "Defeat 300 monsters on Jormungandr Temple floor 1.",
+    "steps": [
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Defeat 300 monsters on Jormungandr Temple floor 1. Return to Valdaris. Contracts reset at 04:00 server time.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  },
+  {
+    "id": 24039,
+    "title": "Clean Finish(2)",
+    "summary": "Defeat 300 monsters on Jormungandr Temple floor 2.",
+    "steps": [
+      {
+        "npc": "Valdaris#ep21_tasks",
+        "label": "Valdaris",
+        "text": "Defeat 300 monsters on Jormungandr Temple floor 2. Return to Valdaris. Contracts reset at 04:00 server time.",
+        "map": "mbase_in",
+        "x": 304,
+        "y": 123,
+        "file": "npc/custom/episode21/SideDailies.txt",
+        "line": 154
+      }
+    ],
+    "timed": false
+  }
+]

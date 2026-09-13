@@ -2221,6 +2221,10 @@ void map_deliddb(block_list *bl)
  *------------------------------------------*/
 int32 map_quit(map_session_data *sd) {
 	int32 i;
+	if (sd->bank_ui.pending && global_core->is_running()) {
+		if (session_isValid(sd->fd)) set_eof(sd->fd);
+		return 0; // Finish the committed bank save before releasing this session.
+	}
 
 	if (sd->state.keepshop == false) { // Close vending/buyingstore
 		if (sd->state.vending)

@@ -278,9 +278,10 @@ OnInit:
 
 jor_mbase,313,106,4	script	Tan#ep21_east_tent	22302,{
 	mes "[Tan]";
-	if (isbegin_quest(23243) != 1 || EP21_ResistanceStep != 4) { mes "The eastern tent is reserved for resistance planning."; close; }
+	if (isbegin_quest(23243) != 1 || EP21_ResistanceStep < 4 || EP21_ResistanceStep > 6) { mes "The eastern tent is reserved for resistance planning."; close; }
 	mes "Inspect the documents and speak with Valdaris inside. Then meet Richard and Lee in the central barracks.";
-	EP21_ResistanceStep = 5;
+	// Reentry after logout must preserve the document/Valdaris checkpoint.
+	if (EP21_ResistanceStep == 4) EP21_ResistanceStep = 5;
 	warp "mbase_in",289,124;
 	end;
 	end;

@@ -52,13 +52,27 @@ class ClientArchiveStack(unittest.TestCase):
         with self.assertRaises(ValueError):
             merge([good[:-1]])
 
+    def test_case_variants_keep_highest_priority_resource(self):
+        first = archive(b'data\\Enchant\\EnchantList.lub', b'repaired')
+        second = archive(b'data\\enchant\\enchantlist.lub', b'obsolete')
+        self.assertEqual(read(merge([first, second])),
+                         {b'data\\Enchant\\EnchantList.lub': b'repaired'})
+
+    def test_case_matching_preserves_legacy_filename_bytes(self):
+        first = archive(b'data\\\xc0\xaf\\Icon.bmp', b'first')
+        other = archive(b'data\\\xe0\xaf\\Icon.bmp', b'distinct legacy name')
+        override = archive(b'data\\\xc0\xaf\\icon.bmp', b'lower priority')
+        self.assertEqual(read(merge([first, other, override])),
+                         {b'data\\\xc0\xaf\\Icon.bmp': b'first',
+                          b'data\\\xe0\xaf\\Icon.bmp': b'distinct legacy name'})
+
     def test_base_archive_must_fit_inside_ten_slots(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root/'Ragexe.exe').touch()
             for i in range(10):
-                (root/f'patch{i}.grf').write_bytes(b'Master of Magic\0')
-            (root/'data.grf').write_bytes(b'Master of Magic\0')
+                (root/f'patch{i}.grf').write_bytes(archive(b'data\\test.lub', b'value'))
+            (root/'data.grf').write_bytes(archive(b'data\\test.lub', b'value'))
             def check(count):
                 names=[f'patch{i}.grf' for i in range(count-1)]+['data.grf']
                 (root/'DATA.INI').write_text('[Data]\n'+''.join(f'{i}={name}\n' for i,name in enumerate(names)))

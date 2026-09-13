@@ -37,7 +37,7 @@ struct s_item_reform {std::unordered_map<t_itemid,std::shared_ptr<s_item_reform_
 template<class T> struct database {std::unordered_map<t_itemid,std::shared_ptr<T>> rows;std::shared_ptr<T> find(t_itemid i){auto a=rows.find(i);return a==rows.end()?nullptr:a->second;}};
 database<s_item_reform> item_reform_db;database<item_data> item_db;
 namespace util {template<class K,class V> V umap_find(const std::unordered_map<K,V>&m,K k){auto a=m.find(k);return a==m.end()?V{}:a->second;}}
-struct map_session_data {struct {t_itemid item_reform=106250;int16 item_reform_index=1;} state;struct {struct {item items_inventory[8];}u;}inventory;item_data* inventory_data[8] = {};t_itemid itemid=106250;int16 itemindex=1;uint32 weight=0,max_weight=100000;};
+struct map_session_data {struct {t_itemid item_reform=106250;int16 item_reform_index=1;uint64_t item_reform_save_id=0;} state;struct {struct {item items_inventory[8];}u;}inventory;item_data* inventory_data[8] = {};t_itemid itemid=106250;int16 itemindex=1;uint32 weight=0,max_weight=100000;};
 constexpr int HEADER_ZC_OPEN_REFORM_UI=1,SELF=0;
 struct PACKET_ZC_OPEN_REFORM_UI{int PacketType; t_itemid ITID;};
 template<class T> void clif_send(T*,size_t,map_session_data*,int){}
@@ -52,6 +52,9 @@ void clif_delitem(map_session_data&,int,int,int){}
 void clif_additem(map_session_data*,int,int,int){}
 void clif_updatestatus(map_session_data&,int){++weight_updates;}
 void clif_item_reform_result(map_session_data&s,int,int){++results;s.state.item_reform=0;}
+bool connected=true,defer_commit=false;
+bool chrif_isconnected(){return connected;}
+void intif_reform_save(map_session_data&s,uint16 i){if(defer_commit)s.state.item_reform_save_id=1;else clif_item_reform_result(s,i,0);}
 item_data* itemdb_search(t_itemid i){return item_db.find(i).get();}
 template<class T> T cap_value(T x,T lo,T hi){return std::max(lo,std::min(x,hi));}
 '''
@@ -78,6 +81,8 @@ int main(){int cases=0;
  {auto s=fresh();item_db.rows[520055]->weight=100;auto old=s.weight;clif_parse_item_reform_start(0,&s);assert(results==1&&s.weight==old-2800-100);++cases;}
  {auto s=fresh();s.max_weight=s.weight+400;clif_parse_item_reform_start(0,&s);assert(results==1&&s.weight==s.max_weight);++cases;}
  {auto s=fresh();s.state.item_reform=0;auto old=s.weight;clif_parse_item_reform_start(0,&s);unchanged(s,old);++cases;}
+ {auto s=fresh();connected=false;auto old=s.weight;clif_parse_item_reform_start(0,&s);unchanged(s,old);connected=true;++cases;}
+ {auto s=fresh();defer_commit=true;clif_parse_item_reform_start(0,&s);assert(results==0&&deleted==6&&s.state.item_reform_save_id==1);s.state.item_reform=0;clif_item_reform_open(s,106250,1);assert(s.state.item_reform==0);s.state.item_reform=106250;clif_parse_item_reform_start(0,&s);assert(results==0&&deleted==6);defer_commit=false;++cases;}
  std::cout<<"PASS: "<<cases<<" production reform transaction cases: full inventory, missing materials/tuning, stale trigger, capacity, metadata, replay, NPC path\n";
 }
 '''

@@ -17,6 +17,20 @@ from release_checks import startup_errors, candidate_digest
 
 
 class StartupGateTest(unittest.TestCase):
+    def test_character_and_login_binary_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'map-server').write_bytes(b'map')
+            for name in ('char-server', 'login-server', 'web-server'):
+                with self.subTest(name=name):
+                    before = candidate_digest(root)
+                    binary = root / name
+                    binary.write_bytes(b'first')
+                    added = candidate_digest(root)
+                    self.assertNotEqual(before, added)
+                    binary.write_bytes(b'second')
+                    self.assertNotEqual(added, candidate_digest(root))
+
     def test_ready_plain_and_colored(self):
         for text in ("Server is 'ready' and listening", "Server is '\x1b[32mready\x1b[0m' and listening", 'Map Server is now online'):
             with self.subTest(text=text):

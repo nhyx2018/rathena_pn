@@ -1,5 +1,9 @@
 # Server navigation and episode quest guide repair
 
+The 13 September 2026 release is installed. See [the current audit](../../doc/quest_navigation_audit_20260913.md) and `validation_20260913.json` for the generator distance fixes, restored episode room routes, missing quest guides and complete verification. The September 9 details below describe the preceding release.
+
+For the current quest overlay, copy `SystemEN/EpisodeQuestNavigation.lua` to the matching client directory and append `dofile("SystemEN/EpisodeQuestNavigation.lua")` after the existing patches in `SystemEN/OngoingQuests.lub`. Keep the existing quest table and repair modules. The overlay fills 79 missing guides and corrects the two reviewed existing records; repeat loading is safe. Navigation tables must also be regenerated from the current server using the workflow below.
+
 The installed client release is retained under `server-work/navigation-repair-20260909/release` in the owner's game directory. Its seven-file ZIP is for the matching client build. Close the game before installing it, then restart the game. Back up existing files first. For another client layout, merge the navigation GRF into DATA.INI at highest priority rather than replacing the archive list.
 
 This patch supplies server-specific map, NPC, monster, travel and distance tables for both KRPRI and KRSAK navigation names. It also repairs quest-link syntax, map names and confirmed NPC coordinates; synchronizes the legacy quest loaders; and handles the navigation helper's end-of-table boundary safely.
@@ -12,7 +16,7 @@ dofile("SystemEN/QuestNavigationRepair.lua")
 
 The three small OngoingQuestInfoList loader files route older client entry points to that canonical file. Five custom records from the old fallback table are preserved. Do not install these loaders without the canonical quest file and its repair overlay. The repair appends notes with direct table assignment because the game quest environment does not reliably expose `table.insert`; native regression loading disables that function.
 
-DATA.INI supports only ten archives (slots 0–9). The current client combines this archive with the episode compatibility overlay as `client_repairs.grf`; do not add an eleventh archive and displace the base data archive.
+DATA.INI supports only ten archives (slots 0â€“9). The current client combines this archive with the episode compatibility overlay as `client_repairs.grf`; do not add an eleventh archive and displace the base data archive.
 
 The native generator now compares iterators from the correct warp vector when classifying segmented maps. Main Office travel and 52 missing literal Warper menu destinations have explicit navigation registrations. Additional existing literal script travel is registered only in an isolated generation workspace using `tools/navigation/register_script_travel.py`; those generated NPC copies are not live-server replacements. Conditions, rewards, player variables and quest access checks remain in the original scripts.
 

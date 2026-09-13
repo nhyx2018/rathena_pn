@@ -1,81 +1,54 @@
-name: Bug Report
-description: Create an Issue that details broken or unexpected behaviour
+name: Reproducible bug
+description: Capture the version, player state, reproduction, and evidence needed for a fix.
+title: "[Bug] "
 labels: ["type:bug"]
 body:
-  - type: input
-    id: hash
+  - type: textarea
+    id: version
     attributes:
-      label: rAthena Hash
-      description: |
-        Please specify the rAthena [GitHub hash](https://help.github.com/articles/autolinked-references-and-urls/#commit-shas) on which you encountered this issue.
-        One way to get your hash is to type `git rev-parse --short HEAD` on your console.
+      label: Exact installation
+      description: Commit, client date and packet version, Renewal mode, local modifications, server binary and client archive hashes (attach the release identity if available).
     validations:
       required: true
-  - type: input
-    id: date
+  - type: textarea
+    id: state
     attributes:
-      label: Client Date
-      description: Specify the client date you are using when this Issue occured.
-      placeholder: YYYY-MM-DD
+      label: Starting state
+      description: Map/NPC, class/level, party role, quest stage/cooldown, equipment, inventory slots/weight, materials, and zeny relevant to the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Exact reproduction steps
+      description: Include timing, repeated clicks, disconnects, reconnects, and whether another player must act.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual result
+      description: Include exact before/after item quantities, unique IDs, zeny, quest flags, damage, or cooldown when relevant.
     validations:
       required: true
   - type: dropdown
-    id: mode
+    id: severity
     attributes:
-      label: Server Mode
-      description: Specify the server-mode you are using when this Issue occured.
-      multiple: true
+      label: Impact
       options:
-        - Pre-Renewal
-        - Renewal
+        - Crash, item loss, duplication, or persistent data corruption
+        - Blocked quest, instance, or core combat behavior
+        - Incorrect client information, art, or navigation
+        - Other reproducible behavior
     validations:
       required: true
   - type: textarea
-    id: result
+    id: evidence
     attributes:
-      label: Result
-      description: Describe the issue that you experienced in detail.
-      placeholder: |
-        1. In this environment...
-        2. With this config...
-        3. Trigger event '...'
-        4. See error...
-    validations:
-      required: true
+      label: Evidence and reproducibility
+      description: Timestamp, attempts/successes, relevant log excerpt or replay, and whether reproduced in source checks, native fixture, server session, or rendered client. Exclude passwords and private player records.
   - type: textarea
-    id: logs
+    id: regression
     attributes:
-      label: Relevant Log Output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: Shell
-    validations:
-      required: false
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Result
-      description: Describe what you would expect to happen in detail.
-    validations:
-      required: true
-  - type: textarea
-    id: howto
-    attributes:
-      label: How to Reproduce
-      description: If you have not stated in the description of the result already, please give us a short guide how we can reproduce your issue.
-    validations:
-      required: true
-  - type: textarea
-    id: info
-    attributes:
-      label: Official Information
-      description: If possible, provide information from official servers (kRO or other sources) which prove that the result is wrong. Please take into account that iRO (especially iRO Wiki) is not always the same as kRO.
-    validations:
-      required: true
-  - type: textarea
-    id: modifications
-    attributes:
-      label: Modifications that may affect results
-      description: |
-        If you are using any modifications, especially in /src/, you must type them here.
-        Even the smallest changes can cause things to break. We need to know what you have customized.
-        This can be either configurations you changed, database values you changed, or even external source modifications.
+      label: Fix verification
+      description: Maintainer records the failing-before/passing-after test, nearby regression results, and deployment receipt here.

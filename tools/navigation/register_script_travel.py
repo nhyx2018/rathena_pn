@@ -27,7 +27,7 @@ def visit(rel):
 visit('npc/re/scripts_main.conf');visit('npc/scripts_athena.conf')
 maps={mp:[mp,mp,0,int(w),int(h)] for mp,w,h in re.findall(r'\{\s*"([^"]+)",\s*"[^"]*",\s*\d+,\s*(\d+),\s*(\d+)\}',args.maps.read_text(errors='replace'))}
 assert maps,'No maps in generator output'
-header=re.compile(r'(?m)^(?:[\w@#]+,-?\d+,-?\d+,\d+|-)\s*\tscript(?:\([^\n]*?\))?\t([^\t]+)\t[^\n]*?\{')
+header=re.compile(r'(?m)^(?:[\w@#-]+,-?\d+,-?\d+,\d+|-)\s*\tscript(?:\([^\n]*?\))?\t([^\t]+)\t[^\n]*?\{')
 def close(s,start):
  depth=0;string=False;line=False;block=False;i=start
  while i<len(s):
@@ -59,6 +59,23 @@ for rel in sorted(active):
   except ValueError as e:raise ValueError((rel,m[1],s.count("\n",0,m.start())+1)) from e
   body=s[m.end():end]
   if 'OnNaviGenerate:' in body:continue
+  if rel=='npc/re/warps/cities/dicastes.txt' and m[1]=='Elevator#main':
+   # The elevator uses a menu-selected coordinate array. Register each
+   # destination for the same duplicate group without executing player UI.
+   groups=re.findall(r'if\s*\(\.@n\s*<=\s*(\d+)\)\s*\{.*?setarray\s+\.@xy,\s*([\d,]+);',body,re.S)
+   assert [int(n) for n,xy in groups]==[4,11,13], 'Review changed elevator groups'
+   label='\n\tend;\nOnNaviGenerate:\n\t.@n = atoi(strnpcinfo(2));\n'
+   destinations=[]
+   for group,(limit,xy) in enumerate(groups):
+    values=list(map(int,xy.split(',')));assert len(values)%2==0
+    label+=f'\t{"if" if group==0 else "else if"} (.@n <= {limit}) {{\n'
+    for x,y in zip(values[::2],values[1::2]):
+     label+=f'\t\tnaviregisterwarp("Elevator > dic_in01", "dic_in01", {x}, {y});\n'
+     destinations.append(('dic_in01',x,y))
+    label+='\t}\n'
+   label+='\tend;\n'
+   edits.append((end,label));changes.append(dict(file=rel,npc=m[1],line=s.count('\n',0,m.start())+1,destinations=destinations))
+   continue
   clean=re.sub(r'/\*.*?\*/','',body,flags=re.S);clean=re.sub(r'(?m)^\s*//[^\n]*','',clean)
   destinations=[]
   for w in re.finditer(r'\bwarp\s*\(?\s*"([\w@]+)"\s*,\s*(\d+)\s*,\s*(\d+)',clean):

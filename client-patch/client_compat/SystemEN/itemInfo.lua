@@ -130,3 +130,7 @@ F_itemInfoMerge(tbl_enchantrepair, true)
 
 -- Reviewed episode resource compatibility.
 dofile("SystemEN/itemInfo_ClientCompat.lua")
+
+-- Reviewed unidentified headgear resource references.
+dofile("SystemEN/ItemResourceRepair.lua")
+dofile("SystemEN/AccountBankInfo.lua")
