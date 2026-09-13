@@ -19,7 +19,8 @@ SUITES = {
     'party': ['episode_party_progression_test.py', 'instance_access_manifest_test.py'],
     'client': ['client_archive_stack_test.py', 'client_preflight_test.py',
                'audit_druid_client_test.py', 'audit_druid_integration_test.py',
-               'legacy_quest_navigation_test.py', 'client_resource_repair_test.py'],
+               'legacy_quest_navigation_test.py', 'client_resource_repair_test.py',
+               'bank_item_metadata_test.py'],
     'recovery': ['database_backup_test.py', 'storage_sql_failure_test.py',
                  'scdata_reload_test.py', 'rodex_operation_test.py'],
     'combat': ['element_system_test.py', 'hotfix_bonus_regression.py',
@@ -113,14 +114,15 @@ def main():
             report['checks'].append(row)
             if name == 'rune_tablet_transaction_test.py':
                 row['command'] += ['--build-dir', str(output / 'native-rune')]
-            if name in ('legacy_quest_navigation_test.py', 'client_resource_repair_test.py'):
+            if name in ('legacy_quest_navigation_test.py', 'client_resource_repair_test.py',
+                        'bank_item_metadata_test.py'):
                 if not args.lua or not args.client_root:
                     row.update(status='blocked', error='Requires --lua and --client-root')
                     (output / log).write_text(row['error'] + '\n', encoding='utf-8')
                     save(report, output)
                     continue
                 row['command'] += ['--lua', str(args.lua.resolve()), '--client', str(args.client_root.resolve())]
-                if name == 'client_resource_repair_test.py':
+                if name in ('client_resource_repair_test.py', 'bank_item_metadata_test.py'):
                     row['command'].append('--require-installed')
             save(report, output)
             start = time.monotonic()

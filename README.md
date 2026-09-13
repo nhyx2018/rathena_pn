@@ -19,7 +19,7 @@ A customized [rAthena](https://github.com/rathena/rathena) server with fourth-jo
 
 1. Open the [latest release](https://github.com/patnawa/rathena_pn/releases/latest) and download **all client `.part*.rar` files** from that release.
 2. Keep every part in one folder. Extract **part 1 once** with a RAR5-compatible extractor; it reads the remaining parts automatically.
-3. Download **`PN-Bank-v2.2-20260913.zip`** from the same release. With the game closed, copy its `BankUI.dll` into the extracted `PN-Client` folder, replacing the existing DLL.
+3. Download **`PN-Bank-v2.2-ItemFix-20260913.zip`** from the same release. With the game closed, copy its `BankUI.dll` and merge its `SystemEN` folder into the extracted `PN-Client` folder, replacing the two matching files. This includes the previous v2.2 fixes and the ticket item definition.
 4. Run **`Check Client.cmd`**, adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**. The bank title bar should show **v2.2**.
 
 The client uses the LAN address above. You need access to that network to log in. When upgrading, close the game, extract into a fresh folder, and update desktop shortcuts to that folder. Keep the supplied `DATA.INI` order and bank/font DLLs together.
@@ -43,7 +43,7 @@ One bank balance is shared by **all characters on the same game login**. Open it
 
 Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**, show the current maximum buy/sell quantities, and display the bank cost or proceeds before you click.
 
-**Bank v2.2** fixes periodic refreshes that briefly disabled Buy/Sell and caused blinking. Valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges retain their visible requirement messages. Get the small v2.2 patch from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64), or read the [refresh repair and verification](doc/bank_refresh_20260913.md).
+**Bank v2.2** fixes periodic refreshes that briefly disabled Buy/Sell and caused blinking. Valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges retain their visible requirement messages. The latest **v2.2 ItemFix** patch also adds the missing **1M Zeny Ticket** definition so purchased tickets display their name, description and existing ticket artwork instead of **Unknown Item**. Get it from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64). See the [refresh verification](doc/bank_refresh_20260913.md) and [ticket repair](doc/bank_ticket_20260913.md).
 
 The server now queues the **new bank only** during connection and reconnection, suppressing the old bank's open/balance replies. This server update works with the existing v2.2 client. [Opening repair and validation](doc/bank_native_only_20260913.md).
 

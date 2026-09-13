@@ -1,0 +1,88 @@
+{
+  "feature": "1M Zeny Ticket client metadata repair",
+  "regression": {
+    "old_patch_regression_reproduced": true,
+    "exit_code": 1,
+    "expected_failure": "Missing item 12781: the client would display Unknown Item"
+  },
+  "validation": {
+    "registered_items": 26908,
+    "base_ticket_missing": true,
+    "loader_hooks": 1,
+    "ticket_registered": true,
+    "identified_and_unidentified_descriptions": true,
+    "repeat_load_safe": true,
+    "custom_resources_preserved": true,
+    "patch_sha256": "988bbc5081a54c2332c811f2fcec500067f4fffc233fd3861b87493d9582d398",
+    "installed_bytes_verified": true,
+    "resources": [
+      {
+        "category": "collection.bmp",
+        "archive": "data.grf",
+        "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c636f6c6c656374696f6e5cc4edc6f92e626d70",
+        "size": 22854,
+        "sha256": "7a067aa4702dce3e9f368cfd66b3dafac38661b82ac4d53c600e410e95383999"
+      },
+      {
+        "category": "ground.act",
+        "archive": "data.grf",
+        "path_hex": "646174615c7370726974655cbec6c0ccc5db5cc4edc6f92e616374",
+        "size": 116,
+        "sha256": "d16c79b68518efc3e57bff0a862074a0a063275836f681198a83165d5921b04f"
+      },
+      {
+        "category": "ground.spr",
+        "archive": "data.grf",
+        "path_hex": "646174615c7370726974655cbec6c0ccc5db5cc4edc6f92e737072",
+        "size": 1362,
+        "sha256": "918858163aa41a19072082360852ad6dca34cfc446d47d274a31b1844ea832d6"
+      },
+      {
+        "category": "item.bmp",
+        "archive": "data.grf",
+        "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c6974656d5cc4edc6f92e626d70",
+        "size": 1654,
+        "sha256": "ce3e31bbcc3e74f678b56736e3417e11dcb6f6e7f8ba614ea757df3e389c45b3"
+      }
+    ]
+  },
+  "installation": {
+    "installed_utc": "2026-09-13T14:40:58.411804+00:00",
+    "changed_file": "SystemEN/AccountBankInfo.lua",
+    "before_sha256": "6316b14d68ca193456ac709ddeb37a008cccaa3e476033c016645dbf293ab36b",
+    "after_sha256": "988bbc5081a54c2332c811f2fcec500067f4fffc233fd3861b87493d9582d398",
+    "preserved": {
+      "Ragexe.exe": "73f72fea2458a4c2dfd1fcc5a2a8f7684485aecd52d612a3e68a27c828b4632d",
+      "BankUI.dll": "a3f324dbe7765421cef8e38024072e93c78f0e81830232dba5f05dc8f4a18a60",
+      "FontScale.dll": "3b4769db1f63a4b3a33853e6a11340ddfa8766a569c18de3c3dc234940d6535a",
+      "FontScaleOriginal.dll": "ca4820f0a86c06cf2cea7fc4173ae3f6fd1b362cab9dcfa703c8319891510d82",
+      "BankUI.ini": "0608cf586b26096afd83dba37e228e2c8ce9981748fe8b753b39b79c8c8e5d03",
+      "FontScale.ini": "85771a4daa17144fbad5c0c6255b440ed5fbaf8a75331982b8773d8ceb7f65a1",
+      "DATA.INI": "92080c2a708ded0566685b615e003b3fe61a4455e2d8ae6812052b362855bc5e",
+      "SystemEN/itemInfo.lua": "f76d858fe7504629201ca4a94d026d4040b07f7dd03987b05878a71ce23f795f"
+    },
+    "installed_loader_test_passed": true,
+    "restart_required": true
+  },
+  "distribution": {
+    "asset": "PN-Bank-v2.2-ItemFix-20260913.zip",
+    "size": 340588,
+    "sha256": "e7b01d7211f062b68bf354a1f4f6735b71e84d3f44d58a834aabdec5609b4b1d",
+    "members": {
+      "BankUI.dll": "a3f324dbe7765421cef8e38024072e93c78f0e81830232dba5f05dc8f4a18a60",
+      "LICENSE.txt": "36b6230836cc6e38a22fc569e7b98c0b96a7e4d49b3aea51791f55dc752edede",
+      "MinHook-LICENSE.txt": "4f21f857550d7be854da6ea5f2da4e6775ca4e3fbb535e4f3d961c47d0bf3335",
+      "README.txt": "113be20652ec4eb67f0fc1a84967cc0c6e11386c116327b0422e62d9984175f5",
+      "SHA256SUMS.txt": "b9f0e0b80ab49efc566b1d300443d9bbaee34127614e766d4fc5c47743765acd",
+      "SystemEN/AccountBankInfo.lua": "988bbc5081a54c2332c811f2fcec500067f4fffc233fd3861b87493d9582d398",
+      "THIRD_PARTY.md": "342cf36fbae43984f527bbdf2ea6cde5c91d874e207ebb10ba4895dd744e716e"
+    },
+    "archive_integrity_verified": true,
+    "payload_matches_installed_files": true,
+    "dll_unchanged_from_v2_2": true
+  },
+  "launcher_preflight_passed": true,
+  "manual_inventory_render_confirmation": true,
+  "production_player_data_modified": false,
+  "owner_confirmation": "Yes, name and icon are correct"
+}
