@@ -1,142 +1,104 @@
-# rAthena PN — Renewal Server Build
+# PN Ragnarok
 
-A customized Ragnarok Online Renewal server built on rAthena, bringing together expanded class support, endgame content, equipment progression, and coordinated client compatibility work.
+**Renewal progression. Shared account banking. Connected quest navigation.**
 
-This repository contains our server source, custom databases and NPC scripts, client patch tooling, and engineering documentation. It is a customization of rAthena, not an official upstream release or a complete game-client distribution.
+A customized [rAthena](https://github.com/rathena/rathena) server with fourth-job and Druid integration, expanded equipment services, and coordinated Windows client updates. This repository contains server source, custom content, client companion sources, and validation tools.
 
-[Features](#features) · [Player services](#player-services) · [Getting started](#getting-started) · [Docker build](#docker-build) · [Client compatibility](#client-compatibility) · [Validation](#validation) · [Operations](#operations) · [Documentation](#documentation)
+**[Download the latest client](https://github.com/patnawa/rathena_pn/releases/latest)** · [Release notes](doc/releases/client-2026-09-13.md) · [Player services](#player-services) · [Server setup](#server-setup) · [Documentation](#documentation)
 
-## Project at a glance
-
-| Area | Repository baseline |
+| Current release | Baseline |
 | --- | --- |
-| Game rules | Customized Renewal with fourth-job and Druid integration |
-| Server processes | Login, character, map, and web |
-| Docker build | Alpine Linux; four server binaries compiled together |
-| PN packet baseline | `20260219`, explicitly selected by Docker configuration and CI |
-| Content configuration | Enabled NPC scripts plus tracked custom database imports |
-| Client delivery | Scoped patch sources and tools; executable and complete GRFs are separate |
-| Verification | Compilation, integrity audits, focused native tests, documented deployment checks |
+| Windows client | **13 September 2026 — Master Account & Quest Navigation** |
+| Game rules | Customized Renewal with fourth jobs and Druid → Karnos → Alitea |
+| Client/server packets | `20260219` |
+| Account bank | Companion protocol v2; signed 64-bit bank balance |
+| Connection | PN LAN server at `192.168.10.18` |
+| Server stack | Login, character, map and web processes; Docker build tooling |
 
-The client baseline is a build setting. Match the intended executable, packet
-version, client resources, and server revision for each release.
+## Play
 
-## Features
+1. Open the [latest release](https://github.com/patnawa/rathena_pn/releases/latest) and download **all client `.part*.rar` files** from that release.
+2. Keep every part in one folder. Extract **part 1 once** with a RAR5-compatible extractor; it reads the remaining parts automatically.
+3. Open the extracted `PN-Client` folder and run **`Check Client.cmd`**.
+4. Adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**.
 
-### Classes and combat
+The client uses the LAN address above. You need access to that network to log in. When upgrading, close the game, extract into a fresh folder, and update desktop shortcuts to that folder. Keep the supplied `DATA.INI` order and bank/font DLLs together.
 
-- Renewal and fourth-job systems, with custom combat and equipment integration.
-- Druid → Karnos → Alitea progression, including skills, transformations, job handling, equipment eligibility, and progression services.
-- Druid-specific equipment, crowns, acquisition routes, and shadow enchant support.
+Releases include `INSTALL.txt`, `SHA256SUMS.txt`, and a `client-manifest.json` containing the size and SHA-256 of every extracted file. Full executables and GRFs are delivered through Releases; their companion sources and patch tools are in Git.
 
-See the [Druid integration notes](doc/druid_integration.md) and [client/progression coverage](doc/druid_client_progression.md) for provenance and implementation limits. Server implementation does not imply complete client rendering or gameplay certification.
+## Master Account bank
 
-### World and progression
+One bank balance is shared by **all characters on the same game login**. Open it through the game bank button, an NPC offering banking, **`@bank`**, **Alt+B**, or **Ctrl+B** after entering the game.
 
-- Custom episode progression and access services, with targeted quest, reward, re-entry, and party-progression fixes.
-- Varmundt Biosphere services and Depth 2 access, plus Zero Cell monster and reward definitions.
-- Grademk equipment services, healer-related fixes, and corrected travel entry points.
-- Reputation initialization on login and map changes, with supporting deployment notes.
+<p align="center">
+  <img src="doc/images/bank-preview.png" width="520" alt="Master Account bank with deposit and withdrawal controls, 17Carat Diamond and 1M Zeny Ticket exchanges, and quantity limits">
+</p>
 
-### Equipment and enchantments
+*Native Windows panel preview with sample balances and inventory; not a captured gameplay session.*
 
-- Native enchant-window integration for supported equipment groups.
-- Grade Workshop services for equipment families including Constellation, seasonal gear, Frontier, Time Dimensions, and Biosphere.
-- Ordinary and guaranteed upgrade handling, with recipe and client metadata audits.
-- Inventory-preserving enchant changes and targeted checks for eligibility, material costs, capacity, and stale item state.
+| Balance | Capacity |
+| --- | ---: |
+| Shared account bank | **9,223,372,036,854,775,807 zeny** |
+| Character wallet | **2,147,483,647 zeny** |
 
-### Engineering and operations
+Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**, show the current maximum buy/sell quantities, and display the bank cost or proceeds before you click.
 
-- Docker build and runtime definitions for database and server services.
-- Scoped client patch generators and installers with compatibility documentation.
-- Source-level audits, native regression tests, and isolated startup validation tooling.
-- Deployment records covering verification evidence, rollback preparation, and remaining checks.
+| Item | Buy one | Sell one |
+| --- | ---: | ---: |
+| 17Carat Diamond — item `6024` | 501,000,000z | 499,000,000z |
+| 1M Zeny Ticket — item `12781` | 1,002,000z | 998,000z |
+
+The ticket quantity counts **inventory items**. Buy requires bank funds and inventory capacity; Sell requires eligible items on hand and room in the bank balance. Favorite, bound, rental, equipped and modified items are excluded from sale. Zero or invalid quantities disable the controls.
+
+Transactions use server-checked integer arithmetic and a coordinated SQL commit for wallet, inventory, bank registry and journal. The 64-bit update preserves balances through character changes and normal saves. See the [bank guide](client-patch/account_bank/README.md), [transaction verification](doc/account_bank_64bit_20260913.md), and [Buy/Sell repair](doc/bank_controls_20260913.md).
+
+<details>
+<summary>Preview at maximum bank and wallet balances</summary>
+
+<p align="center">
+  <img src="doc/images/bank-preview-max.png" width="520" alt="Bank panel displaying the exact 64-bit bank maximum and original character wallet maximum">
+</p>
+
+Sample values rendered by the same native panel. Deposits, withdrawals and item sales are unavailable when their destination balance is full; valid purchases remain available.
+
+</details>
+
+## World and progression
+
+- **Quest navigation:** audited across all 16 loaded episode groups, **13.1 through 21**, with metadata for all **1,849 referenced episode quest IDs**. Repairs include long routes, map boundaries, 71 doorway/stair links, 48 elevator links, and 79 Episode 21 quest-book guides.
+- **Classes and combat:** Renewal and fourth jobs, plus Druid → Karnos → Alitea skills, transformations, equipment eligibility and progression services.
+- **Equipment:** native grading and supported enchant windows, Grade Workshop services, Druid gear and shadow enchants, and inventory-preserving upgrade fixes.
+- **World services:** Main Office, Varmundt Biosphere and Depth 2 access, Zero Cell definitions, reputation initialization, and targeted episode reentry and reward repairs.
+- **Client experience:** English Setup and interface repairs, Rune resources, launcher preflight, and coordinated item, map and navigation patches.
+- **Connection recovery:** server links resolve Docker hostnames again during reconnect, correcting stale-address login failures.
+
+The [navigation audit](doc/quest_navigation_audit_20260913.md) documents route and metadata coverage. Quest, level, party and instance access conditions still apply. Feature reports distinguish automated checks from manual gameplay coverage.
 
 ## Player services
 
-Locations below come from the enabled custom NPC scripts. GM accounts can use
-`@warp <map> <x> <y>` when permitted.
-
-| Service | Location | Function |
+| Service | Open or visit | Purpose |
 | --- | --- | --- |
-| Main Office | `@office` / `pn_office,100,40` | Searchable directory across 52 lobby, training and fashion desks |
-| Player settings | `@settings` / Office lobby | Save character or game-account login preferences with immediate application |
-| Loot presets | `@alc save 1 Farming`, `@als 1` | Ten named game-account sets for autoloot rate, included items and types |
-| Kill counter | `@kc 1002 1`, `@kc status` | Five persistent character slots; `@kc reset [slot]` clears them |
-| Grade Enhancer | Office training floor / `grademk,34,184` | Native grading and Etel exchange with existing costs and risk options |
-| Rune Tablet | Office training floor and `grademk,46,178` | Account collection/rewards; character tablets and enhancement |
-| Battle statistics | `@battlestats` / `@bs`, `@battlestats2` / `@bs2` | Offensive and defensive snapshots with detailed, paginated modifiers |
-| PN Services | `izlude,140,146` and `grademk,46,180` | Damage lab, access diagnostics, navigation |
-| Skill Supplies | `izlude,137,150` and `grademk,42,180` | Consumables required to use skills |
-| Reset Girl | `prontera,150,193` | Skills: 5,000 zeny; stats: 5,000 zeny; both: 9,000 zeny |
-| Wise Old Woman — Card Remover | `prt_in,28,73` | Remove cards from equipped items |
-| Druid Mentor | `prontera,153,193` | Custom Druid → Karnos → Alitea progression |
+| Main Office | `@office` · `pn_office,100,40` | Searchable directory across 52 lobby, training and fashion desks |
+| Account bank | `@bank` · Alt+B · Ctrl+B | Shared savings, wallet transfers, diamond and ticket exchanges |
+| Saved settings | `@settings` | Character overrides and game-account login preferences |
+| Loot presets | `@alc save 1 Farming` · `@als 1` | Ten named game-account autoloot sets |
+| Kill counter | `@kc 1002 1` · `@kc status` | Five persistent character tracking slots |
+| Grade Enhancer | Office training floor · `grademk,34,184` | Native grading and Etel exchange |
+| Rune Tablet | Office training floor · `grademk,46,178` | Account collection and character tablet enhancement |
+| Battle statistics | `@bs` · `@bs2` | Offensive and defensive snapshots |
+| PN Services | `izlude,140,146` · `grademk,46,180` | Damage lab, access diagnostics and navigation |
+| Skill Supplies | `izlude,137,150` · `grademk,42,180` | Skill consumables |
+| Reset Girl | `prontera,150,193` | Skill and stat resets |
+| Card Remover | `prt_in,28,73` | Card removal; costs and risks are stated in the NPC dialogue |
+| Druid Mentor | `prontera,153,193` | Druid, Karnos and Alitea progression |
 
-PN Services and Skill Supplies also have placements on the configured Izlude
-variants. The reset and card removal NPCs are enabled through
-[`npc/scripts_custom.conf`](npc/scripts_custom.conf).
+Use `@commands` and `@help <command>` for in-game discovery. See the [command guide](doc/player_commands_reference_audit_20260908.md), [Main Office guide](doc/main_office.md), and [battle-stat reference](doc/pn_battlestats.md). The damage lab uses an intentional Poring training dummy; its [measurement guide](doc/quality_services.md) explains the results and limits.
 
-The [Main Office guide](doc/main_office.md) covers its three maps, client patch,
-service behavior and rollout. Rune Tablet uses NPC menus with account-shared
-piece unlocks and one active character tablet; see
-[transactions and persistence](doc/rune_tablet_transactions.md) and
-[bonus implementation](doc/pn_rune_tablet_bonus_notes.md).
-Use `@bs help`, `@bs race`, `@bs casting` or `@bs2 element` to inspect a build;
-the [battle-stat guide](doc/pn_battlestats.md) explains the values and limits.
+## Server setup
 
-**Card removal terms:** 200,000 zeny plus 25,000 per card, one Star Crumb, and one
-Yellow Gemstone. Current failure outcomes can destroy cards, equipment, or both.
-Read the confirmation dialogue before proceeding.
+Start with the [Docker guide](tools/docker/README.md), [configuration reference](conf/readme.md), and [database notes](sql-files/README.md). Prepare a separate development database, supply local credentials and advertised addresses, and select the packet version before compiling.
 
-**Damage lab:** the Poring is an intentional training dummy. The service creates
-a private 30-minute instance and measures approximately 60 seconds of HP loss.
-Configure target properties and repeat comparable runs; the normal-class dummy
-does not reproduce boss AI or boss-only effects. See [PN Services](doc/quality_services.md)
-for measurement limits and [the instance crash repair](doc/pn_lab_crash_fix_20260907.md)
-for lifecycle validation.
-
-The [player command guide](doc/player_commands_reference_audit_20260908.md) lists
-available commands, exact aliases and compatibility limits. Use `@commands` and
-`@help <command>` for native command discovery. Saved Settings cover autoloot,
-EXP/zeny messages, skill-delay messages and invitation rejection. Character
-overrides take priority over game-account preferences.
-
-See the [element audit](doc/element_system_audit_20260908.md),
-[refinement audit](doc/refine_system_audit_20260908.md) and
-[grading audit](doc/grade_system_audit_20260908.md) for formulas, confirmed fixes
-and test boundaries. Native refine/grade windows now require unequipped items
-that are also removed from equipment-switch registration.
-
-## Repository layout
-
-| Path | Purpose |
-| --- | --- |
-| [src/](src/) | Server engine, networking, combat, and scripting |
-| [db/import/](db/import/) | Custom database definitions and overrides |
-| [npc/custom/](npc/custom/) | Custom NPCs, services, and progression scripts |
-| [conf/](conf/) | Server configuration and import structure |
-| [sql-files/](sql-files/) | Database schemas and upgrade scripts |
-| [client-patch/](client-patch/) | Client compatibility patches and tooling |
-| [tools/docker/](tools/docker/) | Container definitions and build helpers |
-| [tools/ci/](tools/ci/) | Audits, regression tests, and validation utilities |
-| [doc/](doc/) | Technical references and deployment records |
-
-## Getting started
-
-Treat a fresh checkout as a development environment first. The supplied Docker configuration is a starting point, **not a hardened production deployment**.
-
-1. Review the [Docker setup](tools/docker/README.md), [configuration guide](conf/readme.md), and [database notes](sql-files/README.md).
-2. Prepare an isolated database and local configuration. Replace example credentials, set correct advertised addresses, and restrict database access before exposing services.
-3. Select the client executable and matching packet version before compiling. Do not assume the sample Docker packet version matches the deployed client.
-4. Build compatible login, character, and map binaries together. Shared structure changes require coordinated rebuilds; mixing older character binaries with newer map binaries can prevent login.
-5. Apply the required client patches and run relevant audits and isolated startup checks before admitting players.
-
-Use the [login/character compatibility repair](doc/login_character_abi_repair_20260907.md) and [Druid deployment requirements](doc/druid_integration.md#deployment-requirement) as references when changing shared server structures.
-
-## Docker build
-
-Use a separate development checkout: compilation writes binaries into the mounted
-repository. From the repository root in Bash or WSL:
+From a development checkout in Bash or WSL:
 
 ```sh
 docker build -t rathena-pn-build:local tools/docker
@@ -147,101 +109,56 @@ docker run --rm --network none \
   rathena-pn-build:local sh tools/docker/builder.sh
 ```
 
-This compiles `login-server`, `char-server`, `map-server`, and `web-server` without
-starting services or accessing a database. Building the image alone installs the
-toolchain. Linux outputs require the matching Alpine runtime.
+This compiles all four server binaries into the mounted checkout. The Docker guide includes PowerShell examples, Compose startup and database initialization. The [PN build workflow](.github/workflows/build_servers_docker.yml) retains binaries and checksums as CI artifacts.
 
-See the [Docker guide](tools/docker/README.md) for PowerShell commands, Compose
-startup, packet overrides, database initialization, and troubleshooting.
-The [PN Docker workflow](.github/workflows/build_servers_docker.yml) compiles
-relevant changes pushed to `main` and retains binaries with checksums as CI
-artifacts; it does not deploy them.
+Deploy matching server binaries and client resources together. Follow the [bank installation guide](client-patch/account_bank/README.md) for migrations and companion files. Retain database backups and matching prior binaries; review upgrade SQL individually. Once bank balances exceed the old limit, restoring a 32-bit bank binary would truncate them.
 
-## Operations
-
-### Release checklist
-
-- Back up the database, configuration, and previous binaries before changes.
-- Keep credentials, account data, and private deployment details out of commits.
-- Review schema upgrades individually; do not re-import initialization SQL into an existing live database.
-- Validate in an isolated candidate environment, then coordinate service restarts during maintenance.
-- Inspect logs and test login, character loading, map travel, and changed gameplay after deployment. A running container alone does not establish a successful release.
-
-Record the source commit, configure flags, binary checksums, script/DB changes,
-and client archive order for each release. Restore-test database backups in
-isolation and retain a matching previous set of binaries for rollback.
-
-For script changes, preserve live overrides and apply a reviewed file delta.
-Schedule reloads or restarts with online players and active instances in mind.
-Shared engine changes require matching rebuilt server binaries. SQL migrations
-need a separate backup and recovery procedure.
-
-### Common operational checks
-
-| Symptom | First checks |
+| Path | Contents |
 | --- | --- |
-| Character selection disconnects | Matching login/char/map builds, packet version, advertised addresses |
-| Missing custom NPC | Enabled script, live file, map name, fresh startup errors |
-| Poring in the damage lab | Expected appearance; start measurement through the service |
-| Missing map or sprite | Active GRF order, map assets, sprite mappings, compatibility patch |
-| Missing enchant options | Client metadata, target IDs, server import, supported packet path |
-| Unexpected reward result | Quest state, capacity, item identity, relevant script logs |
-
-## Client compatibility
-
-Server data and client resources must be released as a matched set. Adding an item, job, map, or enchant recipe on the server does not automatically supply its client metadata, sprites, or interface support.
-
-Start with the relevant package:
-
-- [Druid item patch](client-patch/druid_items/README.md) and [compatibility report](doc/druid_item_compatibility.md)
-- [Chapter 2 native enchant integration](client-patch/chapter2_native/README.md)
-- [Biosphere patch](client-patch/biosphere/README.md)
-- [Zero Cell patch](client-patch/zero_cell/README.md)
-- [Enchant target metadata](client-patch/enchant_target_metadata/README.md)
-
-Follow each package's prerequisites and installation instructions. Some tools generate review artifacts only; generation is not installation. Preserve the intended GRF load order and test the actual client executable. External reference archives are not automatically authorized for redistribution.
+| [src/](src/) | Engine, networking, combat and scripting |
+| [db/import/](db/import/) · [npc/custom/](npc/custom/) | PN definitions, NPCs and progression |
+| [conf/](conf/) · [sql-files/](sql-files/) | Configuration, schemas and migrations |
+| [client-patch/](client-patch/) | Companion sources, patches and installers |
+| [tools/docker/](tools/docker/) · [tools/ci/](tools/ci/) | Builds, audits and regression tools |
+| [doc/](doc/) | Guides, investigation reports and deployment evidence |
 
 ## Validation
 
-Run checks from the repository root. Python audits may require PyYAML; native tests and client-resource tests have additional dependencies documented alongside their runners.
+The current bank baseline includes **500,000 randomized arithmetic cases**, **49 SQL checks**, **14 isolated login/character/map scenarios**, and **38 release checks**. The Buy/Sell repair adds real Windows control clicks with a recording transport, alongside shipping DLL-loader, font, transport and rendering checks.
 
-For example, run the strict episode integrity audit through PowerShell:
+Navigation verification combines native route distances with client collision data across the loaded episode groups. Distribution checks test the multipart archive, compare every extracted file to its SHA-256 manifest, and run launcher preflight on the extracted client.
+
+Run relevant checks from the repository root:
+
+```sh
+python3 tools/ci/bank_core_test.py
+python3 tools/ci/bank_service_test.py
+```
 
 ```powershell
 powershell -NoProfile -File tools/audit_episode_integrity.ps1 -StrictContent
 ```
 
-Choose regression tests for the area being changed rather than treating one audit as a full release gate. See [Druid reproducible checks](doc/druid_integration.md#reproducible-checks), [native script VM tests](tools/ci/native_script_vm_README.md), and [enchant protocol evidence](doc/enchant_upgrade_protocol.md).
-
-**Verification scope:** source checks and clean startup logs are not substitutes for end-to-end playthroughs. Episode encounters, class behavior, reward flows, and client interactions have separate coverage limits. Consult the dated [episode audit status](doc/episode_audit_status.md) and feature-specific reports for evidence; historical deployment records are not a live health dashboard.
+Native tests need the documented compiler/runtime dependencies. Dated reports record tested scenarios and limitations; they are not live health indicators or a manual playthrough of every quest and client interaction.
 
 ## Documentation
 
-- [2026-09-08 service release, validation and rollback](doc/pn_services_release_20260908.md)
-- [Docker build and development](tools/docker/README.md)
-- [PN Services and damage lab](doc/quality_services.md)
-- [Main Office and client installation](doc/main_office.md)
-- [Battle-stat commands](doc/pn_battlestats.md)
-- [Rune Tablet transactions](doc/rune_tablet_transactions.md) and [bonuses](doc/pn_rune_tablet_bonus_notes.md)
-- [Chapter 2 reference audit](doc/chapter2_reference_audit_20260908.md) and [progression repairs](doc/chapter2_runtime_audit_20260908.md)
-- [Shadow Gear coverage audit](doc/shadow_gear_reference_audit_20260908.md)
-- [Reset and card removal activation](doc/reset_services_deployment_20260908.md)
-- [Grademk equipment services](doc/grademk_equipment_service_audit.md)
-- [Druid gear and enchants](doc/druid_gear_enchants_audit.md)
-- [Chapter 2 client coverage](doc/chapter2_native_client_coverage.md)
-- [Reputation, Constellation travel, and Depth 2 repairs](doc/reputation_login_and_go55_repair_20260907.md)
-- [Script commands](doc/script_commands.txt), [item bonuses](doc/item_bonus.txt), and [GM commands](doc/atcommands.txt)
+| Topic | Guides and evidence |
+| --- | --- |
+| Current client | [Release notes](doc/releases/client-2026-09-13.md) · [Bank controls](doc/bank_controls_20260913.md) |
+| Banking | [Build/install](client-patch/account_bank/README.md) · [64-bit persistence](doc/account_bank_64bit_20260913.md) |
+| Navigation | [Episode route audit](doc/quest_navigation_audit_20260913.md) · [Episode status](doc/episode_audit_status.md) |
+| Login | [Docker reconnect fix](doc/login_outage_20260913.md) · [Binary compatibility](doc/login_character_abi_repair_20260907.md) |
+| Druid | [Integration](doc/druid_integration.md) · [Client progression](doc/druid_client_progression.md) · [Gear and enchants](doc/druid_gear_enchants_audit.md) |
+| Equipment | [Grademk](doc/grademk_equipment_service_audit.md) · [Refinement](doc/refine_system_audit_20260908.md) · [Grading](doc/grade_system_audit_20260908.md) |
+| Rune Tablet | [Transactions](doc/rune_tablet_transactions.md) · [Bonuses](doc/pn_rune_tablet_bonus_notes.md) |
+| Client patches | [Chapter 2](client-patch/chapter2_native/README.md) · [Biosphere](client-patch/biosphere/README.md) · [Zero Cell](client-patch/zero_cell/README.md) |
+| Development | [Native script tests](tools/ci/native_script_vm_README.md) · [Script commands](doc/script_commands.txt) · [Item bonuses](doc/item_bonus.txt) |
 
-## Contributing
+## Contributing and license
 
-Keep changes scoped and preserve unrelated customizations. Include affected server definitions, client requirements, regression checks, and deployment or rollback notes where applicable. Report what was tested and what still requires in-game verification. Follow the [contribution guidelines](.github/CONTRIBUTING.md) for upstream conventions.
+Keep changes scoped and include affected server definitions, client requirements, validation results and deployment notes. Follow the [contribution guidelines](.github/CONTRIBUTING.md). Report defects with the release version and relevant logs, excluding account credentials and personal data.
 
-## License
+Based on rAthena, with credit to the **rAthena Development Team**, **eAthena**, and their contributors. Existing copyright and attribution notices are retained.
 
-Based on rAthena, with credit to the rAthena Development Team, the eAthena project, and their contributors. Original copyright and attribution notices are retained in the source.
-
-The server source is distributed under the [GNU General Public License v3.0](LICENSE). Third-party components retain their respective licenses. This server-source license does not grant rights to redistribute Ragnarok Online client assets or third-party GRF archives.
-
-## PN script signatures
-
-Project scripts include PN contribution, license and source notices. See [the source signature guide](doc/script_licensing.md) and [client companion notices](client-patch/SOURCE-NOTICES.md).
+Server source is distributed under the [GNU General Public License v3.0](LICENSE); third-party components retain their respective licenses. This license does not grant rights to Ragnarok Online client assets or third-party GRFs. See the [source signature guide](doc/script_licensing.md) and [client companion notices](client-patch/SOURCE-NOTICES.md).

@@ -104,10 +104,12 @@ void paint(HDC dc) {
     }
     for(int row=1;row<3;++row) {
         int y=row==1?191:356;
-        text(dc,17,y,290,row==1?L"17Carat Diamond":L"1M Zeny");
+        text(dc,17,y,290,row==1?L"17Carat Diamond":L"1M Zeny Ticket");
         text(dc,17,y+21,300,L"On Hand  "+commas(state.counts[row-1]));
         text(dc,345,y,70,L"Buy price"); text(dc,412,y,90,commas(state.buy[row-1],true),true);
         text(dc,345,y+18,70,L"Sell price"); text(dc,412,y+18,90,commas(state.sell[row-1],true),true);
+        text(dc,60,field_y[row]-19,347,L"Quantity  (buy up to "+commas(state.max_buy[row-1])+
+            L"; sell up to "+commas(state.max_sell[row-1])+L")");
         int64_t count=amount(row);
         bool safe=count>=0 && count<=INT64_MAX/state.buy[row-1];
         int py=row==1?307:472;
@@ -120,25 +122,35 @@ void paint(HDC dc) {
     text(dc,10,520,500,L"Shared by all characters on this game login.");
     text(dc,10,538,500,L"On-hand limit: "+commas(state.wallet_limit)+L"z");
     text(dc,10,556,500,L"Favorite, bound, modified and rental items cannot be sold.");
-    SetTextColor(dc,RGB(0,0,0)); text(dc,10,610,498,status);
+    auto guidance=status;
+    if(verified && !busy && state.result==pn_bank::Ok) {
+        guidance=L"Buy uses bank zeny; Sell uses eligible items on hand.";
+        for(int row=1;row<3;++row)
+            if(GetFocus()==inputs[row] && amount(row)<=0)
+                guidance=L"Enter an item quantity greater than zero to buy or sell.";
+    }
+    SetTextColor(dc,RGB(0,0,0)); text(dc,10,610,498,guidance);
 }
 HWND button(int id,const wchar_t* label,int x,int y,int width,int height=21) {
     HWND child=CreateWindowW(L"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW,
         x,y,width,height,panel,reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)),instance,nullptr);
     SendMessage(child,WM_SETFONT,reinterpret_cast<WPARAM>(font),TRUE); return child;
 }
+bool actions_ready() {
+    return verified && !busy && state.result!=pn_bank::Saving && state.result!=pn_bank::Unavailable;
+}
 void update() {
     for(int i=0;i<6;++i) {
         int row=i/2; uint32_t action=i+1;
         auto plan=pn_bank::plan(state,action,amount(row));
-        EnableWindow(actions[i],verified && !busy && state.result!=pn_bank::Saving && state.result!=pn_bank::Unavailable && plan.result==pn_bank::Ok);
+        EnableWindow(actions[i],actions_ready() && plan.result==pn_bank::Ok);
     }
     EnableWindow(GetDlgItem(panel,refresh_id),!busy);
     InvalidateRect(panel,nullptr,FALSE);
 }
 void submit(uint32_t action,int64_t value=0) {
     if(busy || preview) return;
-    if(action!=pn_bank::Refresh && (!verified || state.result==pn_bank::Saving)) return;
+    if(action!=pn_bank::Refresh && !actions_ready()) return;
     if(action!=pn_bank::Refresh && pn_bank::plan(state,action,value).result!=pn_bank::Ok) return;
     uint64_t id=action==pn_bank::Refresh?0:++sequence;
     busy=bank_submit(panel,state,action,value,id);
@@ -180,7 +192,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         white=CreateSolidBrush(RGB(255,255,255));
         button(title_close,L"x",490,3,22,21);
         for(int row=0;row<3;++row) {
-            inputs[row]=CreateWindowExW(WS_EX_CLIENTEDGE,L"EDIT",L"0",WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_NUMBER|ES_AUTOHSCROLL,
+            inputs[row]=CreateWindowExW(WS_EX_CLIENTEDGE,L"EDIT",row==0?L"0":L"1",WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_NUMBER|ES_AUTOHSCROLL,
                 60,field_y[row],320,21,window,reinterpret_cast<HMENU>(edit_ids[row]),instance,nullptr);
             SendMessage(inputs[row],WM_SETFONT,reinterpret_cast<WPARAM>(font),TRUE); SendMessage(inputs[row],EM_SETLIMITTEXT,19,0);
             button(300+row,L"x",387,field_y[row],20);
@@ -242,6 +254,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     case BANK_SESSION:
         if(!bank_current_generation(static_cast<LONG>(w),false)) return 0;
         busy=false; verified=false; state=pn_bank::Reply{}; sequence=0;
+        for(int row=0;row<3;++row) set_amount(row,row==0?0:1);
         status=L"Log in to a character to use the bank.";
         if(bank_authenticated()) submit(pn_bank::Refresh);
         update(); return 0;
@@ -304,14 +317,16 @@ int bank_window_main(HINSTANCE module,bool render) {
     if(preview) {
         state.result=pn_bank::Ok; state.bank=1834023229; state.wallet=0;
         state.max_deposit=0; state.max_withdraw=state.bank;
-        for(int i=0;i<2;++i) state.max_buy[i]=state.bank/state.buy[i];
+        state.counts[0]=1;state.counts[1]=10;
+        for(int i=0;i<2;++i) { state.max_buy[i]=state.bank/state.buy[i]; state.max_sell[i]=state.counts[i]; }
         verified=true; status=L"Choose a banking action.";
         set_amount(0,INT64_MAX); assert(!IsWindowEnabled(actions[0]) && !IsWindowEnabled(actions[1]));
         SendMessage(panel,WM_COMMAND,500,0); assert(amount(0)==pn_bank::wallet_limit);
         set_amount(1,3); assert(IsWindowEnabled(actions[2]));
         set_amount(1,4); assert(!IsWindowEnabled(actions[2]));
-        set_amount(0,0); set_amount(1,0); update(); save_preview();
+        set_amount(0,0); set_amount(1,1); set_amount(2,1); update(); save_preview();
         state.bank=INT64_MAX;state.wallet=INT32_MAX;state.max_deposit=state.max_withdraw=0;
+        for(int i=0;i<2;++i) { state.max_buy[i]=30000; state.max_sell[i]=0; }
         set_amount(0,1);assert(!IsWindowEnabled(actions[0]) && !IsWindowEnabled(actions[1]));
         save_preview("bank-preview-max.bmp");
         DestroyWindow(panel); return 0;
@@ -325,7 +340,7 @@ int bank_window_main(HINSTANCE module,bool render) {
 }
 #ifdef PN_BANK_PREVIEW
 int main() { return bank_window_main(GetModuleHandle(nullptr),true); }
-#else
+#elif !defined(PN_BANK_UI_TEST)
 static DWORD WINAPI bank_start(void* module) { return bank_window_main(static_cast<HINSTANCE>(module),false); }
 BOOL WINAPI DllMain(HINSTANCE module,DWORD reason,void*) {
     if(reason==DLL_PROCESS_ATTACH) {
