@@ -21,6 +21,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = (
+    'interserver_reconnect_test.py',
     'bank_core_test.py',
     'bank_service_test.py',
     'release_checks_test.py',

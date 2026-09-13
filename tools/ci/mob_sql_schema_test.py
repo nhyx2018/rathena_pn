@@ -37,7 +37,8 @@ class MonsterSqlSchema(unittest.TestCase):
     def test_actual_exported_values_fit_templates_and_checked_in_schemas(self):
         checked = 0
         for table, source in TABLE_SOURCES.items():
-            records = yaml.load((ROOT/source).read_text(encoding='utf-8-sig'), Loader=yaml.CSafeLoader)['Body']
+            records = yaml.load((ROOT/source).read_text(encoding='utf-8-sig'),
+                                Loader=getattr(yaml, 'CSafeLoader', yaml.SafeLoader))['Body']
             for directory in ('doc/yaml/sql', 'sql-files'):
                 width = attack2_width((ROOT/directory/(table+'.sql')).read_text())
                 for record in records or []:

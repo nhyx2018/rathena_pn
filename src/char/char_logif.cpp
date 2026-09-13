@@ -809,6 +809,17 @@ TIMER_FUNC(chlogif_check_connect_logserver){
 	if (chlogif_isconnected())
 		return 0;
 
+	// Docker and DNS endpoints can change while the upstream is offline.
+	// IP sync packets cannot refresh this address until we reconnect.
+	if (charserv_config.login_ip_str[0] != '\0') {
+		uint32 new_ip = host2ip(charserv_config.login_ip_str);
+		if (new_ip == 0) {
+			ShowWarning("Unable to resolve login-server '%s'; retrying later.\n", charserv_config.login_ip_str);
+			return 0;
+		}
+		charserv_config.login_ip = new_ip;
+	}
+
 	ShowInfo("Attempt to connect to login-server...\n");
 	login_fd = make_connection(charserv_config.login_ip, charserv_config.login_port, false,10);
 	if (login_fd == -1)

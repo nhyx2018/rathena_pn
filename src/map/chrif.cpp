@@ -1864,6 +1864,16 @@ static TIMER_FUNC(check_connect_char_server){
 		}
 
 		chrif_state = 0;
+		// Refresh the hostname on every reconnect: the char container may
+		// now have a different address, and IP sync requires a working link.
+		if (char_ip_str[0] != '\0') {
+			uint32 new_ip = host2ip(char_ip_str);
+			if (new_ip == 0) {
+				ShowWarning("Unable to resolve char-server '%s'; retrying later.\n", char_ip_str);
+				return 0;
+			}
+			char_ip = new_ip;
+		}
 		char_fd = make_connection(char_ip, char_port,false,10);
 
 		if (char_fd == -1)//Attempt to connect later. [Skotlex]

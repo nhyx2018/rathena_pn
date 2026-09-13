@@ -100,6 +100,17 @@ Set advertised character/map addresses to an address reachable by the game clien
 Docker names such as `db` and `char` are internal service addresses. Loopback is
 appropriate only when the game client connects on the same host.
 
+Character-to-login and map-to-character reconnects resolve the configured service
+hostname again on each retry. Docker can assign a different address after a stop
+and start. A temporary DNS failure delays the retry instead of sending the
+interserver handshake to the previous address.
+
+After a restart, verify the application handshakes in fresh logs: login must
+accept the character server, character must report `Connected to login-server`,
+and map must report `Map Server is now online`. A running container and an open
+port do not prove these links are working. Start in `login`, `char`, `map` order,
+then verify a client can authenticate and receive its character list.
+
 The build produces `web-server`, but this Compose file does not define a web
 service, FluxCP, or a reverse proxy. Configure those separately when needed.
 
@@ -136,6 +147,7 @@ and changed instance/reward flows.
 | Builder skips compilation | Set `BUILDER_FORCE_BUILD=1` |
 | Compiler is killed | Reduce `BUILD_JOBS`; inspect host and Docker memory limits |
 | Character selection disconnects | Check packet version and matching login/char/map builds |
+| Login says server closed while containers are running | Check the character-to-login handshake and current Docker DNS address; rebuild char/map if they keep retrying an old address |
 | Port or container name already used | Inspect existing services before starting Compose |
 | Missing NPC | Check enabled imports, deployed scripts, map, and startup errors |
 | Client cannot enter a map | Check advertised address, packet version, map cache, and client assets |
