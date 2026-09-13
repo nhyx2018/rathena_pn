@@ -45,6 +45,8 @@ Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**,
 
 **Bank v2.2** fixes periodic refreshes that briefly disabled Buy/Sell and caused blinking. Valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges retain their visible requirement messages. Get the small v2.2 patch from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64), or read the [refresh repair and verification](doc/bank_refresh_20260913.md).
 
+The server now queues the **new bank only** during connection and reconnection, suppressing the old bank's open/balance replies. This server update works with the existing v2.2 client. [Opening repair and validation](doc/bank_native_only_20260913.md).
+
 | Item | Buy one | Sell one |
 | --- | ---: | ---: |
 | 17Carat Diamond — item `6024` | 501,000,000z | 499,000,000z |

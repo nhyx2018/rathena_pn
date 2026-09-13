@@ -128,16 +128,31 @@ def main():
     assert sql('SELECT DATABASE()')=='bank_runtime'
     cases=[];c=Client(attach=False)
     c.world.sendall(struct.pack('<HI',0x9b6,AID));wire=drain(c.world)
-    assert struct.pack('<HH',0x9b7,0) in wire
+    assert struct.pack('<HH',0x9b9,0) in wire
+    assert struct.pack('<HH',0x9b7,0) not in wire and struct.pack('<H',0x9a6) not in wire
+    c.world.sendall(struct.pack('<HI',0x9ab,AID));wire=drain(c.world)
+    assert struct.pack('<HH',0x9b9,0) in wire
+    assert struct.pack('<HH',0x9b7,0) not in wire and struct.pack('<H',0x9a6) not in wire
+    # A close emitted for the suppressed stock panel must not erase the
+    # pending custom open before the companion finishes attaching.
+    c.world.sendall(struct.pack('<HI',0x9b8,AID));drain(c.world)
     c.attach();assert c.receive()['flags']==1
     assert struct.pack('<HH',0x9b9,0) in drain(c.world)
-    cases.append('an early stock window is replaced when the companion authenticates')
+    cases.append('early bank open and balance check emit no stock open/balance; legacy close preserves the queued custom open')
+    c.companion.close();drain(c.world,.3)
+    c.world.sendall(struct.pack('<HI',0x9b6,AID));wire=drain(c.world)
+    assert struct.pack('<HH',0x9b9,0) in wire
+    assert struct.pack('<HH',0x9b7,0) not in wire and struct.pack('<H',0x9a6) not in wire
+    c.attach();assert c.receive()['flags']==1
+    drain(c.world)
+    cases.append('companion reconnection keeps native banking suppressed and reopens only the authenticated custom panel')
     assert compact(c.state)==dict(bank=1000000000,wallet=1000000,diamonds=1,notes=10),c.state
     # Real game bank button and chat command take the server-driven custom path.
     c.world.sendall(struct.pack('<HI',0x9b6,AID))
     opened=c.receive();assert opened['flags']==1 and opened['result']==0 and compact(opened)==compact(c.state)
-    wire=drain(c.world);assert struct.pack('<HH',0x9b7,0) not in wire
+    wire=drain(c.world);assert struct.pack('<HH',0x9b7,0) not in wire and struct.pack('<H',0x9a6) not in wire
     c.world.sendall(struct.pack('<HI',0x9ab,AID));assert c.receive()['flags']==1
+    wire=drain(c.world);assert struct.pack('<HH',0x9b7,0) not in wire and struct.pack('<H',0x9a6) not in wire
     time.sleep(.5);chat=b'BankFixture0 : @bank\0'
     c.world.sendall(struct.pack('<HH',0xf3,4+len(chat))+chat)
     assert c.receive()['flags']==1

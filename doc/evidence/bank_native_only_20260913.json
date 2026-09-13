@@ -1,0 +1,66 @@
+{
+  "feature": "Custom-bank-only entry points and quantity diagnosis",
+  "validation": {
+    "server_build": {
+      "passed": true,
+      "service_exit": 0,
+      "build_exit": 0,
+      "map_sha256": "20036e29dcc2a58faf72ab2c4a53fe708d631c835d03843f0203ee1975406b0f",
+      "live_exit": 0,
+      "finished_utc": "2026-09-13T14:13:46.932200+00:00"
+    },
+    "service_sanitizers_passed": true,
+    "service_output": "PASS: production bank service authentication, packet fragmentation, funds/capacity, locked saves, duplicate and stale requests/replies, current-state retries, item eligibility, rollback and cache release",
+    "previous_binary_fails_opening_regression": true,
+    "isolated_cases": [
+      "early bank open and balance check emit no stock open/balance; legacy close preserves the queued custom open",
+      "companion reconnection keeps native banking suppressed and reopens only the authenticated custom panel",
+      "native bank button, @bank and actual NPC openbank open custom panel without a financial mutation",
+      "fragmented authenticated request and duplicate delivery",
+      "negative, overflowing, unaffordable and missing-item rejection",
+      "diamond and note round trips charge exact fees and preserve other item metadata",
+      "all four item exchanges retain bank-specific item logs",
+      "native deposit and withdrawal acknowledge only after commit",
+      "same-login character sharing and expired-session rejection",
+      "SQL rollback, lost client socket, save retry and relog",
+      "acknowledged transaction survives actual map-server crash",
+      "uncommitted item purchase is fully rolled back after actual map-server crash",
+      "exact 64-bit deposit, withdrawal, relog and sibling balances at 2^31, 2^53 and INT64_MAX",
+      "multi-billion item exchange costs and proceeds persist exactly in bank and zeny log",
+      "full character wallet rejects native withdrawal while bank remains above old ceiling"
+    ],
+    "production_data_used_in_fixtures": false,
+    "native_windows_quantity_test": {
+      "passed": true,
+      "output": "PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; 3M bank rejects 15 tickets and enables buying 1 or 2 with zero owned; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n",
+      "exe_sha256": "fa78d9b46af61ffaa033311a6103ed5d5cc4ae9376dcb04e788a49e68f871147",
+      "ui_source_sha256": "5e7e64f35e8593bd284be4bed2fc9c9497f5f9e578a3d9af77625baa3b18860c",
+      "test_source_sha256": "5ca59587fce3a0a70d01a6ebf5069b703dd8c14d4de350d77c7824d75fe67adf"
+    }
+  },
+  "deployment": {
+    "deployed": true,
+    "finished_utc": "2026-09-13T14:16:42.070565+00:00",
+    "players_before": 0,
+    "players_after": 0,
+    "rows_unchanged": true,
+    "binary_sha256": {
+      "map": "20036e29dcc2a58faf72ab2c4a53fe708d631c835d03843f0203ee1975406b0f",
+      "char": "7bbbba68ab98f9263e98a0fbbe456f67e4758d7984546e05eb395e5acad96286"
+    },
+    "files_before": {
+      "src/map/clif.cpp": "d9710228dce265ec3228dab25afc3d1bf0456607d64d5ff1c6d5df977593f48c",
+      "src/custom/bank_ui.inc": "3d5a8f00e7a2eba2719a2276bc508e91d7828f3fa6a35bee489ac8c9181bb8e8",
+      "map-server": "9320e488dbbe5c99a46137e5987e3bebfe2ee13658382b88106738914cdbbe60"
+    },
+    "files_after": {
+      "src/map/clif.cpp": "4eda7df211b1ad07b70ee9ddc9cbf7acc932c4b37a331a689f0b9e4322d31c47",
+      "src/custom/bank_ui.inc": "fd93b9f254bba40d3f60625416ac3deb62bd9af8aa23265156ef4fbba808a016",
+      "map-server": "20036e29dcc2a58faf72ab2c4a53fe708d631c835d03843f0203ee1975406b0f"
+    }
+  },
+  "player_data_tables_verified": 31,
+  "database_and_file_backups_retained": true,
+  "manual_Ragexe_opening_confirmation": false,
+  "live_player_financial_transactions_run_by_agent": false
+}

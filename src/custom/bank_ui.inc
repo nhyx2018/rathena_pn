@@ -144,12 +144,16 @@ static bool pn_bank_companion_matches(const pn_bank_companion& peer, const map_s
         peer.nonce_hi == sd.bank_ui.nonce_hi && peer.nonce_lo == sd.bank_ui.nonce_lo;
 }
 static bool clif_bank_open_custom(map_session_data& sd) {
+    if (!sd.state.active || !sd.prev || !session_isValid(sd.fd) || session[sd.fd]->flag.eof) return false;
     sd.bank_ui.open_requested = true;
+    // Some clients create their stock window before requesting the balance.
+    // Dismiss it immediately, including during attachment/reconnection. Never
+    // send stock open/balance replies while the custom open is waiting.
+    clif_bank_close(sd);
     int fd = sd.bank_ui.companion_fd;
     if (!session_isValid(fd) || session[fd]->flag.eof ||
         session[fd]->func_parse != clif_parse_bank_companion_session ||
-        !session[fd]->session_data || !sd.state.active || !sd.prev ||
-        !session_isValid(sd.fd) || session[sd.fd]->flag.eof ||
+        !session[fd]->session_data ||
         session[fd]->client_addr != session[sd.fd]->client_addr ||
         !pn_bank_companion_matches(*static_cast<pn_bank_companion*>(session[fd]->session_data), sd)) return false;
     auto reply = pn_bank_snapshot(sd);
@@ -158,8 +162,6 @@ static bool clif_bank_open_custom(map_session_data& sd) {
     memcpy(WFIFOP(fd, 0), &reply, sizeof(reply));
     WFIFOSET(fd, sizeof(reply));
     sd.bank_ui.open_requested = false;
-    // Also dismiss a stock window opened before the companion authenticated.
-    clif_bank_close(sd);
     return true;
 }
 static bool clif_parse_bank_companion(int32 fd) {

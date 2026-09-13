@@ -7392,15 +7392,9 @@ void clif_cart_additem_ack( const map_session_data& sd, e_ack_additem_to_cart fl
 // 09B7 <unknow data> (ZC_ACK_OPEN_BANKING)
 static bool clif_bank_open_custom(map_session_data& sd);
 void clif_bank_open( map_session_data& sd ){
-    if (clif_bank_open_custom(sd)) return;
-#if PACKETVER >= 20130717
-	PACKET_ZC_ACK_OPEN_BANKING p = {};
-
-	p.packetType = HEADER_ZC_ACK_OPEN_BANKING;
-	p.unknown = 0;
-
-	clif_send( &p, sizeof( p ), &sd, SELF );
-#endif
+    // Queue the Master Account panel until its authenticated companion is
+    // ready. A stock open acknowledgement would flash the obsolete window.
+    clif_bank_open_custom(sd);
 }
 
 /*
@@ -7461,7 +7455,8 @@ void clif_parse_BankClose(int32 fd, map_session_data* sd) {
 	}
 	if(sd->status.account_id == p->AID){
 		sd->state.banking = 0;
-		sd->bank_ui.open_requested = false;
+		// A legacy close can acknowledge the stock window we suppressed while
+		// the companion was connecting. It must not cancel the custom open.
 		clif_bank_close( *sd );
 	}
 #endif
@@ -7505,8 +7500,7 @@ void clif_parse_BankCheck(int32 fd, map_session_data* sd) {
 		if(sd->status.account_id == p->AID) {
             // Some clients open the stock panel locally and request only its
             // balance. Route that entry point through the custom panel too.
-            if (clif_bank_open_custom(*sd)) return;
-			clif_Bank_Check( *sd );
+            clif_bank_open( *sd );
         }
 	}
 #endif

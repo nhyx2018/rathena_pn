@@ -162,6 +162,19 @@ int main() {
     for(int i=0;i<2;++i) full.max_sell[i]=0;
     reply(full);assert(!IsWindowEnabled(actions[3]) && !IsWindowEnabled(actions[5]));
     assert(exchange_block_reason(2,false).find(L"limit")!=std::wstring::npos);
+    // Reported live state: 3M in bank with quantity 15 cannot buy 15 tickets.
+    // Owning zero tickets does not block a purchase at an affordable quantity.
+    auto quantity_case=value;quantity_case.bank=3000000;quantity_case.wallet=1000000000;
+    quantity_case.max_deposit=quantity_case.wallet;quantity_case.max_withdraw=quantity_case.bank;
+    for(int i=0;i<2;++i) quantity_case.counts[i]=quantity_case.max_buy[i]=quantity_case.max_sell[i]=0;
+    quantity_case.max_buy[1]=2;set_amount(2,15);reply(quantity_case);
+    assert(!IsWindowEnabled(actions[4]) && !IsWindowEnabled(actions[5]));
+    assert(exchange_block_reason(2,true)==L"Buy: Deposit 12,030,000 more Zeny into the bank.");
+    for(int quantity:{1,2}) {
+        set_amount(2,quantity);assert(IsWindowEnabled(actions[4]) && !IsWindowEnabled(actions[5]));
+        assert(exchange_block_reason(2,true).empty());
+    }
+    set_amount(2,1);
     // Reproduce the reported state: on-hand funds do not pay for bank purchases.
     auto unfunded=value;unfunded.bank=1000000;unfunded.wallet=1000000000;
     unfunded.max_deposit=unfunded.wallet;unfunded.max_withdraw=unfunded.bank;
@@ -199,5 +212,5 @@ int main() {
     assert(queued_action==pn_bank::Refresh && !busy && !refreshing && fixture::requests.size()==before_session);
     for(auto control:actions) assert(!IsWindowEnabled(control));
     DestroyWindow(panel);
-    std::cout<<"PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
+    std::cout<<"PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; 3M bank rejects 15 tickets and enables buying 1 or 2 with zero owned; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
 }
