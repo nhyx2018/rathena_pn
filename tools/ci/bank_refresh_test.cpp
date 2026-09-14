@@ -44,7 +44,7 @@ int main() {
     WSADATA ws;assert(!WSAStartup(MAKEWORD(2,2),&ws));instance=GetModuleHandle(nullptr);
     WNDCLASSW type{};type.lpfnWndProc=window_proc;type.hInstance=instance;type.lpszClassName=L"PNAccountBank";
     assert(RegisterClassW(&type));
-    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_CLIPCHILDREN,0,0,522,642,nullptr,nullptr,instance,nullptr);
+    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_BORDER|WS_CLIPCHILDREN,0,0,panel_width+2,panel_height+2,nullptr,nullptr,instance,nullptr);
     assert(panel);bank_install_transport(panel);assert(game_send && game_close);
     SOCKET chars=listener(char_port),maps=listener(map_port);
     SOCKET cc=connect_to(char_port),cs=accept(chars,nullptr,nullptr);

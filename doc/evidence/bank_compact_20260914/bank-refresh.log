@@ -1,0 +1,1 @@
+PASS: shipping UI + real hooked authentication + delayed fragmented loopback replies; timer refresh keeps Buy enabled; native click queues once and preserves quantity; pending save blocks actions; committed purchase restores Buy/Sell; logout cancels queued sale and stale reply

@@ -1,0 +1,1 @@
+PASS: shipping FontScale export forwards DirectDraw, original font scaling preserved, BankUI loads hidden with unauthenticated transactions disabled

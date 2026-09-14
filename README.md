@@ -173,7 +173,7 @@ Native tests need the documented compiler/runtime dependencies. Dated reports re
 | --- | --- |
 | Latest audit | [Six-area audit and deployed fixes](doc/audit_all_20260914.md) · [Rendered checklist](doc/rendered_acceptance_20260914.md) |
 | Current client | [Release notes](doc/releases/client-2026-09-13.md) · [Bank controls](doc/bank_controls_20260913.md) |
-| Banking | [Build/install](client-patch/account_bank/README.md) · [64-bit persistence](doc/account_bank_64bit_20260913.md) |
+| Banking | [Compact v2.3 panel](doc/bank_compact_20260914.md) · [Build/install](client-patch/account_bank/README.md) · [64-bit persistence](doc/account_bank_64bit_20260913.md) |
 | Storage | [Pages, expansion, migration and validation](doc/multi_storage_20260913.md) |
 | Navigation | [Episode route audit](doc/quest_navigation_audit_20260913.md) · [Episode status](doc/episode_audit_status.md) |
 | Login | [Docker reconnect fix](doc/login_outage_20260913.md) · [Binary compatibility](doc/login_character_abi_repair_20260907.md) |

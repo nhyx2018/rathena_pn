@@ -1,0 +1,71 @@
+{
+  "passed": true,
+  "tests": [
+    {
+      "case": "BankUITest",
+      "passed": true,
+      "sha256": "fc499186246de8af2a8dbf621bb16415d0bb34377b5e636379b0e0fb891d31b2"
+    },
+    {
+      "case": "BankRefreshTest",
+      "passed": true,
+      "sha256": "b2c2e5e86c112da4d48266cbe2ebe37a258d891412febaba70e1ce7796015a2d"
+    },
+    {
+      "case": "BankTransportTest",
+      "passed": true,
+      "sha256": "55ef67f828afa315017f522551540197f715e074779e9ae892123d559e5ecbb8"
+    },
+    {
+      "case": "BankLoaderTest",
+      "passed": true,
+      "sha256": "47aef1c4b0b57e1222bf7dc83b051fffe7375ce015f9ba6c41ad1c78745aa64d"
+    },
+    {
+      "case": "preview-native",
+      "passed": true,
+      "images": [
+        "bank-preview-disconnected.png",
+        "bank-preview-invalid.png",
+        "bank-preview-large-total.png",
+        "bank-preview-max.png",
+        "bank-preview-needs-deposit.png",
+        "bank-preview.png"
+      ]
+    },
+    {
+      "case": "preview-scale-110",
+      "passed": true,
+      "images": [
+        "bank-preview-disconnected.png",
+        "bank-preview-invalid.png",
+        "bank-preview-large-total.png",
+        "bank-preview-max.png",
+        "bank-preview-needs-deposit.png",
+        "bank-preview.png"
+      ]
+    }
+  ],
+  "panel_client_pixels": [
+    412,
+    482
+  ],
+  "panel_outer_pixels": [
+    414,
+    484
+  ],
+  "previous_outer_pixels": [
+    522,
+    642
+  ],
+  "area_reduction_percent": 40.21,
+  "bank_dll_sha256": "6e82edfde303e819c602b6ac6019c9f6e6a54edb3cecdd7c42f413a9fa21f510",
+  "rendering_scope": "Native production panel with synthetic state; scaled previews load the supplied original 1.10 font DLL. No Ragexe login or production transaction.",
+  "source_sha256": {
+    "client-patch/account_bank/bank_ui.cpp": "75f11a1c2abd7f5d372384af79e7d66df1ebaac00e63b90b96d25ad5a654b9f3",
+    "client-patch/account_bank/bank_transport.cpp": "53ad9c344037688aeb7b77bdabc5be760153b8edcfddcc23e81c2f907afdcccf",
+    "tools/ci/bank_ui_test.cpp": "1e023cbe779260c3d4d0b9001625ea67c997781ad647864bf30992fde5ea1fbe",
+    "tools/ci/bank_refresh_test.cpp": "a3ec83593bdfb776466fd0890f7948f99d18bd5d65e003dda02abca3c7b87bf6"
+  },
+  "source_hash_normalization": "CRLF to LF"
+}

@@ -41,16 +41,55 @@ static pn_bank::Reply funded() {
     return value;
 }
 static void click(int id) { SendMessage(GetDlgItem(panel,id),BM_CLICK,0,0); }
+static std::wstring label(HWND control) {
+    wchar_t value[128]{};GetWindowTextW(control,value,128);return value;
+}
+static void check_layout() {
+    RECT bounds{};GetClientRect(panel,&bounds);
+    assert(bounds.right<=420 && bounds.bottom<=490);
+    std::vector<RECT> occupied;
+    for(HWND child=GetWindow(panel,GW_CHILD);child;child=GetWindow(child,GW_HWNDNEXT)) {
+        RECT box{};GetWindowRect(child,&box);MapWindowPoints(nullptr,panel,reinterpret_cast<POINT*>(&box),2);
+        assert(box.left>=0 && box.top>=0 && box.right<=bounds.right && box.bottom<=bounds.bottom);
+        for(const auto& other:occupied) { RECT overlap{};assert(!IntersectRect(&overlap,&box,&other)); }
+        occupied.push_back(box);
+    }
+    // Check the actual captions using both native and supplied 1.10-size text.
+    HDC dc=GetDC(panel);
+    for(int height:{12,13}) {
+        HFONT measure=CreateFontW(-height,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,0,0,0,0,L"Tahoma");
+        auto old=SelectObject(dc,measure);
+        for(int row=1;row<3;++row) {
+            set_amount(row,INT32_MAX);
+            for(int action=0;action<2;++action) {
+                const auto value=label(actions[row*2+action]);
+                const auto split=value.find(L'\n');assert(split!=std::wstring::npos);
+                for(const auto& part:{value.substr(0,split),value.substr(split+1)}) {
+                    SIZE size{};GetTextExtentPoint32W(dc,part.c_str(),static_cast<int>(part.size()),&size);
+                    assert(size.cx<=180 && size.cy<=16);
+                }
+            }
+            set_amount(row,1);
+        }
+        SelectObject(dc,old);DeleteObject(measure);
+    }
+    ReleaseDC(panel,dc);
+}
 int main() {
     instance=GetModuleHandle(nullptr);
     WNDCLASSW type{};type.lpfnWndProc=window_proc;type.hInstance=instance;type.lpszClassName=L"PNBankUIFixture";
     assert(RegisterClassW(&type));
-    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_CLIPCHILDREN,0,0,522,642,nullptr,nullptr,instance,nullptr);
+    panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_BORDER|WS_CLIPCHILDREN,0,0,panel_width+2,panel_height+2,nullptr,nullptr,instance,nullptr);
     assert(panel);
     // These fail in the reported build: both item edits originally started at 0.
     assert(amount(0)==0 && amount(1)==1 && amount(2)==1);
     update();for(auto control:actions) assert(!IsWindowEnabled(control));
     auto value=funded();reply(value);
+    check_layout();
+    set_amount(1,3);assert(label(actions[2])==L"Buy 3\n-1,503,000,000z" && label(actions[3])==L"Sell 3\n+1,497,000,000z");
+    set_amount(2,2);assert(label(actions[4])==L"Buy 2\n-2,004,000z" && label(actions[5])==L"Sell 2\n+1,996,000z");
+    set_amount(2,INT64_MAX);assert(label(actions[4])==L"Buy\nEnter quantity" && !IsWindowEnabled(actions[4]));
+    set_amount(1,1);set_amount(2,1);
     for(int i=2;i<6;++i) assert(IsWindowEnabled(actions[i]));
     for(int row=1;row<3;++row) for(bool buy:{true,false}) assert(exchange_block_reason(row,buy).empty());
     for(auto control:actions)
@@ -169,7 +208,7 @@ int main() {
     for(int i=0;i<2;++i) quantity_case.counts[i]=quantity_case.max_buy[i]=quantity_case.max_sell[i]=0;
     quantity_case.max_buy[1]=2;set_amount(2,15);reply(quantity_case);
     assert(!IsWindowEnabled(actions[4]) && !IsWindowEnabled(actions[5]));
-    assert(exchange_block_reason(2,true)==L"Buy: Deposit 12,030,000 more Zeny into the bank.");
+    assert(exchange_block_reason(2,true)==L"Buy: Deposit 12,030,000 more Zeny.");
     for(int quantity:{1,2}) {
         set_amount(2,quantity);assert(IsWindowEnabled(actions[4]) && !IsWindowEnabled(actions[5]));
         assert(exchange_block_reason(2,true).empty());
@@ -181,8 +220,8 @@ int main() {
     for(int i=0;i<2;++i) unfunded.counts[i]=unfunded.max_buy[i]=unfunded.max_sell[i]=0;
     reply(unfunded);
     for(int i=2;i<6;++i) assert(!IsWindowEnabled(actions[i]));
-    assert(exchange_block_reason(1,true)==L"Buy: Deposit 500,000,000 more Zeny into the bank.");
-    assert(exchange_block_reason(2,true)==L"Buy: Deposit 2,000 more Zeny into the bank.");
+    assert(exchange_block_reason(1,true)==L"Buy: Deposit 500,000,000 more Zeny.");
+    assert(exchange_block_reason(2,true)==L"Buy: Deposit 2,000 more Zeny.");
     set_amount(0,2000);click(400);
     assert(fixture::requests.back().action==pn_bank::Deposit && fixture::requests.back().amount==2000);
     unfunded.bank+=2000;unfunded.wallet-=2000;unfunded.max_deposit=unfunded.wallet;unfunded.max_withdraw=unfunded.bank;
@@ -212,5 +251,6 @@ int main() {
     assert(queued_action==pn_bank::Refresh && !busy && !refreshing && fixture::requests.size()==before_session);
     for(auto control:actions) assert(!IsWindowEnabled(control));
     DestroyWindow(panel);
+    std::cout<<"PASS: compact controls stay inside the panel without overlaps; exact signed Buy/Sell totals track quantity; largest valid totals fit native and 1.10-size fonts; invalid quantity cannot display an overflowed total\n";
     std::cout<<"PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; 3M bank rejects 15 tickets and enables buying 1 or 2 with zero owned; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";
 }

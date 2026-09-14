@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "version": "2.3",
+  "package": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Data\\server-work\\bank-compact-20260914\\client-update\\PN-Client-Update-20260914-Bank-v2.3.zip",
+  "package_sha256": "34e391cac808c0b67bf135438fea350036e346d6bc2188068a396b2c5c24e2a8",
+  "package_bytes": 600910,
+  "file_count": 5625,
+  "installed_files": [
+    {
+      "path": "BankUI.dll",
+      "before_sha256": "a3f324dbe7765421cef8e38024072e93c78f0e81830232dba5f05dc8f4a18a60",
+      "after_sha256": "6e82edfde303e819c602b6ac6019c9f6e6a54edb3cecdd7c42f413a9fa21f510"
+    },
+    {
+      "path": "VERIFY-CLIENT.txt",
+      "before_sha256": "1c2faaadd9cd6a0e533295daadceb85efe404d5de0cd9de460876a60eac399a0",
+      "after_sha256": "70d1702a7dd4d64df2a1ce260634157f3833d7c101c221455a4d720764ed3233"
+    },
+    {
+      "path": "client-manifest.json",
+      "before_sha256": "7f9517d3beb446d2190fcf3089db10b045bdec41dbcc4541261a73b9a8e7a958",
+      "after_sha256": "e7d192abb284fc02828436754843201f9e34b3ee3f1329cec985c31d91e2672c"
+    }
+  ],
+  "checks": [
+    "Four native Windows suites",
+    "Normal and original 1.10 font renderings",
+    "Quick client checks",
+    "Complete staged manifest hashes",
+    "ZIP integrity",
+    "Installed file hashes and quick checks"
+  ],
+  "preserved": {
+    "Ragexe.exe": "73f72fea2458a4c2dfd1fcc5a2a8f7684485aecd52d612a3e68a27c828b4632d",
+    "FontScale.dll": "3b4769db1f63a4b3a33853e6a11340ddfa8766a569c18de3c3dc234940d6535a",
+    "FontScaleOriginal.dll": "ca4820f0a86c06cf2cea7fc4173ae3f6fd1b362cab9dcfa703c8319891510d82",
+    "FontScale.ini": "85771a4daa17144fbad5c0c6255b440ed5fbaf8a75331982b8773d8ceb7f65a1",
+    "BankUI.ini": "0608cf586b26096afd83dba37e228e2c8ce9981748fe8b753b39b79c8c8e5d03",
+    "DATA.INI": "92080c2a708ded0566685b615e003b3fe61a4455e2d8ae6812052b362855bc5e",
+    "SystemEN/itemInfo_Chapter2Materials.lua": "5f33a0c0cc79761e3e129bf30b8c0dc63245026e5ffcd791d5d02749560fd88f"
+  },
+  "server_changes": false,
+  "rendered_ragexe_transaction_passed": false
+}

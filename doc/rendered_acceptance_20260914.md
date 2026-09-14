@@ -7,7 +7,11 @@ exchange prices. Native desktop enumeration now works, but automated inputs
 did not complete a rendered transaction. Treat this as partial visual evidence;
 fixtures and server protocol checks remain separate from a Ragexe playthrough.
 
-Use the verified 13 September full client plus `PN-Client-Update-20260914-Audit.zip`.
+The later [compact v2.3 panel](bank_compact_20260914.md) passed native control,
+transport, refresh and font-scaled rendering checks. Its rendered Ragexe
+transactions remain part of this checklist.
+
+Use the verified 13 September full client plus `PN-Client-Update-20260914-Bank-v2.3.zip`.
 Run scenarios on a disposable QA realm with two fixture accounts and two
 characters on one account. Prepare level, quest, funds and capacity states in
 the fixture database. Record client/version hashes, setup, expected/actual result

@@ -14,7 +14,7 @@ namespace {
 HINSTANCE instance;
 HWND panel=nullptr, game=nullptr;
 WNDPROC previous_game_proc=nullptr;
-HFONT font=nullptr;
+HFONT font=nullptr, balance_font=nullptr;
 HBRUSH white=nullptr;
 bool preview=false, busy=false, refreshing=false, verified=false;
 uint32_t queued_action=pn_bank::Refresh; // One explicit click may wait for a read-only refresh.
@@ -27,11 +27,12 @@ ULONGLONG last_refresh=0;
 std::wstring status=L"Log in to a character to use the bank.";
 std::array<HWND,3> inputs{};
 std::array<HWND,6> actions{};
-constexpr int field_y[3]={117,250,415};
-constexpr int preset_y[3]={151,284,449};
-constexpr int action_y[3]={103,236,401};
+constexpr int panel_width=412, panel_height=482;
+constexpr int field_y[3]={76,172,302};
+constexpr int preset_y[3]={106,172,302};
+constexpr int action_y[3]={76,200,330};
 constexpr int edit_ids[3]={100,101,102};
-constexpr int refresh_id=200, close_id=201, title_close=202;
+constexpr int refresh_id=200, close_id=201, title_close=202, help_id=203;
 
 bool transaction_pending() { return (busy && !refreshing) || queued_action!=pn_bank::Refresh; }
 bool actions_ready() {
@@ -66,17 +67,30 @@ std::wstring exchange_block_reason(int row,bool buy) {
     switch(result) {
     case pn_bank::Ok: return L"";
     case pn_bank::Funds:
-        return label+L"Deposit "+commas(count*state.buy[row-1]-state.bank)+L" more Zeny into the bank.";
+        return label+L"Deposit "+commas(count*state.buy[row-1]-state.bank)+L" more Zeny.";
     case pn_bank::Items:
         return label+(state.counts[row-1]?L"Only "+commas(state.counts[row-1])+L" eligible items on hand.":
-            L"No eligible items in your character inventory.");
-    case pn_bank::Capacity: return label+L"Free inventory space/weight, or lower the quantity.";
-    case pn_bank::Limit: return label+L"Bank balance or transaction limit would be exceeded.";
+            L"No eligible items on hand.");
+    case pn_bank::Capacity: return label+L"Free inventory space/weight, or buy fewer.";
+    case pn_bank::Limit: return label+L"Bank or transaction limit reached.";
     default: return label+L"Enter a whole quantity of 1 or more.";
     }
 }
 void text(HDC dc,int x,int y,int width,const std::wstring& value,bool right=false) {
-    RECT box{x,y,x+width,y+20}; DrawTextW(dc,value.c_str(),-1,&box,DT_SINGLELINE|DT_VCENTER|(right?DT_RIGHT:DT_LEFT));
+    RECT box{x,y,x+width,y+20}; DrawTextW(dc,value.c_str(),-1,&box,DT_SINGLELINE|DT_VCENTER|DT_NOPREFIX|(right?DT_RIGHT:DT_LEFT));
+}
+std::wstring exchange_label(int row,bool buy) {
+    const auto count=amount(row);
+    const auto price=buy?state.buy[row-1]:state.sell[row-1];
+    const std::wstring verb=buy?L"Buy":L"Sell";
+    if(count<=0 || count>INT32_MAX || !price || count>INT64_MAX/price)
+        return verb+L"\nEnter quantity";
+    return verb+L" "+commas(count)+L"\n"+(buy?L"-":L"+")+commas(count*price,true);
+}
+void caption(HWND control,const std::wstring& value) {
+    if(!control) return;
+    wchar_t current[128]{}; GetWindowTextW(control,current,128);
+    if(value!=current) SetWindowTextW(control,value.c_str());
 }
 void line(HDC dc,int x,int y,int x2,int y2,COLORREF color) {
     auto pen=CreatePen(PS_SOLID,1,color); auto old=SelectObject(dc,pen);
@@ -113,61 +127,57 @@ void icon(HDC dc,int row,int x,int y) {
     }
 }
 void paint(HDC dc) {
-    RECT all{0,0,520,640}; FillRect(dc,&all,white); SelectObject(dc,font);
-    SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(0,0,0));
-    gradient(dc,RECT{0,0,520,27},RGB(188,200,255),RGB(225,232,255));
-    text(dc,12,3,420,L"\x25cf  Bank");
-    text(dc,390,3,90,L"v2.2",true);
-    text(dc,10,32,495,L"Master Account");
-    for(auto range:{std::pair<int,int>{55,181},{185,346},{350,511}}) {
-        RECT box{9,range.first,511,range.second}; FrameRect(dc,&box,reinterpret_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH)));
-    }
-    text(dc,17,62,160,L"In Bank"); text(dc,182,62,319,commas(state.bank,true),true);
-    text(dc,17,80,160,L"On Hand"); text(dc,182,80,319,commas(state.wallet,true),true);
+    RECT all{0,0,panel_width,panel_height}; FillRect(dc,&all,white); SelectObject(dc,font);
+    SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(37,48,68));
+    gradient(dc,RECT{0,0,panel_width,26},RGB(194,205,249),RGB(234,239,255));
+    text(dc,12,3,190,L"Account Bank");
+    text(dc,panel_width-84,3,42,L"v2.3",true);
+    text(dc,12,30,86,L"In bank"); text(dc,12,49,86,L"On hand");
+    SelectObject(dc,balance_font);
+    text(dc,100,30,panel_width-112,commas(state.bank,true),true);
+    text(dc,100,49,panel_width-112,commas(state.wallet,true),true);
+    SelectObject(dc,font);
+    text(dc,12,field_y[0]+1,34,L"Zeny");
+    line(dc,12,138,panel_width-12,138,RGB(218,223,233));
     for(int row=0;row<3;++row) {
-        icon(dc,row,17,field_y[row]-2);
         // Paint the edit backing as well, for native WM_PRINT/off-screen renders.
-        RECT backing{60,field_y[row],380,field_y[row]+21};
+        const int x=row==0?48:44, width=row==0?170:140;
+        RECT backing{x,field_y[row],x+width,field_y[row]+24};
         FillRect(dc,&backing,reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
         FrameRect(dc,&backing,reinterpret_cast<HBRUSH>(GetStockObject(LTGRAY_BRUSH)));
         wchar_t value[64]{}; GetWindowTextW(inputs[row],value,64);
-        text(dc,64,field_y[row],312,value);
+        text(dc,x+4,field_y[row]+2,width-8,value);
     }
     for(int row=1;row<3;++row) {
-        int y=row==1?191:356;
-        text(dc,17,y,290,row==1?L"17Carat Diamond":L"1M Zeny Ticket");
-        text(dc,17,y+21,300,L"On Hand  "+commas(state.counts[row-1]));
-        text(dc,345,y,70,L"Buy price"); text(dc,412,y,90,commas(state.buy[row-1],true),true);
-        text(dc,345,y+18,70,L"Sell price"); text(dc,412,y+18,90,commas(state.sell[row-1],true),true);
-        text(dc,60,field_y[row]-19,347,L"Quantity  (buy up to "+commas(state.max_buy[row-1])+
-            L"; sell up to "+commas(state.max_sell[row-1])+L")");
-        int64_t count=amount(row);
-        bool safe=count>=0 && count<=INT64_MAX/state.buy[row-1];
-        int py=row==1?307:472;
+        const int y=row==1?145:275;
+        // Reuse the small native artwork at a 20-pixel decorative size.
+        const auto saved=SaveDC(dc);
+        SetMapMode(dc,MM_ANISOTROPIC); SetWindowExtEx(dc,33,33,nullptr);
+        SetViewportExtEx(dc,20,20,nullptr); SetViewportOrgEx(dc,12,y,nullptr);
+        icon(dc,row,0,0); RestoreDC(dc,saved);
+        text(dc,40,y,226,row==1?L"17Carat Diamond":L"1M Zeny Ticket");
+        text(dc,267,y,133,L"On hand: "+commas(state.counts[row-1]),true);
+        text(dc,12,field_y[row]+1,30,L"Qty");
         for(int action=0;action<2;++action) {
             const auto reason=exchange_block_reason(row,action==0);
-            if(!reason.empty()) {
-                SetTextColor(dc,RGB(160,48,34)); text(dc,17,py+action*18,485,reason);
-                SetTextColor(dc,RGB(0,0,0));
-            } else {
-                text(dc,17,py+action*18,290,action==0?L"Zeny paid from bank":L"Zeny added to bank");
-                const auto price=action==0?state.buy[row-1]:state.sell[row-1];
-                text(dc,307,py+action*18,195,safe?commas(count*price,true):L"Invalid amount",true);
-            }
+            SetTextColor(dc,reason.empty()?RGB(93,102,119):RGB(153,53,39));
+            const auto hint=reason.empty()?
+                std::wstring(action==0?L"Buy up to ":L"Sell up to ")+commas(action==0?state.max_buy[row-1]:state.max_sell[row-1]):reason;
+            text(dc,12,action_y[row]+38+action*16,panel_width-24,hint);
         }
+        SetTextColor(dc,RGB(37,48,68));
+        if(row==1) line(dc,12,272,panel_width-12,272,RGB(218,223,233));
     }
-    SetTextColor(dc,RGB(95,95,95));
-    text(dc,10,520,500,L"Shared by all characters on this game login.");
-    text(dc,10,538,500,L"On-hand limit: "+commas(state.wallet_limit)+L"z");
-    text(dc,10,556,500,L"Favorite, bound, modified and rental items cannot be sold.");
     auto guidance=status;
     if(actions_ready() && state.result==pn_bank::Ok && status==wide(pn_bank::message(pn_bank::Ok))) {
-        guidance=L"Buy uses bank zeny; Sell uses eligible items on hand.";
+        guidance=L"Buy / Sell totals use your bank zeny.";
         for(int row=1;row<3;++row)
             if(GetFocus()==inputs[row] && amount(row)<=0)
                 guidance=L"Enter an item quantity greater than zero to buy or sell.";
     }
-    SetTextColor(dc,RGB(0,0,0)); text(dc,10,610,498,guidance);
+    SetTextColor(dc,RGB(63,73,91));
+    RECT footer{12,443,panel_width-12,panel_height-5};
+    DrawTextW(dc,guidance.c_str(),-1,&footer,DT_WORDBREAK|DT_NOPREFIX);
 }
 HWND button(int id,const wchar_t* label,int x,int y,int width,int height=21) {
     HWND child=CreateWindowW(L"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW,
@@ -184,7 +194,7 @@ void write_diagnostics(const char* event) {
     if(!file) return;
     // Local, opt-in latest-state snapshot. Never log identities, balances,
     // inventory counts, login tokens, nonces, raw packets, or passwords.
-    std::fprintf(file,"version=2.2\nevent=%s\nuptime_ms=%llu\nauthenticated=%d\nverified=%d\nbusy=%d\nrefreshing=%d\nqueued_action=%u\nlast_reply_connected=%d\nserver_result=%s\n",
+    std::fprintf(file,"version=2.3\nevent=%s\nuptime_ms=%llu\nauthenticated=%d\nverified=%d\nbusy=%d\nrefreshing=%d\nqueued_action=%u\nlast_reply_connected=%d\nserver_result=%s\n",
         event,static_cast<unsigned long long>(GetTickCount64()),bank_authenticated(),verified,busy,refreshing,queued_action,last_reply_connected,result_name(state.result));
     const char* names[]={"Deposit","Withdraw","BuyDiamond","SellDiamond","BuyTicket","SellTicket"};
     for(int i=0;i<6;++i) {
@@ -211,6 +221,7 @@ void enable(HWND control,bool enabled) {
 void update(const char* event="controls") {
     for(int i=0;i<6;++i) {
         int row=i/2; uint32_t action=i+1;
+        if(row) caption(actions[i],exchange_label(row,i%2==0));
         auto plan=pn_bank::plan(state,action,amount(row));
         enable(actions[i],actions_ready() && plan.result==pn_bank::Ok);
     }
@@ -248,9 +259,15 @@ void show() {
     if(!IsWindowVisible(panel)) {
         RECT area{};
         if(game) GetWindowRect(game,&area); else SystemParametersInfo(SPI_GETWORKAREA,0,&area,0);
-        int x=area.left+std::max<LONG>(0,(area.right-area.left-522)/2);
-        int y=area.top+std::max<LONG>(0,(area.bottom-area.top-642)/2);
-        SetWindowPos(panel,nullptr,x,y,522,642,SWP_NOZORDER);
+        const int width=panel_width+2, height=panel_height+2;
+        int x=area.left+std::max<LONG>(0,(area.right-area.left-width)/2);
+        int y=area.top+std::max<LONG>(0,(area.bottom-area.top-height)/2);
+        MONITORINFO monitor{}; monitor.cbSize=sizeof(monitor);
+        if(GetMonitorInfo(MonitorFromRect(&area,MONITOR_DEFAULTTONEAREST),&monitor)) {
+            x=std::max<int>(monitor.rcWork.left,std::min<int>(x,monitor.rcWork.right-width));
+            y=std::max<int>(monitor.rcWork.top,std::min<int>(y,monitor.rcWork.bottom-height));
+        }
+        SetWindowPos(panel,nullptr,x,y,width,height,SWP_NOZORDER);
         ShowWindow(panel,SW_SHOW); SetForegroundWindow(panel); SetFocus(inputs[0]);
     }
     submit(pn_bank::Refresh);
@@ -263,8 +280,10 @@ LRESULT CALLBACK game_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
 }
 void max_menu(int row,HWND source) {
     HMENU menu=CreatePopupMenu();
-    AppendMenuW(menu,MF_STRING,1,row==0?L"Maximum deposit":L"Maximum buy");
-    AppendMenuW(menu,MF_STRING,2,row==0?L"Maximum withdrawal":L"Maximum sell");
+    const auto first=std::wstring(row==0?L"Deposit ":L"Buy ")+commas(row==0?state.max_deposit:state.max_buy[row-1],row==0);
+    const auto second=std::wstring(row==0?L"Withdraw ":L"Sell ")+commas(row==0?state.max_withdraw:state.max_sell[row-1],row==0);
+    AppendMenuW(menu,MF_STRING,1,first.c_str());
+    AppendMenuW(menu,MF_STRING,2,second.c_str());
     RECT box; GetWindowRect(source,&box);
     int selected=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_NONOTIFY,box.left,box.bottom,0,panel,nullptr); DestroyMenu(menu);
     if(selected) set_amount(row,row==0?(selected==1?state.max_deposit:state.max_withdraw):
@@ -275,21 +294,25 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     case WM_CREATE:
         panel=window;
         font=CreateFontW(-12,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,L"Tahoma");
+        balance_font=CreateFontW(-14,0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,L"Tahoma");
         white=CreateSolidBrush(RGB(255,255,255));
-        button(title_close,L"x",490,3,22,21);
+        button(title_close,L"x",panel_width-28,3,22,20);
         for(int row=0;row<3;++row) {
             inputs[row]=CreateWindowExW(WS_EX_CLIENTEDGE,L"EDIT",row==0?L"0":L"1",WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_NUMBER|ES_AUTOHSCROLL,
-                60,field_y[row],320,21,window,reinterpret_cast<HMENU>(edit_ids[row]),instance,nullptr);
+                row==0?48:44,field_y[row],row==0?170:140,24,window,reinterpret_cast<HMENU>(edit_ids[row]),instance,nullptr);
             SendMessage(inputs[row],WM_SETFONT,reinterpret_cast<WPARAM>(font),TRUE); SendMessage(inputs[row],EM_SETLIMITTEXT,19,0);
-            button(300+row,L"x",387,field_y[row],20);
-            actions[row*2]=button(400+row*2,row==0?L"Deposit":L"Buy",413,action_y[row],89);
-            actions[row*2+1]=button(401+row*2,row==0?L"Withdraw":L"Sell",413,action_y[row]+23,89);
-            int count=row==0?5:4; int width=(484-(count-1)*5)/count;
+            button(300+row,L"x",row==0?223:189,field_y[row],22,24);
+            actions[row*2]=button(400+row*2,row==0?L"Deposit":L"Buy",row==0?252:12,action_y[row],row==0?71:190,row==0?24:36);
+            actions[row*2+1]=button(401+row*2,row==0?L"Withdraw":L"Sell",row==0?330:210,action_y[row],row==0?70:190,row==0?24:36);
+            int count=row==0?5:4;
             const wchar_t* cash[]={L"+1M",L"+10M",L"+100M",L"+1B",L"Max"};
             const wchar_t* items[]={L"+1",L"+10",L"+100",L"Max"};
-            for(int i=0;i<count;++i) button(500+row*10+i,row==0?cash[i]:items[i],17+i*(width+5),preset_y[row],width);
+            const int item_x[]={219,258,301,348}, item_width[]={35,39,43,52};
+            for(int i=0;i<count;++i) button(500+row*10+i,row==0?cash[i]:items[i],row==0?12+i*79:item_x[i],preset_y[row],row==0?72:item_width[i],row==0?22:24);
         }
-        button(refresh_id,L"Refresh",10,584,247); button(close_id,L"Close",263,584,247);
+        button(refresh_id,L"Refresh",12,412,126,25);
+        button(help_id,L"Bank info",143,412,126,25);
+        button(close_id,L"Close",274,412,126,25);
         SetTimer(window,1,250,nullptr); return 0;
     case WM_PAINT: {
         PAINTSTRUCT ps; HDC dc=BeginPaint(window,&ps);
@@ -312,19 +335,27 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     case WM_DRAWITEM: {
         auto draw=reinterpret_cast<DRAWITEMSTRUCT*>(l); auto box=draw->rcItem;
         bool disabled=draw->itemState&ODS_DISABLED;
-        gradient(draw->hDC,box,disabled?RGB(244,244,244):RGB(207,217,255),disabled?RGB(222,222,222):RGB(153,174,242));
-        FrameRect(draw->hDC,&box,reinterpret_cast<HBRUSH>(GetStockObject(GRAY_BRUSH)));
+        gradient(draw->hDC,box,disabled?RGB(247,248,250):RGB(232,237,255),disabled?RGB(232,235,241):RGB(186,201,249));
+        auto border=CreateSolidBrush(disabled?RGB(191,198,211):RGB(127,146,196));
+        FrameRect(draw->hDC,&box,border); DeleteObject(border);
         InflateRect(&box,-1,-1); FrameRect(draw->hDC,&box,reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
-        wchar_t label[60]; GetWindowTextW(draw->hwndItem,label,60); SelectObject(draw->hDC,font);
-        SetBkMode(draw->hDC,TRANSPARENT); SetTextColor(draw->hDC,disabled?RGB(139,139,139):RGB(0,0,0));
+        wchar_t label[128]{}; GetWindowTextW(draw->hwndItem,label,128); SelectObject(draw->hDC,font);
+        SetBkMode(draw->hDC,TRANSPARENT); SetTextColor(draw->hDC,disabled?RGB(96,106,123):RGB(30,48,91));
         if(draw->itemState&ODS_SELECTED) OffsetRect(&box,1,1);
-        DrawTextW(draw->hDC,label,-1,&box,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        if(auto split=wcschr(label,L'\n')) {
+            *split=0;
+            RECT title=box, total=box;
+            title.top+=1; title.bottom=title.top+16;
+            total.top=title.bottom; total.bottom=total.top+16;
+            DrawTextW(draw->hDC,label,-1,&title,DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
+            DrawTextW(draw->hDC,split+1,-1,&total,DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
+        } else DrawTextW(draw->hDC,label,-1,&box,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
         if(draw->itemState&ODS_FOCUS) { InflateRect(&box,-2,-2); DrawFocusRect(draw->hDC,&box); }
         return TRUE;
     }
     case WM_NCHITTEST: {
         POINT point{static_cast<short>(LOWORD(l)),static_cast<short>(HIWORD(l))}; ScreenToClient(window,&point);
-        if(point.y>=0 && point.y<27 && point.x<485) return HTCAPTION;
+        if(point.y>=0 && point.y<26 && point.x<panel_width-32) return HTCAPTION;
         break;
     }
     case WM_COMMAND: {
@@ -332,6 +363,15 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         if(HIWORD(w)==EN_CHANGE) { update(); return 0; }
         if(id==close_id || id==title_close || id==IDCANCEL) { ShowWindow(window,SW_HIDE); return 0; }
         if(id==refresh_id) { submit(pn_bank::Refresh); return 0; }
+        if(id==help_id) {
+            const auto info=L"The bank is shared by all characters on this game login.\n\n"
+                L"Deposit moves on-hand zeny into the bank; Withdraw returns it.\n"
+                L"Buy spends bank zeny; Sell adds zeny to the bank. Each button shows the total for the entered quantity, including the exchange fee.\n\n"
+                L"Max lets you choose the available buy/sell or deposit/withdraw amount.\n\n"
+                L"Only eligible items can be sold. Equipped, favorite, bound, modified and rental items are excluded.\n\n"
+                L"On-hand limit: 2,147,483,647z\nBank limit: 9,223,372,036,854,775,807z";
+            MessageBoxW(window,info,L"Bank info",MB_OK|MB_ICONINFORMATION); return 0;
+        }
         if(id>=300 && id<303) { set_amount(id-300,0); return 0; }
         if(id>=400 && id<406) { submit(id-399,amount((id-400)/2)); return 0; }
         if(id>=500 && id<530) {
@@ -402,14 +442,14 @@ void save_preview(const char* path="bank-preview.bmp") {
     // Render our own hidden window and its controls, without capturing the desktop.
     HDC screen=GetDC(nullptr), memory=CreateCompatibleDC(screen);
     BITMAPINFO info{}; info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-    info.bmiHeader.biWidth=520; info.bmiHeader.biHeight=-640; info.bmiHeader.biPlanes=1; info.bmiHeader.biBitCount=32;
+    info.bmiHeader.biWidth=panel_width; info.bmiHeader.biHeight=-panel_height; info.bmiHeader.biPlanes=1; info.bmiHeader.biBitCount=32;
     void* bits=nullptr; HBITMAP bitmap=CreateDIBSection(screen,&info,DIB_RGB_COLORS,&bits,nullptr,0);
     auto old=SelectObject(memory,bitmap);
     SendMessage(panel,WM_PRINT,reinterpret_cast<WPARAM>(memory),PRF_CLIENT|PRF_CHILDREN|PRF_ERASEBKGND);
     BITMAPFILEHEADER header{}; header.bfType=0x4d42; header.bfOffBits=sizeof(header)+sizeof(info.bmiHeader);
-    header.bfSize=header.bfOffBits+520*640*4;
+    header.bfSize=header.bfOffBits+panel_width*panel_height*4;
     FILE* output=fopen(path,"wb");
-    if(output) { fwrite(&header,sizeof(header),1,output); fwrite(&info.bmiHeader,sizeof(info.bmiHeader),1,output); fwrite(bits,520*640*4,1,output); fclose(output); }
+    if(output) { fwrite(&header,sizeof(header),1,output); fwrite(&info.bmiHeader,sizeof(info.bmiHeader),1,output); fwrite(bits,panel_width*panel_height*4,1,output); fclose(output); }
     SelectObject(memory,old); DeleteObject(bitmap); DeleteDC(memory); ReleaseDC(nullptr,screen);
 }
 }
@@ -420,7 +460,7 @@ int bank_window_main(HINSTANCE module,bool render) {
     type.hCursor=LoadCursor(nullptr,IDC_ARROW); type.lpszClassName=L"PNAccountBank";
     RegisterClassW(&type);
     panel=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_CONTROLPARENT,type.lpszClassName,L"Bank",WS_POPUP|WS_BORDER|WS_CLIPCHILDREN,
-        100,100,522,642,nullptr,nullptr,instance,nullptr);
+        100,100,panel_width+2,panel_height+2,nullptr,nullptr,instance,nullptr);
     if(!panel) return 1;
     bank_install_transport(panel);
     if(!preview) configure_diagnostics();
@@ -443,6 +483,12 @@ int bank_window_main(HINSTANCE module,bool render) {
         state.max_withdraw=state.bank;
         for(int i=0;i<2;++i) state.counts[i]=state.max_buy[i]=state.max_sell[i]=0;
         update(); save_preview("bank-preview-needs-deposit.bmp");
+        state.bank=INT64_MAX;state.wallet=0;state.max_deposit=0;state.max_withdraw=INT32_MAX;
+        for(int i=0;i<2;++i) { state.counts[i]=30000;state.max_buy[i]=30000;state.max_sell[i]=0; }
+        set_amount(1,INT32_MAX);set_amount(2,INT32_MAX);update();save_preview("bank-preview-large-total.bmp");
+        set_amount(1,0);set_amount(2,0);update();save_preview("bank-preview-invalid.bmp");
+        verified=false;status=L"Connection lost. Refresh to verify the transaction result.";
+        update();save_preview("bank-preview-disconnected.bmp");
         DestroyWindow(panel); return 0;
     }
     update();
@@ -453,7 +499,21 @@ int bank_window_main(HINSTANCE module,bool render) {
     return 0;
 }
 #ifdef PN_BANK_PREVIEW
-int main() { return bank_window_main(GetModuleHandle(nullptr),true); }
+int main(int argc,char** argv) {
+    if(argc==2 && !std::strcmp(argv[1],"--scaled")) {
+        assert(LoadLibraryW(L"FontScaleOriginal.dll"));
+        const auto deadline=GetTickCount64()+5000;
+        bool ready=false;
+        do {
+            auto sample=CreateFontW(-10,0,0,0,400,0,0,0,0,0,0,0,0,L"Tahoma");
+            LOGFONTW details{};GetObjectW(sample,sizeof(details),&details);DeleteObject(sample);
+            ready=details.lfHeight==-11;
+            if(!ready) Sleep(10);
+        } while(!ready && GetTickCount64()<deadline);
+        assert(ready && "The preview requires the supplied 1.10 font configuration");
+    }
+    return bank_window_main(GetModuleHandle(nullptr),true);
+}
 #elif !defined(PN_BANK_UI_TEST)
 static DWORD WINAPI bank_start(void* module) { return bank_window_main(static_cast<HINSTANCE>(module),false); }
 BOOL WINAPI DllMain(HINSTANCE module,DWORD reason,void*) {
