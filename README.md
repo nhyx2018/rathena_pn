@@ -4,11 +4,12 @@
 
 A customized [rAthena](https://github.com/rathena/rathena) server with fourth-job and Druid integration, expanded equipment services, and coordinated Windows client updates. This repository contains server source, custom content, client companion sources, and validation tools.
 
-**[Download the latest client](https://github.com/patnawa/rathena_pn/releases/latest)** · [Release notes](doc/releases/client-2026-09-13.md) · [Player services](#player-services) · [Server setup](#server-setup) · [Documentation](#documentation)
+**[Download the published client](https://github.com/patnawa/rathena_pn/releases/latest)** · [Bank v2.3](doc/bank_compact_20260914.md) · [Release notes](doc/releases/client-2026-09-13.md) · [Player services](#player-services) · [Server setup](#server-setup) · [Documentation](#documentation)
 
-| Current release | Baseline |
+| Client and server | Current state |
 | --- | --- |
-| Windows client | **13 September 2026 — Master Account & Quest Navigation** |
+| Published full client | **13 September 2026 — Master Account & Quest Navigation** |
+| Current bank UI | **v2.3 — compact 414 × 484 panel; 40% less screen area** |
 | Game rules | Customized Renewal with fourth jobs and Druid → Karnos → Alitea |
 | Client/server packets | `20260219` |
 | Account bank | Companion protocol v2; signed 64-bit bank balance |
@@ -20,7 +21,9 @@ A customized [rAthena](https://github.com/rathena/rathena) server with fourth-jo
 1. Open the [latest release](https://github.com/patnawa/rathena_pn/releases/latest) and download **all client `.part*.rar` files** from that release.
 2. Keep every part in one folder. Extract **part 1 once** with a RAR5-compatible extractor; it reads the remaining parts automatically.
 3. Download **`PN-Bank-v2.2-ItemFix-20260913.zip`** from the same release. With the game closed, copy its `BankUI.dll` and merge its `SystemEN` folder into the extracted `PN-Client` folder, replacing the two matching files. This includes the previous v2.2 fixes and the ticket item definition.
-4. Run **`Check Client.cmd`**, adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**. The bank title bar should show **v2.2**.
+4. Run **`Check Client.cmd`**, adjust display settings with **`Setup.exe`**, then run **`Start Game.cmd`**. The published ItemFix package displays **v2.2** in the bank title bar.
+
+**Compact bank v2.3:** the current source and validated cumulative update are described in the [v2.3 installation notes](doc/bank_compact_20260914.md#installation-and-package). `PN-Client-Update-20260914-Bank-v2.3.zip` includes the earlier bank, audit and item fixes and replaces the bank title version with **v2.3**. That ZIP has not yet been attached to the public release above.
 
 The client uses the LAN address above. You need access to that network to log in. When upgrading, close the game, extract into a fresh folder, and update desktop shortcuts to that folder. Keep the supplied `DATA.INI` order and bank/font DLLs together.
 
@@ -30,22 +33,24 @@ Releases include `INSTALL.txt`, `SHA256SUMS.txt`, and a `client-manifest.json` c
 
 One bank balance is shared by **all characters on the same game login**. Open it through the game bank button, an NPC offering banking, **`@bank`**, **Alt+B**, or **Ctrl+B** after entering the game.
 
+**Bank v2.3 uses 40% less screen area**, shrinking from 522 × 642 to **414 × 484 pixels** while keeping all six transaction actions visible. Larger balance text, compact presets and exact Buy/Sell totals make the panel easier to read during play.
+
 <p align="center">
-  <img src="doc/images/bank-preview.png" width="520" alt="Master Account bank with deposit and withdrawal controls, 17Carat Diamond and 1M Zeny Ticket exchanges, and quantity limits">
+  <img src="doc/images/bank-v2.3.png" width="412" height="482" alt="Compact Account Bank v2.3 with larger balances, deposit and withdrawal, quantity presets, and exact signed Buy/Sell totals">
 </p>
 
-*Native Windows panel preview with sample balances and inventory; not a captured gameplay session.*
+*Native v2.3 preview with the supplied 1.10 font extension and sample balances and inventory; not a captured gameplay session.*
 
 | Balance | Capacity |
 | --- | ---: |
 | Shared account bank | **9,223,372,036,854,775,807 zeny** |
 | Character wallet | **2,147,483,647 zeny** |
 
-Deposit wallet zeny to fund purchases. Both exchange rows start at **one item**, show the current maximum buy/sell quantities, and display the bank cost or proceeds before you click.
+Deposit wallet zeny to fund purchases. Both exchange rows start at **one item** and show the current maximum buy/sell quantities. Each button displays its selected quantity and exact bank total, including fees: buying two tickets shows **−2,004,000z**, while selling two shows **+1,996,000z**. **Bank info** explains account sharing, balance limits and sale eligibility.
 
-**Bank v2.2** fixes periodic refreshes that briefly disabled Buy/Sell and caused blinking. Valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges retain their visible requirement messages. The latest **v2.2 ItemFix** patch also adds the missing **1M Zeny Ticket** definition so purchased tickets display their name, description and existing ticket artwork instead of **Unknown Item**. Get it from the [client release](https://github.com/patnawa/rathena_pn/releases/tag/client-2026-09-13-bank64). See the [refresh verification](doc/bank_refresh_20260913.md) and [ticket repair](doc/bank_ticket_20260913.md).
+The compact panel retains the v2.2 refresh protections: valid buttons stay enabled during balance checks, clicks are submitted once after fresh validation, and unchanged replies do not repaint the panel. Disabled exchanges keep their specific requirement messages. The cumulative update also includes the **1M Zeny Ticket** metadata repair. See the [v2.3 layout and verification](doc/bank_compact_20260914.md), [refresh checks](doc/bank_refresh_20260913.md), and [ticket repair](doc/bank_ticket_20260913.md).
 
-The server now queues the **new bank only** during connection and reconnection, suppressing the old bank's open/balance replies. This server update works with the existing v2.2 client. [Opening repair and validation](doc/bank_native_only_20260913.md).
+The server queues the custom bank during connection and reconnection, suppressing the stock bank's open/balance replies. Both v2.2 and v2.3 use the same companion protocol v2. [Opening repair and validation](doc/bank_native_only_20260913.md).
 
 | Item | Buy one | Sell one |
 | --- | ---: | ---: |
@@ -60,7 +65,7 @@ Transactions use server-checked integer arithmetic and a coordinated SQL commit 
 <summary>Preview at maximum bank and wallet balances</summary>
 
 <p align="center">
-  <img src="doc/images/bank-preview-max.png" width="520" alt="Bank panel displaying the exact 64-bit bank maximum and original character wallet maximum">
+  <img src="doc/images/bank-v2.3-max.png" width="412" height="482" alt="Compact Bank v2.3 displaying the full 64-bit bank maximum and character wallet maximum without clipping">
 </p>
 
 Sample values rendered by the same native panel. Deposits, withdrawals and item sales are unavailable when their destination balance is full; valid purchases remain available.
@@ -148,7 +153,9 @@ Deploy matching server binaries and client resources together. Follow the [bank 
 
 ## Validation
 
-The current bank baseline includes **500,000 randomized arithmetic cases**, **49 SQL checks**, **14 isolated login/character/map scenarios**, and **38 release checks**. The Buy/Sell repair adds real Windows control clicks with a recording transport, alongside shipping DLL-loader, font, transport and rendering checks.
+The [14 September audit](doc/audit_all_20260914.md) passed **40 release checks**, **15 bank scenarios**, delayed-mail capacity regressions and two-account economy transfers. Fresh backup restoration verified **137 production tables** in an isolated database. The earlier bank arithmetic baseline includes **500,000 randomized cases** and **49 SQL checks**.
+
+The [compact v2.3 panel](doc/bank_compact_20260914.md#verification) passed all **four native Windows suites**, normal and original 1.10 font renderings, and all **5,625 client file hashes**. Checks cover exact button totals, the largest balances, control bounds, refresh races and duplicate-click protection. These native fixtures are separate from the [remaining rendered gameplay checklist](doc/rendered_acceptance_20260914.md).
 
 Multi-storage passed **185 SQL assertions** and now **17 authenticated storage scenarios**, including the visible Mystic Box, player/GM commands, purchase cancellation, exact expansion fees, shared/private pages, a full 600-slot page and map crashes. The initial storage build also passed the bank scenarios and all 38 release checks. See the [original deployment evidence](doc/evidence/multi_storage_20260913.json) and [storage dialog verification](doc/evidence/storage_dialog_20260913.json).
 

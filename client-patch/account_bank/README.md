@@ -2,6 +2,12 @@
 
 Open with the normal bank button, an NPC using `openbank`, `@bank`, **Alt+B**, or **Ctrl+B** after logging into a character. The balance is shared across characters on that game login. The compact **v2.3 Account Bank** panel is 414 × 484 pixels, using 40% less area than v2.2 while keeping all six transaction actions visible. Balances use larger text; each Buy/Sell button shows its quantity and exact signed bank total. Presets, Max, Refresh and rejection reasons remain available. **Bank info** explains account sharing, limits and sale eligibility. See the [compact layout and native renderings](../../doc/bank_compact_20260914.md).
 
+<p align="center">
+  <img src="../../doc/images/bank-v2.3.png" width="412" height="482" alt="Compact Bank v2.3 with balance display, presets and exact Buy/Sell totals">
+</p>
+
+*Native preview with sample balances and the supplied 1.10 font extension.*
+
 | Currency | Buy from bank | Sell to bank |
 |---|---:|---:|
 | 17Carat Diamond (6024) | 501,000,000 | 499,000,000 |
