@@ -81,6 +81,24 @@ int main() {
     assert(RegisterClassW(&type));
     panel=CreateWindowExW(WS_EX_TOOLWINDOW,type.lpszClassName,L"",WS_POPUP|WS_BORDER|WS_CLIPCHILDREN,0,0,panel_width+2,panel_height+2,nullptr,nullptr,instance,nullptr);
     assert(panel);
+    ShowWindow(panel,SW_SHOWNOACTIVATE);
+    // Emulate a game that hides the OS pointer for its software cursor.
+    const int initial_cursor_count=ShowCursor(TRUE)-1;ShowCursor(FALSE);
+    while(ShowCursor(FALSE)>-3) {}
+    const int hidden_cursor_count=ShowCursor(TRUE)-1;ShowCursor(FALSE);
+    SetCursor(nullptr);
+    SendMessage(panel,WM_SETCURSOR,reinterpret_cast<WPARAM>(panel),MAKELPARAM(HTCLIENT,WM_MOUSEMOVE));
+    assert(GetCursor()==LoadCursor(nullptr,IDC_ARROW));
+    const int visible_cursor_count=ShowCursor(TRUE)-1;ShowCursor(FALSE);
+    assert(visible_cursor_count>=0);
+    for(int repeat=0;repeat<100;++repeat)
+        SendMessage(panel,WM_SETCURSOR,reinterpret_cast<WPARAM>(panel),MAKELPARAM(HTCLIENT,WM_MOUSEMOVE));
+    assert(ShowCursor(TRUE)-1==visible_cursor_count);ShowCursor(FALSE);
+    SendMessage(inputs[0],WM_SETCURSOR,reinterpret_cast<WPARAM>(inputs[0]),MAKELPARAM(HTCLIENT,WM_MOUSEMOVE));
+    assert(GetCursor()==LoadCursor(nullptr,IDC_IBEAM));
+    ShowWindow(panel,SW_HIDE);
+    assert(ShowCursor(TRUE)-1==hidden_cursor_count);ShowCursor(FALSE);
+    for(int count=hidden_cursor_count;count<initial_cursor_count;++count) ShowCursor(TRUE);
     // These fail in the reported build: both item edits originally started at 0.
     assert(amount(0)==0 && amount(1)==1 && amount(2)==1);
     update();for(auto control:actions) assert(!IsWindowEnabled(control));
@@ -245,11 +263,16 @@ int main() {
     submit(pn_bank::Refresh);click(404);assert(queued_action==pn_bank::BuyNote);
     const auto before_session=fixture::requests.size();
     fixture::authenticated=false;++fixture::generation;
+    ShowWindow(panel,SW_SHOWNOACTIVATE);
     SendMessage(panel,BANK_SESSION,fixture::generation,0);
+    assert(!IsWindowVisible(panel));
+    SendMessage(panel,BANK_OPEN,0,0);
+    assert(!IsWindowVisible(panel));
     assert(amount(0)==0 && amount(1)==1 && amount(2)==1);
     reply(value,true,fixture::generation-1);
     assert(queued_action==pn_bank::Refresh && !busy && !refreshing && fixture::requests.size()==before_session);
     for(auto control:actions) assert(!IsWindowEnabled(control));
+    assert(!IsWindowVisible(panel));
     DestroyWindow(panel);
     std::cout<<"PASS: compact controls stay inside the panel without overlaps; exact signed Buy/Sell totals track quantity; largest valid totals fit native and 1.10-size fonts; invalid quantity cannot display an overflowed total\n";
     std::cout<<"PASS: automatic refresh preserves enabled controls, status and paint region with zero WM_ENABLE messages; all six queued actions submit once with the clicked amount; changed funds/items/capacity, saving, failed refresh and session change cancel queued actions; local diagnostics omit identities, tokens and balances; 3M bank rejects 15 tickets and enables buying 1 or 2 with zero owned; default item quantities; all four native Buy/Sell clicks; pending/duplicate guards; zero/invalid input; presets; visible rejection reasons; deposit then buy/sell control recovery; funds, eligible items, inventory and bank capacity; unavailable, disconnected and stale sessions\n";

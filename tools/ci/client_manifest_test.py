@@ -45,6 +45,26 @@ class ManifestTests(unittest.TestCase):
                         [{'path':'safe', 'bytes':1, 'sha256':'invalid'}]):
             self.run_case(entries, {}, 1)
 
+    def test_parent_manifest_and_json_diagnostic(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            parent = Path(tmp)
+            root = parent/'PN-Client'; root.mkdir()
+            (root/'BankUI.dll').write_bytes(b'expected')
+            (parent/'client-manifest.json').write_text(json.dumps([self.entry('BankUI.dll')]))
+            report = parent/'diagnostic.json'
+            command = ['powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(SCRIPT),
+                       '-ClientRoot',str(root),'-ReportPath',str(report)]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
+            data=json.loads(report.read_text(encoding='utf-8-sig'))
+            self.assertTrue(data['passed']); self.assertEqual(data['checked'], 1)
+            # An installed manifest must take priority over the older outer one.
+            (root/'client-manifest.json').write_text(json.dumps([self.entry('BankUI.dll',b'updated')]))
+            result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            data=json.loads(report.read_text(encoding='utf-8-sig'))
+            self.assertFalse(data['passed']); self.assertTrue(data['failures'])
+
 
 if __name__ == '__main__':
     unittest.main()

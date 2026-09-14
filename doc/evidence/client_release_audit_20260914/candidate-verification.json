@@ -1,0 +1,11 @@
+﻿{
+    "passed":  true,
+    "checked":  5619,
+    "client":  "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Client-Packages\\audit-20260914\\candidate\\PN-Client",
+    "manifest":  "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Client-Packages\\audit-20260914\\candidate\\PN-Client\\client-manifest.json",
+    "failures":  [
+
+                 ],
+    "checked_at_utc":  "2026-09-14T12:51:30.0015800Z",
+    "scope":  "Supplied manifest sizes and hashes only; not gameplay or publisher authenticity."
+}

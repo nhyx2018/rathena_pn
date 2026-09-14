@@ -283,6 +283,11 @@ PurchaseItem:
 		break;
 	case 2:
 		if (kvm_point >= .@prices[.@req_setting]) {
+			// Check the selected reward after the confirmation dialogue.
+			if (!checkweight(.@item_id,1)) {
+				mes "Make room for the selected item. No KVM Points were charged.";
+				close;
+			}
 			kvm_point = kvm_point -.@prices[.@req_setting];
 			getitem .@item_id,1;
 			mes "[Logistics]";

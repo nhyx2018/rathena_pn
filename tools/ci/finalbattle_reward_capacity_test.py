@@ -154,7 +154,9 @@ def output_negative_controls():
     print(f'FINALBATTLE_OUTPUT_NEGATIVES_OK: {len(samples)+2} zero-exit failures rejected', flush=True)
 
 
-def native(build, inputs, reuse=False):
+def native(build, inputs, reuse=False, *, verifier=None, fixture_only=False):
+    require((verifier is not None) == fixture_only, 'Explicit fixture verifier and scope must be paired')
+    verify = verifier if fixture_only else gate.validate
     build = build.resolve()
     require(build != ROOT and ROOT not in build.parents, 'Artifacts must be outside repository')
     build.mkdir(parents=True, exist_ok=True)
@@ -175,7 +177,10 @@ def native(build, inputs, reuse=False):
               'extern "C" npc_data* npc_lookup(int32){return nullptr;}\n')
     require(prefix.count(remove) == 1, 'Exact test world-lookup boundary replacement')
     combined = build/'combined_finalbattle_test.cpp'
-    combined.write_text(prefix.replace(remove, '')+'\n'+(ROOT/DRIVER).read_text())
+    driver_text=(ROOT/DRIVER).read_text()
+    if (build/'shop_cases.inc').exists():
+        driver_text=driver_text.replace('#include "shop_cases.inc"',(build/'shop_cases.inc').read_text())
+    combined.write_text(prefix.replace(remove, '')+'\n'+driver_text)
     tracked = PRODUCTION + [PREFIX,DRIVER,RUNNER,'tools/ci/biosphere_crown_transaction_test.py',
                             'tools/ci/finalbattle_reward_callback_audit.py',
                             'tools/ci/episode20_21_questinfo_migration.py']
@@ -223,7 +228,14 @@ def native(build, inputs, reuse=False):
                      '_Z23clif_achievement_updateP16map_session_dataPK11achievementi']
         command = ['g++']+san+['-o',str(executable)]+[str(p) for p in fresh+objects+libs]
         command += ['-Wl,--wrap='+w for w in wrappers]
-        command += ['-lz','-ldl','-lmysqlclient','-lzstd','-lssl','-lcrypto','-lresolv','-lm']
+        command += ['-lz','-ldl','-lmysqlclient','-lssl','-lcrypto','-lresolv','-lm']
+        for library in ('zstd', 'pcre'):
+            for suffix in ('so', 'a'):
+                filename = f'lib{library}.{suffix}'
+                resolved = subprocess.check_output(['g++', f'-print-file-name={filename}'], text=True).strip()
+                if resolved != filename and Path(resolved).is_file():
+                    command.append(f'-l{library}')
+                    break
         subprocess.run(command,cwd=ROOT,check=True)
         (build/'build.json').write_text(json.dumps({'context':context,'binary':sha(executable.read_bytes())},indent=2)+'\n')
     outputs = {}
@@ -233,7 +245,7 @@ def native(build, inputs, reuse=False):
         (build/f'{mode}.stderr.txt').write_text(result.stderr)
         print(result.stdout,end=''); print(result.stderr,end='',file=sys.stderr)
         outputs[mode] = check_output(result,mode)
-    require(gate.validate(ROOT) == callbacks, 'Callback evidence changed during proof')
+    require(verify(ROOT) == callbacks, 'Callback evidence changed during proof')
     require((ROOT/NPC).read_bytes() == current, 'Frozen NPC changed during proof')
     require(hashes == {p:sha((ROOT/p).read_bytes()) for p in tracked}, 'Compiled inputs changed during proof')
     require(header_hashes == {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in headers}, 'Headers changed during proof')
@@ -255,6 +267,10 @@ def native(build, inputs, reuse=False):
                'world_boundary':'Native pc_show_questinfo executes with instance-map qi_npc empty, separately proven by pinned enabled source graph; no world startup',
                'achievement_scope':'Seven Get_Item and twenty Goal_Achieve actual records plus their deferred Gift_Box metadata; all361 records pinned, conditionless other-group recursion reviewed in source',
                'limitations':'No live persisted text, deployed-binary equivalence, crash/durability atomicity, or arbitrary invalid inventories claimed'}
+    if fixture_only:
+        receipt.update(scope='isolated current reward fixture', broad_callback_closure_verified=False,
+                       weight_status_boundary='Weight50/Weight90 status update is doubled; no arbitrary callback safety claim',
+                       world_boundary='Explicit world and persistence doubles; no full-world closure or SQL durability claim')
     (build/'receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
 
 

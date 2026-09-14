@@ -543,6 +543,9 @@ mal_in01,27,120,4	script	Fashion Box Shop#FP	4_F_KAFRA1,{
 	mes "Buy ^0000ff" + .@name$[.@i] + "^000000 for ^cc33cc" + .@cost + " Fashion Points^000000?";
 	next;
 	if (select("Buy:Cancel") == 2) close;
+	// Confirmation yields: validate the current balance and selected output again.
+	if (#FP_Fashion < .@cost) { mes "You no longer have enough Fashion Points."; close; }
+	if (!checkweight(.@box[.@i],1)) { mes "Make room in your inventory before purchasing."; close; }
 	#FP_Fashion -= .@cost;
 	getitem .@box[.@i],1;
 	mes "[Fashion Box Shop]";

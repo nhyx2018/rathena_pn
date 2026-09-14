@@ -84,7 +84,14 @@ def run(build, legacy=False, prepare_only=False, map_source=None):
     executable = build / 'map_cache_native_test'
     command = ['g++'] + sanitizer + ['-o', str(executable)] + [str(p) for p in compiled+objects+libraries]
     command += ['-Wl,--wrap=_Z9ShowErrorPKcz', '-Wl,--wrap=_Z11ShowWarningPKcz',
-                '-lz', '-ldl', '-lmysqlclient', '-lzstd', '-lssl', '-lcrypto', '-lresolv', '-lm']
+                '-lz', '-ldl', '-lmysqlclient', '-lssl', '-lcrypto', '-lresolv', '-lm']
+    for library in ('zstd', 'pcre'):
+        for suffix in ('so', 'a'):
+            filename = f'lib{library}.{suffix}'
+            resolved = subprocess.check_output(['g++', f'-print-file-name={filename}'], text=True).strip()
+            if resolved != filename and Path(resolved).is_file():
+                command.append(f'-l{library}')
+                break
     subprocess.run(command, cwd=ROOT, check=True)
     result = subprocess.run([str(executable), str(build / 'geometry_oracle.bin')], cwd=ROOT,
                             capture_output=True, text=True, timeout=120)

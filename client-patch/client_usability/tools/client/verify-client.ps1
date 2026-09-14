@@ -1,11 +1,21 @@
 [CmdletBinding()]
-param([string]$ClientRoot, [string]$Manifest)
+param([string]$ClientRoot, [string]$Manifest, [string]$ReportPath)
 
 $ErrorActionPreference = 'Stop'
+$checked = 0
+$failures = [System.Collections.Generic.List[string]]::new()
+$passed = $false
 try {
     if (-not $ClientRoot) { $ClientRoot = Join-Path $PSScriptRoot '../..' }
     $root = (Resolve-Path -LiteralPath $ClientRoot).Path.TrimEnd('\', '/')
-    if (-not $Manifest) { $Manifest = Join-Path $root 'client-manifest.json' }
+    if (-not $Manifest) {
+        $Manifest = Join-Path $root 'client-manifest.json'
+        # Full releases keep the manifest beside PN-Client; cumulative updates
+        # put it inside. Prefer the installed manifest when both are present.
+        if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
+            $Manifest = Join-Path (Split-Path -Parent $root) 'client-manifest.json'
+        }
+    }
     if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
         throw 'Place the client-manifest.json supplied with your current release in the game folder, then run Verify Client again.'
     }
@@ -42,8 +52,6 @@ try {
         }
         $validated.Add([pscustomobject]@{name=$name; path=$path; bytes=[long]$row.bytes; sha256=[string]$row.sha256})
     }
-    $failures = [System.Collections.Generic.List[string]]::new()
-    $checked = 0
     Write-Host 'Verifying release files. Large GRF archives can take a few minutes.'
     foreach ($row in $validated) {
         if (-not (Test-Path -LiteralPath $row.path -PathType Leaf)) { $failures.Add("Missing: $($row.name)"); continue }
@@ -66,8 +74,18 @@ try {
     }
     Write-Host "PASS: $checked release files match their sizes and SHA-256 checksums."
     Write-Host 'Extra screenshots and saves are allowed. This verifies the supplied manifest, not gameplay or publisher authenticity.'
+    $passed = $true
     exit 0
 } catch {
+    $failures.Add($_.Exception.Message)
     Write-Host ('Verification failed: '+$_.Exception.Message)
     exit 1
+} finally {
+    if ($ReportPath) {
+        [pscustomobject]@{
+            passed=$passed; checked=$checked; client=$root; manifest=$Manifest
+            failures=@($failures.ToArray()); checked_at_utc=[DateTime]::UtcNow.ToString('o')
+            scope='Supplied manifest sizes and hashes only; not gameplay or publisher authenticity.'
+        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ReportPath -Encoding UTF8
+    }
 }

@@ -1,0 +1,43 @@
+{
+  "host": "192.168.10.18",
+  "inspection": "Read-only SSH commands observed in this session",
+  "observed_source_hashes_match_local": {
+    "src/custom/bank_commit.hpp": "f94591cdf19135636915320b0cb97a0c6996083eac4b35715f50d5f91d547d39",
+    "src/custom/bank_inter.inc": "3d0959dc3efd8cb671d726a7a6f63650e225dbf6a86e6ddb4d1e633cc09d07b6",
+    "src/custom/bank_protocol.hpp": "080fad3bb7c5908f831fc435d498b491184ad6343c3c5eb09491edc2aafbf2ba",
+    "src/custom/bank_sql.inc": "8b36dd6087a234fc387a405ba315648fd70deb8abedaa839639c47a3008193cc",
+    "src/custom/bank_state.hpp": "f4a6a10ded3530617219ddd7845a4317bfe8ca3085385a386457719cf1359613",
+    "src/custom/bank_ui.inc": "6d9e351e3e9eac28a9bce36b3281b46c10589509f15aa90229a9bbbf79b1bb69",
+    "src/map/storage.cpp": "42cc565f678f383267745a5f7245d17a33c2312bf17513b0af9154b88bab0ac1"
+  },
+  "map_binary_sha256": "455ab58bc569c708783f04eccc2adce78c863286f8ce8577e4933c845997c825",
+  "containers": [
+    {
+      "name": "rathena-map",
+      "running": true,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    {
+      "name": "rathena-char",
+      "running": true,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    {
+      "name": "rathena-login",
+      "running": true,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    {
+      "name": "rathena-db",
+      "running": true,
+      "restart_count": 0,
+      "oom_killed": false
+    }
+  ],
+  "disk_observation": "df -h /app: 98G total, 82G used, 12G available, 88% use",
+  "changes_made": false,
+  "boundary": "Source hash equality does not prove which source built the running binary; no new full process/crash/gameplay run was performed."
+}

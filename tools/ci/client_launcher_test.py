@@ -17,6 +17,10 @@ def main():
         (root / 'SystemEN').mkdir()
         (root / 'SystemEN/itemInfo.lua').write_text('ImportFiles = {}')
         (root / 'Ragexe.exe').write_bytes(b'Never execute this fixture')
+        bank_files = ('BankUI.ini', 'BankUI.dll', 'FontScale.ini', 'FontScale.dll',
+                      'FontScaleOriginal.dll', 'SystemEN/AccountBankInfo.lua')
+        for name in bank_files:
+            (root / name).write_text('Scale=1.25\n' if name == 'FontScale.ini' else 'Presence fixture only')
         header = b'Master of Magic\0' + bytes(26) + struct.pack('<I', 0x200)
         for i in range(11):
             (root / f'patch{i}.grf').write_bytes(header)
@@ -36,6 +40,19 @@ def main():
             assert (result.returncode == 0) == passed and message in result.stdout, (name, result.stdout, result.stderr)
             print('PASS:', name)
         (root / 'DATA.INI').write_text('[Data]\n0=patch0.grf\n')
+        for removed in (('BankUI.ini', 'BankUI.dll'), *[(name,) for name in bank_files]):
+            saved = {name: (root / name).read_bytes() for name in removed}
+            for name in removed:
+                (root / name).unlink()
+            result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                '-File', str(args.launcher.resolve()), '-CheckOnly', '-ClientRoot', str(root)],
+                capture_output=True, text=True, timeout=30)
+            assert result.returncode != 0, ('false pass', removed, result.stdout)
+            for name in removed:
+                assert 'Missing file: ' + name in result.stdout, result.stdout
+                (root / name).write_bytes(saved[name])
+            print('PASS: required component removal rejected:', ', '.join(removed))
+        (root / 'FontScaleOriginal.dll').unlink()
         (root / 'BankUI.ini').write_text('[Bank]\nCharacterPort=6121\nMapPort=5121\n')
         for complete in (False, True):
             if complete:

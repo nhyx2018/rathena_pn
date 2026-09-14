@@ -1,0 +1,49 @@
+{
+  "source": "Observed tool executions in this session, not a production gameplay run",
+  "launcher_fixtures": {
+    "passed": true,
+    "cases": 15
+  },
+  "manifest_tests": {
+    "passed": true,
+    "tests": 6
+  },
+  "resource_audit_tests": {
+    "passed": true,
+    "tests": 9,
+    "lua51_enabled": true
+  },
+  "release_gate_tests": {
+    "passed": true,
+    "tests": 6
+  },
+  "bank_core": {
+    "passed": true,
+    "randomized_plans": 500000,
+    "accepted_plans": 112758,
+    "sanitizers": [
+      "address",
+      "undefined"
+    ]
+  },
+  "bank_service": {
+    "passed": true,
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "scope": "Production handlers with explicit world/SQL doubles: authentication, fragmentation, duplicate/stale replies, retries, eligibility, rollback and cache release"
+  },
+  "candidate_dll_chain": {
+    "passed": true,
+    "scope": "Existing native BankLoaderTest executable with this candidate DLL/INI files in a disposable folder; no game login"
+  },
+  "bank_item_metadata": {
+    "passed": true,
+    "scope": "Actual Lua loader and four bank ticket artwork payloads"
+  },
+  "rendered_gameplay": {
+    "passed": false,
+    "status": "Not exercised in this session; earlier acceptance remains partial"
+  }
+}

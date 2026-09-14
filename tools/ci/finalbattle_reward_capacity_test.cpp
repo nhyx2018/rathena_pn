@@ -13,6 +13,9 @@
 // world lookup below. Actual production VM/helper/grants/achievements stay native.
 #include "map/instance.hpp"
 #include "map/npc.hpp"
+#if defined(__linux__) && !defined(__GLIBC__)
+namespace __sanitizer { unsigned struct_sock_fprog_sz = sizeof(sock_fprog); }
+#endif
 
 namespace {
 npc_data crystal_npc{};
@@ -131,12 +134,17 @@ extern "C" map_session_data* crystal_character(int32 id){return attached&&attach
 extern "C" bool crystal_registry(map_session_data*,int64,int64) asm("__wrap__Z14pc_setregistryP16map_session_datall");
 extern "C" bool crystal_registry(map_session_data* sd,int64 key,int64 value){
     const std::string name=get_str(script_getvarid(key));check(sd==attached,"registry attached to correct player");
-    check(name=="ARG0"||name.rfind("EP21_FB_Crystal_",0)==0,"only exact achievement/crystal persistent variables");
+    check(name=="ARG0"||name=="#FP_Fashion"||name=="kvm_point"||name.rfind("EP21_FB_Crystal_",0)==0,"only exact achievement/crystal persistent variables");
     nums[key]=value;if(name=="ARG0")++argument_writes;return true;
 }
 extern "C" void achievement_packet(map_session_data*,const struct achievement*,int32) asm("__wrap__Z23clif_achievement_updateP16map_session_dataPK11achievementi");
 extern "C" void achievement_packet(map_session_data* sd,const struct achievement*,int32){check(sd==attached,"achievement packet owner");++achievement_packets;}
 
+#if __has_include("shop_cases.inc")
+#include "shop_cases.inc"
+#else
+#define SHOP_ITEM_COUNT 0
+#endif
 extern "C" int __wrap_main(int argc,char** argv){
     check(argc==3,"explicit artifact directory and isolated mode");
     const bool old=std::string(argv[2])=="original";check(old||std::string(argv[2])=="candidate","known mode");
@@ -156,9 +164,9 @@ extern "C" int __wrap_main(int argc,char** argv){
     const std::string dir=argv[1];
     auto text=read(dir+"/items.yml");auto rows=ryml::parse_in_arena(ryml::to_csubstr(text));
     for(auto row:rows["Body"])check(item_db.parseBodyNode(row)==1,"actual item definition parses");
-    check(item_db.size()==22&&item_db.find(644),"exact21 outputs plus actual deferred Gift_Box metadata");
+    check(item_db.size()==22+SHOP_ITEM_COUNT&&item_db.find(644),"exact21 outputs plus actual deferred Gift_Box metadata");
     item_db.loadingFinished();
-    check(item_db.size()==23&&item_db.find(ITEMID_DUMMY),"actual finalization supplies native dummy and derived prices");
+    check(item_db.size()==23+SHOP_ITEM_COUNT&&item_db.find(ITEMID_DUMMY),"actual finalization supplies native dummy and derived prices");
     for(int id:output_ids){auto d=item_db.find(id);check(d&&itemdb_isstackable2(d.get())&&!d->flag.guid&&!d->flag.autoequip&&!d->stack.inventory,"actual native plain output contract");}
     check(item_db.find(1001480)->value_sell==300000,"actual Golden Diamond derived Sell value");
     text=read(dir+"/achievements.yml");rows=ryml::parse_in_arena(ryml::to_csubstr(text));
@@ -255,6 +263,9 @@ extern "C" int __wrap_main(int argc,char** argv){
                 check(achievement_check_condition(a->condition,sd.get())==(level>=threshold),"all actual Goal_Achieve condition boundaries");}}
             before.unchanged();}
     }
+#if SHOP_ITEM_COUNT
+    if(!old) shop_cases(dir);
+#endif
     attached=nullptr;script_free_code(normal);script_free_code(hard);
     script_free_vars(instances[1]->regs.vars);instances[1]->regs.vars=nullptr;instances.clear();
     item_db.clear();achievement_db.clear();achievement_level_db.clear();

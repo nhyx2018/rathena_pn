@@ -33,6 +33,24 @@ constexpr int preset_y[3]={106,172,302};
 constexpr int action_y[3]={76,200,330};
 constexpr int edit_ids[3]={100,101,102};
 constexpr int refresh_id=200, close_id=201, title_close=202, help_id=203;
+int cursor_show_adjustments=0;
+constexpr UINT_PTR cursor_timer=2;
+
+void release_panel_cursor() {
+    KillTimer(panel,cursor_timer);
+    // Balance only our own increments; do not change the game's cursor policy.
+    while(cursor_show_adjustments>0) { ShowCursor(FALSE); --cursor_show_adjustments; }
+}
+void set_panel_cursor(HWND target) {
+    const bool edit=std::find(inputs.begin(),inputs.end(),target)!=inputs.end();
+    SetCursor(LoadCursor(nullptr,edit?IDC_IBEAM:IDC_ARROW));
+    if(!cursor_show_adjustments) {
+        int count;
+        do { count=ShowCursor(TRUE); ++cursor_show_adjustments; }
+        while(count<0 && cursor_show_adjustments<64);
+        SetTimer(panel,cursor_timer,50,nullptr);
+    }
+}
 
 bool transaction_pending() { return (busy && !refreshing) || queued_action!=pn_bank::Refresh; }
 bool actions_ready() {
@@ -255,6 +273,7 @@ void submit(uint32_t action,int64_t value=0) {
     update("request_started");
 }
 void show() {
+    if(!preview && !bank_authenticated()) { ShowWindow(panel,SW_HIDE); return; }
     if(game) SetWindowLongPtr(panel,GWLP_HWNDPARENT,reinterpret_cast<LONG_PTR>(game));
     if(!IsWindowVisible(panel)) {
         RECT area{};
@@ -291,6 +310,18 @@ void max_menu(int row,HWND source) {
 }
 LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     switch(message) {
+    case WM_SETCURSOR:
+        if(IsWindowVisible(window)) {
+            set_panel_cursor(reinterpret_cast<HWND>(w));
+            return TRUE;
+        }
+        break;
+    case WM_SHOWWINDOW:
+        if(!w) release_panel_cursor();
+        break;
+    case WM_ACTIVATE:
+        if(LOWORD(w)==WA_INACTIVE) release_panel_cursor();
+        break;
     case WM_CREATE:
         panel=window;
         font=CreateFontW(-12,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,L"Tahoma");
@@ -392,6 +423,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         return 0;
     case BANK_SESSION:
         if(!bank_current_generation(static_cast<LONG>(w),false)) return 0;
+        ShowWindow(window,SW_HIDE);
         busy=refreshing=verified=last_reply_connected=false;
         queued_action=pn_bank::Refresh; queued_amount=0; state=pn_bank::Reply{}; sequence=0;
         for(int row=0;row<3;++row) set_amount(row,row==0?0:1);
@@ -423,6 +455,16 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         delete result; return 0;
     }
     case WM_TIMER:
+        if(w==cursor_timer) {
+            POINT position{};
+            HWND target=GetCursorPos(&position)?WindowFromPoint(position):nullptr;
+            // Owned menus/help windows run on the panel thread too. Do not
+            // leave our cursor adjustment active after returning to the game.
+            if(IsWindowVisible(window) && target && GetWindowThreadProcessId(target,nullptr)==GetCurrentThreadId())
+                set_panel_cursor(target);
+            else release_panel_cursor();
+            return 0;
+        }
         if(!preview && (!game || !IsWindow(game))) {
             game=bank_find_game_window();
             if(game) previous_game_proc=reinterpret_cast<WNDPROC>(SetWindowLongPtr(game,GWLP_WNDPROC,reinterpret_cast<LONG_PTR>(game_proc)));
@@ -434,7 +476,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             (state.result==pn_bank::Saving?500:(!verified || IsWindowVisible(window) || !bank_connection_ready()?3000:15000))) submit(pn_bank::Refresh);
         return 0;
     case WM_CLOSE: ShowWindow(window,SW_HIDE); return 0;
-    case WM_DESTROY: KillTimer(window,1); PostQuitMessage(0); return 0;
+    case WM_DESTROY: release_panel_cursor(); KillTimer(window,1); PostQuitMessage(0); return 0;
     }
     return DefWindowProcW(window,message,w,l);
 }

@@ -98,9 +98,12 @@ int main() {
     received=false;ResetEvent(gate);std::thread logout_refresh(backend,pn_bank::Refresh,snapshot,true);
     submit(pn_bank::Refresh);pump_until([&] { return received.load(); });
     SendMessage(actions[5],BM_CLICK,0,0);assert(queued_action==pn_bank::SellNote);
+    ShowWindow(panel,SW_SHOWNOACTIVATE);assert(IsWindowVisible(panel));
     closesocket(mc);pump_until([] { return !verified && !busy && queued_action==pn_bank::Refresh; });
+    assert(!IsWindowVisible(panel));
     SetEvent(gate);logout_refresh.join();pump_until([] { return !bank_connection_ready(); });
     assert(financial==1 && !verified && queued_action==pn_bank::Refresh);
+    assert(!IsWindowVisible(panel));
     for(auto control:actions) assert(!IsWindowEnabled(control));
     for(auto socket:{peer,cc,cs,ms,chars,maps}) closesocket(socket);
     CloseHandle(gate);DestroyWindow(panel);

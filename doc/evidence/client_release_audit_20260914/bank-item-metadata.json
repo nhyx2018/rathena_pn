@@ -1,0 +1,41 @@
+{
+  "registered_items": 26916,
+  "base_ticket_missing": true,
+  "loader_hooks": 1,
+  "ticket_registered": true,
+  "identified_and_unidentified_descriptions": true,
+  "repeat_load_safe": true,
+  "custom_resources_preserved": true,
+  "patch_sha256": "988bbc5081a54c2332c811f2fcec500067f4fffc233fd3861b87493d9582d398",
+  "installed_bytes_verified": true,
+  "resources": [
+    {
+      "category": "collection.bmp",
+      "archive": "data.grf",
+      "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c636f6c6c656374696f6e5cc4edc6f92e626d70",
+      "size": 22854,
+      "sha256": "7a067aa4702dce3e9f368cfd66b3dafac38661b82ac4d53c600e410e95383999"
+    },
+    {
+      "category": "ground.act",
+      "archive": "data.grf",
+      "path_hex": "646174615c7370726974655cbec6c0ccc5db5cc4edc6f92e616374",
+      "size": 116,
+      "sha256": "d16c79b68518efc3e57bff0a862074a0a063275836f681198a83165d5921b04f"
+    },
+    {
+      "category": "ground.spr",
+      "archive": "data.grf",
+      "path_hex": "646174615c7370726974655cbec6c0ccc5db5cc4edc6f92e737072",
+      "size": 1362,
+      "sha256": "918858163aa41a19072082360852ad6dca34cfc446d47d274a31b1844ea832d6"
+    },
+    {
+      "category": "item.bmp",
+      "archive": "data.grf",
+      "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c6974656d5cc4edc6f92e626d70",
+      "size": 1654,
+      "sha256": "ce3e31bbcc3e74f678b56736e3417e11dcb6f6e7f8ba614ea757df3e389c45b3"
+    }
+  ]
+}

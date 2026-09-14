@@ -28,6 +28,11 @@ try {
         return $true
     }
     $null = Require-ClientFile 'Ragexe.exe'
+    # These are required features of the PN release, even if both bank files
+    # are absent. Presence detection must not turn an incomplete install valid.
+    foreach ($name in @('BankUI.ini', 'BankUI.dll', 'FontScale.ini', 'FontScale.dll', 'FontScaleOriginal.dll', 'SystemEN/AccountBankInfo.lua')) {
+        $null = Require-ClientFile $name
+    }
     $archives = @{}
     $archiveNames = @{}
     if (Require-ClientFile 'DATA.INI') {
@@ -91,11 +96,6 @@ try {
             $problems.Add('FontScale.ini needs a Scale between 1.00 and 2.00.')
         }
         $null = Require-ClientFile 'FontScale.dll'
-    }
-    if ((Test-Path -LiteralPath (Join-Path $gameRoot 'BankUI.ini')) -or (Test-Path -LiteralPath (Join-Path $gameRoot 'BankUI.dll'))) {
-        foreach ($name in @('BankUI.ini', 'BankUI.dll', 'FontScale.dll', 'FontScaleOriginal.dll', 'SystemEN/AccountBankInfo.lua')) {
-            $null = Require-ClientFile $name
-        }
     }
     if ($problems.Count -gt 0) {
         Write-Host 'The client needs attention before starting:' -ForegroundColor Yellow

@@ -1,0 +1,42 @@
+{
+  "client": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Data",
+  "changes": [
+    {
+      "path": "tools/client/start-client.ps1",
+      "before": "6575fde87eb8c5e973e16598159e69320bb21f2481b7e42a4d299dfb31444e57",
+      "after": "12d63995f1118dbba9b498a109c427b91417f0818da723bdc9f2e279d0457a32"
+    },
+    {
+      "path": "tools/client/verify-client.ps1",
+      "before": "c0d75ea29838e6573fa824f861fbe4e8291bdc807a41b0d2fa37d2a7f46e43a5",
+      "after": "e86874d5ac4f9608738e2d666c16ebd758976bc07a99d31a8888ad73c85c0004"
+    },
+    {
+      "path": "RELEASE.json",
+      "before": null,
+      "after": "1baa19d37a553e94cfbd3601035e5985e8f7614600c0201387161f2ce7c916f2"
+    },
+    {
+      "path": "AUDIT-UPDATE.txt",
+      "before": null,
+      "after": "e2beaac64874b72cca91855380ce385a8e9f68e58908b7634237ce7353f3940b"
+    },
+    {
+      "path": "LICENSES/PN-GPL-3.0.txt",
+      "before": null,
+      "after": "36b6230836cc6e38a22fc569e7b98c0b96a7e4d49b3aea51791f55dc752edede"
+    },
+    {
+      "path": "README-FIRST.txt",
+      "before": null,
+      "after": "2827fd54cc1039ff43140f19dc2f9fc398e3294e648b96a20dffaa104c4a2cf3"
+    },
+    {
+      "path": "SOURCE-NOTICES.txt",
+      "before": null,
+      "after": "77e48bbd92ff4e6d6322a20217b11ad57ee94013d3d8855ae759a1f4cba4f778"
+    }
+  ],
+  "backup": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Client-Packages\\audit-20260914\\installed-tooling-backup",
+  "scope": "Only launcher/verifier, release docs and missing notices installed. No DLLs, assets, settings, saves or server files changed. Existing hash drift is preserved and remains reportable."
+}

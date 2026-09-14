@@ -1,0 +1,33 @@
+{
+  "candidate": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Client-Packages\\audit-20260914\\candidate\\PN-Client",
+  "files": 5619,
+  "changed_files": [
+    "AUDIT-UPDATE.txt",
+    "BankUI.dll",
+    "RELEASE.json",
+    "SystemEN/AccountBankInfo.lua",
+    "SystemEN/itemInfo_Chapter2Materials.lua",
+    "SystemEN/ItemResourceRepair.lua",
+    "tools/client/start-client.ps1",
+    "tools/client/verify-client.ps1",
+    "Verify Client.cmd",
+    "VERIFY-CLIENT.txt",
+    "client-manifest.json"
+  ],
+  "excluded_from_clean_candidate": [
+    "AI/USER_AI/data/H_10910512.txt",
+    "AI/USER_AI/data/H_10910512Timeouts.lua",
+    "AI/USER_AI/data/H_2000031.txt",
+    "AI/USER_AI/data/H_2000031Timeouts.lua",
+    "AI/USER_AI/data/H_5935025.txt",
+    "AI/USER_AI/data/H_5935025Timeouts.lua",
+    "AI/USER_AI/data/H_9289565.txt",
+    "AI/USER_AI/data/H_9289565Timeouts.lua"
+  ],
+  "zip": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Client-Packages\\audit-20260914\\PN-Client-Update-20260914-Validator.zip",
+  "sha256": "7abc952ed2580eaad340fb5fe2848d27d7e093c415308d31f094fbd0b88058f7",
+  "zip_integrity_passed": true,
+  "gameplay_tested": false,
+  "cumulative_base_sha256": "34e391cac808c0b67bf135438fea350036e346d6bc2188068a396b2c5c24e2a8",
+  "bank_ui_version": "2.3"
+}

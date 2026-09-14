@@ -1,0 +1,13 @@
+﻿{
+    "passed":  false,
+    "checked":  5624,
+    "client":  "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Data",
+    "manifest":  "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Data\\client-manifest.json",
+    "failures":  [
+                     "Size differs: AI\\USER_AI\\A_Friends.lua",
+                     "Size differs: BankUI.ini",
+                     "Checksum differs: FontScale.dll"
+                 ],
+    "checked_at_utc":  "2026-09-14T12:48:26.5927972Z",
+    "scope":  "Supplied manifest sizes and hashes only; not gameplay or publisher authenticity."
+}

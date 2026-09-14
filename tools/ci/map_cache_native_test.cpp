@@ -26,6 +26,14 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#if defined(__GLIBC__)
+using cookie_offset_t = off64_t;
+#else
+using cookie_offset_t = off_t;
+// GCC's musl sanitizer runtime expects this Linux ABI size symbol.
+namespace __sanitizer { unsigned struct_sock_fprog_sz = sizeof(sock_fprog); }
+#endif
+
 namespace {
 unsigned assertions=0, failures=0, cases=0, errors=0, records=0;
 std::string current;
@@ -156,24 +164,24 @@ void synthetic() {
 // They make failed seek/ftell/read paths deterministic without editing a file.
 struct Cookie {
     std::vector<char> data;
-    off64_t position=0, advertised=8;
+    cookie_offset_t position=0, advertised=8;
     int mode=0;
     unsigned failed=0, closed=0;
 };
 ssize_t cookie_read(void* raw,char* destination,size_t size) {
     auto& c=*static_cast<Cookie*>(raw);
     if(c.mode==5) { ++c.failed; errno=EIO; return -1; }
-    const size_t available=c.position>=static_cast<off64_t>(c.data.size()) ? 0 : c.data.size()-c.position;
+    const size_t available=c.position>=static_cast<cookie_offset_t>(c.data.size()) ? 0 : c.data.size()-c.position;
     const size_t copied=std::min(available,size);
     if(copied) std::memcpy(destination,c.data.data()+c.position,copied);
     c.position+=copied; return copied;
 }
-int cookie_seek(void* raw,off64_t* offset,int origin) {
+int cookie_seek(void* raw,cookie_offset_t* offset,int origin) {
     auto& c=*static_cast<Cookie*>(raw);
     if((c.mode==1 && origin==SEEK_END) || (c.mode==2 && origin==SEEK_CUR) || (c.mode==3 && origin==SEEK_SET)) {
         ++c.failed; errno=EIO; return -1;
     }
-    const off64_t target=*offset+(origin==SEEK_END ? c.advertised : origin==SEEK_CUR ? c.position : 0);
+    const cookie_offset_t target=*offset+(origin==SEEK_END ? c.advertised : origin==SEEK_CUR ? c.position : 0);
     if(target<0) { errno=EINVAL; return -1; }
     c.position=target; *offset=target; return 0;
 }
