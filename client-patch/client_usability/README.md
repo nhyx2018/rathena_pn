@@ -4,6 +4,7 @@ Install after the enchantment repair client patch. Close the game, back up `Syst
 
 - **Start Game.cmd** checks the client files and starts Ragexe with the game directory as its working directory. It leaves a readable error on screen if a required file is missing.
 - **Check Client.cmd** runs the same checks without starting the game.
+- **Verify Client.cmd** compares every file in the matching release's `client-manifest.json` against its size and SHA-256. Place that manifest in the game folder. Use this slower check after installing or updating; `Check Client.cmd` remains the quick launch check. Extra screenshots and saves are allowed, while changed supplied settings are reported. Use the updated manifest after applying the bank patch.
 - Item names no longer carry source-server suffixes. Official source labels appear at the bottom of tooltips; the ExampleRO custom-name placeholder is removed. Item IDs, database links, descriptions, art and slots are preserved.
 
 The launcher checks DATA.INI archive presence, repeated priorities, gaps, duplicate archives, classic and Event Horizon GRF headers, this loader's literal Lua imports, and the FontScale configuration. It reads only archive headers, so it does not scan the multi-gigabyte base archive on every launch. It does not download files, alter game settings, require administrator privileges, or contact a server. PowerShell's execution-policy override applies only to the launcher process.

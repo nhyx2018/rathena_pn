@@ -1,0 +1,19 @@
+-	script	EconomyTransferFixture	-1,{
+OnInit:
+ bindatcmd "auditvendarea",strnpcinfo(3)+"::OnArea",0,99;
+ end;
+OnArea:
+ if (getcharid(3)!=99000011 || !isloggedin(99000021,99000022)) end;
+ for (.@x=100; .@x<=200; .@x+=5) {
+  for (.@y=100; .@y<=200; .@y+=5) {
+   if (!checkcell("prontera",.@x,.@y,CELL_CHKPASS)) continue;
+   if (getareaunits(BL_NPC,"prontera",.@x-10,.@y-10,.@x+10,.@y+10)) continue;
+   warp "prontera",.@x,.@y,99000022;
+   warp "prontera",.@x,.@y;
+   dispbottom "AUDIT_VENDING_AREA " + .@x + " " + .@y;
+   end;
+  }
+ }
+ dispbottom "AUDIT_VENDING_AREA_NOT_FOUND";
+ end;
+}

@@ -38,13 +38,13 @@ def drain(connection,seconds=.3):
     connection.settimeout(8);return result
 
 class Client:
-    def __init__(self,slot=0,attach=True):
-        self.cid=CID+slot;self.sequence=0
+    def __init__(self,slot=0,attach=True,*,account_id=AID,character_id=CID,username=b'bankfixture',password=b'bank-fixture-only'):
+        self.aid=account_id;self.cid=character_id+slot;self.sequence=0
         # A real map crash retains the old login session until the stock
         # disconnect watchdog clears it. Respect that recovery path.
         for attempt in range(12):
             with socket.create_connection(('127.0.0.1',6900),8) as login:
-                login.sendall(struct.pack('<HI24s24sB',0x64,20260219,b'bankfixture',b'bank-fixture-only',0))
+                login.sendall(struct.pack('<HI24s24sB',0x64,20260219,username,password,0))
                 head=exact(login,2);kind=struct.unpack('<H',head)[0]
                 if kind==0x81:
                     assert exact(login,1)==b'\x08','Unexpected fixture login rejection'
@@ -52,17 +52,17 @@ class Client:
                 assert kind==0xac4,hex(kind)
                 head+=exact(login,2);length=struct.unpack_from('<H',head,2)[0]
                 data=head+exact(login,length-4)
-                self.key1,aid,self.key2=struct.unpack_from('<III',data,4);sex=data[46];assert aid==AID
+                self.key1,aid,self.key2=struct.unpack_from('<III',data,4);sex=data[46];assert aid==self.aid
                 break
         else:raise RuntimeError('Stock disconnect watchdog did not release fixture login')
         self.char=socket.create_connection(('127.0.0.1',6121),8)
-        self.char.sendall(struct.pack('<HIIIHB',0x65,AID,self.key1,self.key2,0,sex));assert struct.unpack('<I',exact(self.char,4))[0]==AID
+        self.char.sendall(struct.pack('<HIIIHB',0x65,self.aid,self.key1,self.key2,0,sex));assert struct.unpack('<I',exact(self.char,4))[0]==self.aid
         drain(self.char);self.char.sendall(struct.pack('<H',0x9a1));drain(self.char)
         self.char.sendall(struct.pack('<HB',0x66,slot));data=drain(self.char)
         position=data.find(b'\xc5\x0a');assert position>=0,'Character selection did not return a map endpoint'
         assert struct.unpack_from('<I',data,position+2)[0]==self.cid
         self.world=socket.create_connection(('127.0.0.1',5121),8)
-        self.world.sendall(struct.pack('<HIIIIIB',0x436,AID,self.cid,self.key1,1000,0,sex));assert drain(self.world)
+        self.world.sendall(struct.pack('<HIIIIIB',0x436,self.aid,self.cid,self.key1,1000,0,sex));assert drain(self.world)
         self.world.sendall(struct.pack('<H',0x7d));drain(self.world,1.5)
         if attach:self.attach()
     def attach(self):
@@ -71,7 +71,7 @@ class Client:
     def bytes(self,action,amount,sequence=None):
         if sequence is None:
             self.sequence+=1;sequence=self.sequence
-        return struct.pack('<IHHIIIIQQQqII',0x314b4250,2,64,AID,self.cid,self.key1,self.key2,
+        return struct.pack('<IHHIIIIQQQqII',0x314b4250,2,64,self.aid,self.cid,self.key1,self.key2,
                            *self.nonce,sequence,amount,action,0)
     def send(self,data,fragment=False):
         if fragment:

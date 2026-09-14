@@ -1,0 +1,12 @@
+[Unit]
+Description=Check game services, database recovery and free disk space
+After=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+StateDirectory=rathena-health
+ExecStart=/usr/bin/python3 /app/rathena/tools/admin/health_check.py --report /var/lib/rathena-health/latest.json
+TimeoutStartSec=5min
+StandardOutput=journal
+StandardError=journal

@@ -220,7 +220,9 @@ class Chapter2NativePatchTest(unittest.TestCase):
         fragment = path.read_text(encoding='utf-8')
         parts = re.split(r'^\s*\[(\d+)\]\s*=\s*\{', fragment, flags=re.M)
         records = {int(parts[i]): parts[i + 1] for i in range(1, len(parts), 2)}
-        self.assertEqual(set(records), {1002700, 1002751, 1002752, 1002753})
+        self.assertEqual(set(records), {1002700, 1002751, 1002752, 1002753,
+                                      1002678, 1002679, 1002681, 1002683,
+                                      1002693, 1002695, 1002702, 1002705})
         server = {}
         for record in renewal_records(ROOT, 'db/item_db.yml'):
             server.setdefault(record['Id'], {}).update(record)

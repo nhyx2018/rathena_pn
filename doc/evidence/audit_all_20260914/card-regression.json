@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "noncard_deposits_rejected": 48,
+  "card_deposits_accepted": 12,
+  "noncard_item_ids": [
+    501,
+    601,
+    909,
+    1201,
+    2301,
+    1750,
+    616,
+    6024,
+    12781,
+    9001,
+    10001,
+    24000
+  ],
+  "card_item_ids": [
+    4001,
+    4002,
+    300001
+  ],
+  "scenarios": [
+    "group 0: 12 non-card items rejected from inventory without item, wallet or journal changes",
+    "group 0: normal and six-digit-ID cards accepted from inventory and stacked correctly",
+    "group 0: 12 non-card items rejected from cart without item, wallet or journal changes",
+    "group 0: normal and six-digit-ID cards accepted from cart and stacked correctly",
+    "group 0: card withdrawal preserves the total inventory/cart item count",
+    "group 99: 12 non-card items rejected from inventory without item, wallet or journal changes",
+    "group 99: normal and six-digit-ID cards accepted from inventory and stacked correctly",
+    "group 99: 12 non-card items rejected from cart without item, wallet or journal changes",
+    "group 99: normal and six-digit-ID cards accepted from cart and stacked correctly",
+    "GM privilege, carded equipment, page rename and bulk storage cannot bypass the card filter",
+    "group 99: card withdrawal preserves the total inventory/cart item count"
+  ]
+}

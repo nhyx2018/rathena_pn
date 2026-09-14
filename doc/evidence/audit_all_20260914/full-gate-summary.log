@@ -1,0 +1,48 @@
+PASS: 500000 randomized bank plans, edge limits, invalid amounts, inventory limits and exchange fees; 112758 accepted plans
+PASS: production bank service authentication, packet fragmentation, funds/capacity, locked saves, duplicate and stale requests/replies, current-state retries, item eligibility, rollback and cache release
+Ran 6 tests in 0.006s
+OK
+OK
+PASS: Liberation 21 refine boundaries; Deviruchi +1 ASPD conversion
+PASS: four rental groups, one deterministic wing each, correct 1/3-day lifetimes
+Ran 3 tests in 0.000s
+OK
+Ran 4 tests in 9.729s
+OK
+PASS: 27 production reform transaction cases: full inventory, missing materials/tuning, stale trigger, capacity, metadata, replay, NPC path
+PASS: production reform commit protocol: delayed/failure/stale/duplicate replies, reconnect, current-snapshot retry, logout
+PASS: 160 effective refine levels in 9 categories
+PASS: 110000 RNG outcomes, 13 pre-payment guards, funds/max-refine, break/protection/downgrade
+Ran 8 tests in 0.015s
+OK
+Ran 3 tests in 0.066s
+OK
+Ran 4 tests in 0.006s
+OK
+Ran 3 tests in 1.080s
+OK
+PASS: 7364 actual Attack2/schema range checks
+Ran 6 tests in 0.007s
+OK
+Ran 6 tests in 0.004s
+OK
+Ran 3 tests in 0.191s
+OK
+Ran 6 tests in 5.448s
+OK
+Ran 4 tests in 1.152s
+OK
+INSTANCE_COMBAT_RULES checks=815 failures=0
+INSTANCE_COMBAT_RULES checks=815 failures=0
+CH1_PROTECTION_OK cases=20 assertions=137
+INSTANCE_ENTRY_RESULT checks=29 failures=0 errors=0
+EP21_NATIVE_RESULT cases=16 assertions=46 failures=0 errors=0
+EP21_CHECKPOINT_RESULT checks=113 failures=0 errors=0
+MOB_MATK_RESULT checks=786484 failures=0
+MOB_MATK_RESULT checks=36 failures=0
+IMMORTAL_RESULT checks=39 failures=0 errors=0
+INSTANCE_WARPER_RESULT checks=409 failures=0 errors=0
+AIRSHIP_BRIEFING_RESULT checks=14 failures=0 errors=0
+BIORESEARCH_RESULT checks=241 failures=0 errors=0
+ALICE_RESULT checks=217 failures=0 errors=0
+PASS: full release checks (40 checks). Report: /evidence/full-release.json

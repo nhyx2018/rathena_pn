@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "finished_utc": "2026-09-14T06:33:21.773639+00:00",
+  "stopped_fixture_containers": [
+    "audit-all-20260914-qa-game",
+    "audit-all-20260914-qa-db"
+  ],
+  "qa_proxy_stopped": true,
+  "qa_container_data_retained": true,
+  "qa_network_retained": true,
+  "production_health": {
+    "checked_utc": "2026-09-14T06:33:21.414419+00:00",
+    "checks": {
+      "rathena-login": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-char": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-map": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-web": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-db": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "backup": {
+        "passed": true,
+        "report": "ragnarok-20260913T210406223048Z.sql.json",
+        "age_hours": 9.49,
+        "restore_verified": true,
+        "archive_checksum_verified": true
+      },
+      "disk": {
+        "passed": true,
+        "free_gib": 11.22,
+        "used_percent": 83.4
+      },
+      "backup_timer": {
+        "passed": true
+      }
+    },
+    "passed": true
+  },
+  "deployed_sha256": {
+    "map-server": "455ab58bc569c708783f04eccc2adce78c863286f8ce8577e4933c845997c825",
+    "src/map/pc.hpp": "6f5c9ddf460bfd7d08e9793382099bcd7e6837be874fe3b50198ea6ccb18598b",
+    "src/map/storage.cpp": "42cc565f678f383267745a5f7245d17a33c2312bf17513b0af9154b88bab0ac1",
+    "src/custom/bank_ui.inc": "6d9e351e3e9eac28a9bce36b3281b46c10589509f15aa90229a9bbbf79b1bb69"
+  }
+}

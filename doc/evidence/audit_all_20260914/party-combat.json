@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "party": {
+    "passed": true,
+    "checks": [
+      "two accounts join",
+      "leadership transfer",
+      "shared instance entry",
+      "leader disconnect",
+      "relogin and same-instance re-entry"
+    ]
+  },
+  "combat": {
+    "passed": true,
+    "damage": {
+      "physical": [
+        486,
+        690,
+        486,
+        486,
+        486
+      ],
+      "fire_vs_neutral": [
+        270,
+        270,
+        270,
+        270,
+        270
+      ],
+      "fire_vs_water": [
+        243,
+        243,
+        243,
+        243,
+        243
+      ]
+    }
+  },
+  "boundary": "Real party builtins and actual map combat pipeline on a controlled monster; full quests/bosses/rendered timing are separate checks"
+}

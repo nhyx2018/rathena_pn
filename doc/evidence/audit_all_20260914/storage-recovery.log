@@ -1,0 +1,159 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "storage_protocol_scenarios": [
+    "all screenshot menu entries and twelve initially locked pages",
+    "both player commands show Expand Storages as the first visible menu option",
+    "visible Mystic Box NPC opens multi-storage and locked-page purchase confirmation",
+    "direct and expansion-list confirmations do not charge on inspection, Cancel or menu Escape",
+    "independent normal and premium pages, native deposit and withdrawal, immediate SQL persistence",
+    "card-only and character-bound filters preserve metadata and reject invalid deposits",
+    "rename and reorder keep the same page inventory and native window title",
+    "confirmed expansion charges exactly 50M character zeny and unlocks one 600-slot page",
+    "sibling shares account pages, names, order and unlocks; private bound page stays separate; insufficient funds rejected",
+    "failed transfer rolls back both containers, then retries safely after client disconnect",
+    "failed expansion and disconnected confirmation charge once after recovery",
+    "native storage-to-cart and cart-to-storage transfers commit both containers",
+    "invalid indices, negative/zero and oversized quantities cannot move items",
+    "guild page uses native membership and permission checks",
+    "all 600 slots load through split client packets and a full page rejects an extra item",
+    "committed transfer survives a map crash; an uncommitted transfer rolls back after a map crash",
+    "GM level 99 uses the same command menu and locked-page purchase confirmation"
+  ],
+  "restored_pages": [
+    {
+      "page": 0,
+      "table": "storage",
+      "owner": "account_id",
+      "rows": 2
+    },
+    {
+      "page": 100,
+      "table": "pn_storage_02",
+      "owner": "account_id",
+      "rows": 2
+    },
+    {
+      "page": 101,
+      "table": "pn_storage_03",
+      "owner": "account_id",
+      "rows": 601
+    },
+    {
+      "page": 102,
+      "table": "pn_storage_04",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 103,
+      "table": "pn_storage_05",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 104,
+      "table": "pn_storage_06",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 105,
+      "table": "pn_storage_07",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 106,
+      "table": "pn_storage_08",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 107,
+      "table": "pn_storage_09",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 108,
+      "table": "pn_storage_10",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 110,
+      "table": "pn_master_storage_01",
+      "owner": "account_id",
+      "rows": 2
+    },
+    {
+      "page": 111,
+      "table": "pn_master_storage_02",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 112,
+      "table": "pn_master_storage_03",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 113,
+      "table": "pn_master_storage_04",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 114,
+      "table": "pn_master_storage_05",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 115,
+      "table": "pn_master_storage_06",
+      "owner": "account_id",
+      "rows": 1
+    },
+    {
+      "page": 116,
+      "table": "pn_card_storage",
+      "owner": "account_id",
+      "rows": 2
+    },
+    {
+      "page": 117,
+      "table": "pn_character_storage",
+      "owner": "char_id",
+      "rows": 2
+    }
+  ],
+  "backup": {
+    "backup": "/app/rathena-builds/audit-all-20260914/storage-recovery/backup-recovery/bank_runtime-20260914T054310346469Z.sql.gz",
+    "created_utc": "20260914T054310346469Z",
+    "database": "bank_runtime",
+    "consistency": "lock-all-tables",
+    "restore": {
+      "passed": true,
+      "tables_checked": 97,
+      "restored_sql_sha256": "a6e9952cda5f2fd724098aefcca08419a6238664d400882a28ca71990dcaf3e7"
+    },
+    "sql_sha256": "a6e9952cda5f2fd724098aefcca08419a6238664d400882a28ca71990dcaf3e7",
+    "archive_sha256": "b3495770e290716d9ffd90ed7fd0d20d535320541fccabbb77b28084c688c879",
+    "archive_bytes": 1136535,
+    "passed": true
+  },
+  "coverage": [
+    "all 18 personal pages",
+    "account and character ownership",
+    "paid-page entitlements",
+    "page names",
+    "signed 64-bit bank balance",
+    "unsigned 64-bit item identity",
+    "refine/cards/options/grade/binding",
+    "inventory/cart and completed storage journals from real protocol operations"
+  ],
+  "boundary": "Synthetic data and process/database recovery; not physical host power loss"
+}

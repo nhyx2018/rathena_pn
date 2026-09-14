@@ -22,4 +22,6 @@ jobs:
           python tools/ci/client_archive_stack_test.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/ci/client_launcher_test.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/ci/client_manifest_test.py
           exit $LASTEXITCODE

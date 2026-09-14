@@ -1,0 +1,15 @@
+{
+  "backup": "/app/rathena-builds/audit-all-20260914/deployment/database-backup/ragnarok-20260914T061725909957Z.sql.gz",
+  "created_utc": "20260914T061725909957Z",
+  "database": "ragnarok",
+  "consistency": "lock-all-tables",
+  "restore": {
+    "passed": true,
+    "tables_checked": 137,
+    "restored_sql_sha256": "a350ba57e7b8d90f95cf13fe72a3a177a3cfd0fbdb7cbf8e4ee88ef259eb7cd8"
+  },
+  "sql_sha256": "a350ba57e7b8d90f95cf13fe72a3a177a3cfd0fbdb7cbf8e4ee88ef259eb7cd8",
+  "archive_sha256": "847ec8873ce3d771ce7e9a345279391d51d9f2fb8a10ef8c377d5ab9661ec736",
+  "archive_bytes": 1405140,
+  "passed": true
+}

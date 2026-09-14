@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "cases": [
+    "early bank open and balance check emit no stock open/balance; legacy close preserves the queued custom open",
+    "companion reconnection keeps native banking suppressed and reopens only the authenticated custom panel",
+    "native bank button, @bank and actual NPC openbank open custom panel without a financial mutation",
+    "fragmented authenticated request and duplicate delivery",
+    "negative, overflowing, unaffordable and missing-item rejection",
+    "diamond and note round trips charge exact fees and preserve other item metadata",
+    "all four item exchanges retain bank-specific item logs",
+    "native deposit and withdrawal acknowledge only after commit",
+    "same-login character sharing and expired-session rejection",
+    "SQL rollback, lost client socket, save retry and relog",
+    "acknowledged transaction survives actual map-server crash",
+    "uncommitted item purchase is fully rolled back after actual map-server crash",
+    "exact 64-bit deposit, withdrawal, relog and sibling balances at 2^31, 2^53 and INT64_MAX",
+    "multi-billion item exchange costs and proceeds persist exactly in bank and zeny log",
+    "full character wallet rejects native withdrawal while bank remains above old ceiling"
+  ],
+  "final_state": {
+    "bank": 9007197098206142,
+    "wallet": 2147483647,
+    "diamonds": 1,
+    "notes": 10
+  },
+  "synthetic_account": 99000011,
+  "journal_rows": 18
+}

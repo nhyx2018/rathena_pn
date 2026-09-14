@@ -1170,7 +1170,11 @@ static inline bool pc_transaction_locked(const map_session_data* sd) {
 		(sd->multi_storage.pending && !sd->multi_storage.applying);
 }
 static bool pc_cant_act2( map_session_data* sd ){
-	return pc_transaction_pending(sd) || sd->multi_storage.loading || sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
+	// RODEX claims reserve capacity until the character-server reply arrives.
+	// An independent bank/storage action must not consume that reservation.
+	return pc_transaction_pending(sd) || sd->multi_storage.loading
+		|| sd->mail.pending_zeny || sd->mail.pending_slots || sd->mail.pending_weight
+		|| sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
 		|| sd->state.trading || sd->state.storage_flag || sd->state.prevend || sd->state.refineui_open
 		|| sd->state.stylist_open || sd->state.inventory_expansion_confirmation || sd->npc_shopid
 		|| sd->state.barter_open || sd->state.barter_extended_open

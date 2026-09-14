@@ -1,0 +1,81 @@
+{
+  "passed": true,
+  "finished_utc": "2026-09-14T04:22:13.457608+00:00",
+  "schema_change": "attack2 smallint unsigned -> int unsigned; no combat retuning",
+  "schema_after": [
+    "mob_db\tint(11) unsigned",
+    "mob_db2\tint(11) unsigned",
+    "mob_db2_re\tint(11) unsigned",
+    "mob_db_re\tint(11) unsigned"
+  ],
+  "unchanged_table_count": 34,
+  "files_after": {
+    "npc/custom/main_office/services.txt": "0a1e217fd3b08d61a3f37e3cd2a4b6b7139c212e70581eab0dd7cc624d70358b",
+    "tools/admin/health_check.py": "b8041ef2668c87eab3f140988141d44425ad1d821a52d408e68fc0767a8a64ae",
+    "tools/admin/rathena-health.service": "8c37b7299712a1f1a556670a9e14405f1836e65663ba62c78f6f596fc353bd79",
+    "tools/admin/rathena-health.timer": "a8509035aac2416ff36293afde177f9d99df5e0c264c24330aed8ac2265ed3fa",
+    "sql-files/mob_db.sql": "dd067ef8d3faf0975b0ed52a99b67b05351677a95adc0b1a0715567f311c223b",
+    "sql-files/mob_db2.sql": "b475abb7a97fa64accf7d9796177aa7f0331ca016c0a1d3ba2843af4321a9169",
+    "sql-files/mob_db_re.sql": "e6f1fc7aa0943725b5c8f7f3bba3ca9ffb516a47e26cea911f18be909e0fe400",
+    "sql-files/mob_db2_re.sql": "71b11f837d68aa633c7d1ad65239073581d13b32e42c8d6f0f2467122a5411bb",
+    "sql-files/upgrades/upgrade_20260909_mob_attack2.sql": "0e0c812f50722a0b833e5ff537af18683a279cf74e3a276a380b68b9b963d35c"
+  },
+  "binaries_after": {
+    "login-server": "4c6e67a12b1c9e89b96eeec8e1d62adfbcd5f7ffee6fb16fa65b4b6dd7ab868d",
+    "char-server": "7bbbba68ab98f9263e98a0fbbe456f67e4758d7984546e05eb395e5acad96286",
+    "map-server": "20036e29dcc2a58faf72ab2c4a53fe708d631c835d03843f0203ee1975406b0f",
+    "web-server": "2e554707bf580b09a4d39d4c47d3d38acc9273903b0ef074dbd72f1cd5487f40"
+  },
+  "health": {
+    "checked_utc": "2026-09-14T04:22:13.041439+00:00",
+    "checks": {
+      "rathena-login": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-char": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-map": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-web": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-db": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "backup": {
+        "passed": true,
+        "report": "ragnarok-20260913T210406223048Z.sql.json",
+        "age_hours": 7.3,
+        "restore_verified": true,
+        "archive_checksum_verified": true
+      },
+      "disk": {
+        "passed": true,
+        "free_gib": 12.97,
+        "used_percent": 81.6
+      },
+      "backup_timer": {
+        "passed": true
+      }
+    },
+    "passed": true
+  },
+  "full_private_receipt_sha256": "e77c52a671bb26fe0ec73da88003c4360d57ea6043103b11f05bb9c97ae6d7db"
+}

@@ -41,12 +41,12 @@ def items(wire, container):
 
 
 class Client(bank.Client):
-    def __init__(self, slot=0):
+    def __init__(self, slot=0, **kwargs):
         captured = []
         def capture(*args, **kw):
             result = drain(*args, **kw); captured.append(result); return result
         bank.drain = capture
-        try: super().__init__(slot, attach=False)
+        try: super().__init__(slot, attach=False, **kwargs)
         finally: bank.drain = drain
         self.inventory = items(b''.join(captured), 0)
         self.cart = items(b''.join(captured), 1)

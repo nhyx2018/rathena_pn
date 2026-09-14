@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "files": {
+    "tools/client/verify-client.ps1": {
+      "before": "6748d5784cf72a91f4f62f14b66ac4c0f408016e1457e5510d5671b724496884",
+      "after": "c0d75ea29838e6573fa824f861fbe4e8291bdc807a41b0d2fa37d2a7f46e43a5"
+    },
+    "VERIFY-CLIENT.txt": {
+      "before": "7755246e785903eaf0a813fae3607e671c4625815ccc81d13737d3184a82888f",
+      "after": "0352dcadf4cb47ae34f96d52dafcc82629c1b14aeba090d1aff54fc51a6faf69"
+    },
+    "SystemEN/ItemResourceRepair.lua": {
+      "before": "2d2c83e414cb8b0182c4ab0a1140f3f0d078801dcda8612e9fcf0aaabb249f04",
+      "after": "def7a681b80ab259611300d5cd4dd7c3ac64191f00fcb87aae2e1ee70cea3d88"
+    },
+    "client-manifest.json": {
+      "before": "d4c3940b8fa77d8c98bcd275db655e40289c150d3ac03ed07a565cee95f929bd",
+      "after": "9a0d5568424baf69184901f46973132856d6a4eb2b63a3f855e566ec5c3c52a2"
+    }
+  }
+}

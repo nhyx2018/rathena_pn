@@ -1,0 +1,23 @@
+{
+  "BankTransportTest.exe": {
+    "passed": true,
+    "exit_code": 0
+  },
+  "BankLoaderTest.exe": {
+    "passed": true,
+    "exit_code": 0
+  },
+  "BankUITest.exe": {
+    "passed": true,
+    "exit_code": 0
+  },
+  "BankRefreshTest.exe": {
+    "passed": true,
+    "exit_code": 0
+  },
+  "sha256": {
+    "BankUI.dll": "8602766cdcc037ec2a383433a491af7da2b6f9f2689ba3e3ddfa35996b0a2374",
+    "FontScale.dll": "820328855f614d1b51dfc75268c3b881df4fde9f8ecc59d17126d96442ffb5f1",
+    "FontScaleOriginal.dll": "ca4820f0a86c06cf2cea7fc4173ae3f6fd1b362cab9dcfa703c8319891510d82"
+  }
+}

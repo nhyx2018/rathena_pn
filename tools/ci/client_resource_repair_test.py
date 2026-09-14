@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the actual item loader and the narrow unidentified-helmet repair."""
+"""Verify actual item loading, reviewed resource repairs and field preservation."""
 import argparse
 import json
 from pathlib import Path
@@ -32,20 +32,35 @@ local ids = {5581,5582}; for id=400529,400546 do ids[#ids+1]=id end
 local missing='\197\245\177\184'
 local helmet='\199\239\184\167'
 assert(tbl[2228].unidentifiedResourceName == helmet, 'standard helmet donor changed')
+local fixes = {
+    {5054, 'identifiedResourceName', '\190\238\188\188\189\197\184\182\189\186\197\169', '\190\238\187\245\189\197\184\182\189\186\197\169'},
+    {6417, 'unidentifiedResourceName', '\176\179\180\217\191\173\184\197', '\176\179\180\217\183\161\191\173\184\197'},
+    {11534, 'unidentifiedResourceName', '\190\198\192\218\193\234\189\186', '\190\223\192\218\193\234\189\186'},
+}
+assert(tbl[5096].identifiedResourceName == fixes[1][4], 'Assassin Mask donor changed')
+assert(tbl[6417].identifiedResourceName == fixes[2][4], 'Silvervine artwork changed')
+assert(tbl[11534].identifiedResourceName == fixes[3][4], 'Coconut Juice artwork changed')
 local before=clone(tbl)
 if REQUIRE_INSTALLED then
   for _,id in ipairs(ids) do assert(tbl[id].unidentifiedResourceName == helmet, 'missing installed helmet repair: '..id) end
+  for _,fix in ipairs(fixes) do assert(tbl[fix[1]][fix[2]] == fix[4], 'missing installed resource repair: '..fix[1]) end
 end
 -- Reproduce the original affected metadata in memory even after installation.
 for _,id in ipairs(ids) do tbl[id].unidentifiedResourceName=missing end
+for _,fix in ipairs(fixes) do tbl[fix[1]][fix[2]]=fix[3] end
 dofile(PATCH)
-local allowed={};for _,id in ipairs(ids) do allowed[id]=true end
+local allowed={}
+for _,id in ipairs(ids) do allowed[id]={unidentifiedResourceName=helmet} end
+for _,fix in ipairs(fixes) do allowed[fix[1]]={[fix[2]]=fix[4]} end
 local count=0
 for id,entry in pairs(tbl) do
   count=count+1
   if allowed[id] then
-    assert(entry.unidentifiedResourceName == helmet, 'helmet resource was not repaired: '..id)
-    local expected=clone(before[id]);expected.unidentifiedResourceName=helmet
+    local expected=clone(before[id])
+    for field,value in pairs(allowed[id]) do
+      assert(entry[field] == value, 'resource was not repaired: '..id..' '..field)
+      expected[field]=value
+    end
     assert(equal(entry,expected),'unrelated item field changed: '..id)
   else assert(equal(entry,before[id]),'unrelated item changed: '..id) end
 end
@@ -53,7 +68,10 @@ local once=clone(tbl);dofile(PATCH);assert(equal(tbl,once),'repair is not idempo
 -- An independently corrected resource must not be overwritten.
 tbl[5581].unidentifiedResourceName='custom-corrected';dofile(PATCH)
 assert(tbl[5581].unidentifiedResourceName=='custom-corrected')
-print('PASS: '..count..' item records preserved; 20 helmet resources repaired; repeat loads and custom corrections safe')
+for _,fix in ipairs(fixes) do tbl[fix[1]][fix[2]]='custom-corrected' end
+dofile(PATCH)
+for _,fix in ipairs(fixes) do assert(tbl[fix[1]][fix[2]]=='custom-corrected') end
+print('PASS: '..count..' item records preserved; 23 reviewed resource references repaired; repeat loads and custom corrections safe')
 '''.replace('REQUIRE_INSTALLED', 'true' if args.require_installed else 'false').replace('PATCH', json.dumps(patch.as_posix()))
     result = subprocess.run([str(args.lua.resolve()), '-'], input=program, text=True,
                             cwd=args.client, capture_output=True)

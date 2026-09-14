@@ -35,6 +35,8 @@ TESTS = (
     'refine_transaction_test.py',
     'episode_party_progression_test.py',
     'database_backup_test.py',
+    'health_check_test.py',
+    'main_office_test.py',
     'storage_sql_failure_test.py',
     'mob_sql_schema_test.py',
     'client_archive_stack_test.py',

@@ -1,0 +1,2 @@
+# Retain receipt bytes so SHA256SUMS survives checkout on every platform.
+* -text whitespace=cr-at-eol

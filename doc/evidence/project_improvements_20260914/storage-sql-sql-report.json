@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "production_database_accessed": false,
+  "sql_checks": 185,
+  "repeat_migration": {
+    "passed": true,
+    "ordered_data_sha256": "cb15b7284c842cc0dc6ca59607e3c6062e9c80daa0e9692a099791c3dfe98d43"
+  },
+  "real_database_crash": {
+    "passed": true,
+    "kill_point": "After source, page and wallet writes; before journal/COMMIT",
+    "recovered_wallet": 2000000000,
+    "source_rows": 2,
+    "uncommitted_page_rows": 0,
+    "uncommitted_journal_rows": 0
+  }
+}

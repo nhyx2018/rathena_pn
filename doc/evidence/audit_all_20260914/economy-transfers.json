@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "scenarios": [
+    "bank deposit/withdraw and ticket round trip preserve quantities and charge exactly 4000 in fees",
+    "inventory to storage to cart to inventory conserves all potion units",
+    "two-account item-for-zeny trade and duplicate final confirmations conserve items and money",
+    "native vending purchase transfers the exact price; a sold-out replay gives no extra item",
+    "RODEX send, relog, attachment claim and repeated claim conserve item quantities"
+  ],
+  "potions_before": 40,
+  "potions_after": 40
+}

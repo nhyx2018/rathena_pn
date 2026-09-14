@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "item_record_count": 26908,
+  "changes": [
+    {
+      "item_id": 11534,
+      "column": 3,
+      "before": "bec6c0dac1eabdba",
+      "after": "bedfc0dac1eabdba"
+    },
+    {
+      "item_id": 6417,
+      "column": 3,
+      "before": "b0b3b4d9bfadb8c5",
+      "after": "b0b3b4d9b7a1bfadb8c5"
+    },
+    {
+      "item_id": 5054,
+      "column": 2,
+      "before": "beeebcbcbdc5b8b6bdbac5a9",
+      "after": "beeebbf5bdc5b8b6bdbac5a9"
+    }
+  ],
+  "scope": "Actual installed item loader. Names and resource fields of every other record match the earlier baseline; full-field preservation is covered by the Lua regression."
+}

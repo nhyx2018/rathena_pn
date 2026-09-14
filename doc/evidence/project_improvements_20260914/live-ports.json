@@ -1,0 +1,18 @@
+[
+  {
+    "port": 6900,
+    "reachable": true
+  },
+  {
+    "port": 6121,
+    "reachable": true
+  },
+  {
+    "port": 5121,
+    "reachable": true
+  },
+  {
+    "port": 8888,
+    "reachable": true
+  }
+]

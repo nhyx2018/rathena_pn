@@ -131,28 +131,138 @@ OnInit:
 -	script	PN Progression Guide	-1,{
 	mes "[Progression Guide]";
 	mes "Your base/job level: "+BaseLevel+" / "+JobLevel+".";
-	mes "Start with Job Master and Skill Supplies. Druid characters have a separate Mentor.";
-	mes "Visit Training for upgrades and a measured damage test; visit Fashion for costume services.";
-	next;
-	switch(select("Chapter 1 and Zero Cell:Chapter 2:Episode services:Equipment progression:Leave")) {
+	mes "Choose your next objective, check repeatable work, or find an equipment service.";
+	switch(select("What should I do next?:Daily and repeatable quests:Equipment goals and materials:Zero Cell access:Episode 21:Leave")) {
 	case 1:
-		mes "Chapter 1 complete: "+CH1_Complete()+".";
-		mes "Zero Cell investigation complete: "+ZC_HasAccess()+".";
-		mes "Speak to Robin at ygg_edge 173,185. PN Services explains remaining entry requirements.";
+		callfunc "PN_GuideNext";
 		break;
 	case 2:
-		mes "Chapter 2: level 225 and Chapter 1 completion. Current step: "+CH2_Step+".";
-		mes "Guardian El is at ygg_edge 156,179. Your existing quest progress is preserved.";
+		callfunc "PN_GuideDailies";
 		break;
 	case 3:
-		mes "Temporal Tina offers the existing episode ticket service with its listed prices and requirements.";
-		mes "Travel Desk includes instance destinations. Entrance NPCs enforce their own prerequisites and cooldowns.";
+		switch(select("Refine and ores:Equipment enchants:Shadow enchants:Rune crowns:Biosphere materials:Flame Coins:Leave")) {
+		case 1: mes "Review success rates, fees and break risk with the Master Refiner. The Ore Dealer is across the training room."; navigateto "pn_train",32,49; break;
+		case 2: mes "The Equipment Enchanter lists compatible equipment and the exact materials for each supported recipe."; navigateto "pn_train",36,59; break;
+		case 3: mes "The Shadow Enchanter lists supported targets, materials and upgrade options. Check the target before paying."; navigateto "pn_train",64,59; break;
+		case 4: mes "The Rune Crown desk lists its equipment and enchant recipes. Use its material list to choose a hunt."; navigateto "pn_train",42,67; break;
+		case 5: mes "At Base Level 240, Research Admin Beta offers seven habitat hunts. Each awards 5 habitat runes and 2 essences. Omega exchanges fragments, runes and essences."; navigateto "ba_in01",252,353; break;
+		case 6: mes "Finish Chapter 2, then take Flame Branch missions. The Phantom clear awards 3 Flame Coins and has a four-hour timer after claiming."; navigateto "ch2safe4",86,146; break;
+		}
 		break;
 	case 4:
-		mes "Equipment, crown, shadow and constellation desks share the existing Grade Workshop recipes.";
-		mes "Check target compatibility and materials before confirming. The office does not change their costs.";
+		if (BaseLevel < 260) mes "Reach Base Level 260 for the Zero Cell investigation.";
+		if (!CH1_Complete()) mes "Finish Chapter 1 before Robin's investigation.";
+		if (isbegin_quest(18379) != 2) mes "Complete A Hazy Gate in your Chapter 1 quest book.";
+		if (!ZC_HasAccess()) {
+			mes "Robin: Ash Tree Village, 173,185. He checks the requirements above.";
+			navigateto "ygg_edge",173,185;
+		} else {
+			mes "Investigation complete. Lux/Nox: level 260 and 50 Mana Rings. Vita/Ark: level 270 and 70 Mana Rings.";
+			mes "Mana Rings held: "+countitem(1001996)+". Ask Newt for the appropriate permit.";
+			navigateto "ch1fild1",106,84;
+		}
+		break;
+	case 5:
+		if (BaseLevel < 230) mes "Reach Base Level 230.";
+		if (isbegin_quest(18233) != 2) mes "Finish Episode 20: The Immortal.";
+		if (callfunc("EP21_Started")) mes "Your expedition has started. Follow your active Episode 21 quest in the quest window; navigation preserves the entrance requirements.";
+		else { mes "Shufapa begins the expedition at jor_tail 233,41 once both requirements are met."; navigateto "jor_tail",233,41; }
 	}
 	close;
+}
+
+// Advice and status only: these functions never accept/claim quests, reset
+// cooldowns, spend currency, give items or move the character.
+function	script	PN_GuideNext	{
+	if (BaseLevel < 200) {
+		mes "Prepare for Base Level 200: choose your job, learn its skills and equip suitable gear.";
+		mes "Job Master: lobby 46,40. Druid Mentor: lobby 56,40. Skill Supplies carries consumables; Training has the private damage lab.";
+		navigateto "pn_office",46,39;
+		return;
+	}
+	if (!CH1_Complete()) {
+		if (!isbegin_quest(18368)) {
+			mes "Start Chapter 1 at the Small Ash Tree, prt_fild05 353,252. It requires Base Level 200.";
+			navigateto "prt_fild05",353,252;
+		} else mes "Continue Chapter 1 in your quest window. Follow the active objective through Bring Down the Air Fortress; Robin's Zero Cell investigation comes afterward.";
+		return;
+	}
+	if (BaseLevel < 225) { mes "Chapter 1 is complete. Reach Base Level 225 to begin Chapter 2 with Guardian El."; return; }
+	if (CH2_Complete()) {
+		mes "Chapter 2 is complete. Check Daily and repeatable quests for Flame Coins, Biosphere materials and Episode 21 patrols.";
+		mes "Equipment goals lists the desks and material sources for your next upgrade.";
+		return;
+	}
+	mes "Chapter 2 stage: "+CH2_Step+" / 12.";
+	switch (CH2_Step) {
+	case 0:
+		mes "Bring 5 Apples to Guardian El. Apples held: "+countitem(512)+".";
+		navigateto "ygg_edge",156,179; break;
+	case 1: mes "Speak to Guardian El in Veledor."; navigateto "veledor",136,65; break;
+	case 2:
+		if (CH2_Crossroads) { mes "Crossroads cleared. Report to Guardian El."; navigateto "veledor",136,65; }
+		else { mes "Clear Crossroads of Tangled Mana through the gate beside Guardian El."; navigateto "veledor",140,65; }
+		break;
+	case 3: case 4: mes "Help Karilon: accept his assignment, defeat 20 Shadow Jailers, then report to him."; navigateto "kindlbrk",115,215; break;
+	case 5: mes "Meet Orion at the Root of Death."; navigateto "deadroot",136,65; break;
+	case 6: case 7: mes "Help the Flame Researcher: defeat the assigned Shadow Jailers and report back."; navigateto "mu_dun01",95,131; break;
+	case 8: mes "Bring 5 Apples to the Nyrholt Keeper. Apples held: "+countitem(512)+"."; navigateto "ragsruth",88,58; break;
+	case 9:
+		if (CH2_Nyrholt) mes "Nyrholt cleared. Report to the Keeper for the next assignment.";
+		else mes "Enter Nyrholt through the Keeper and defeat the guardian.";
+		navigateto "ragsruth",88,58; break;
+	case 10: mes "Defeat 100 Folnir creatures in Distorted Ragsroot, then report to the Scout."; navigateto "rgs_dun1",95,131; break;
+	case 11:
+		if (CH2_Phantom) mes "The Phantom is defeated. Speak to the Phantom Gate to record the clear and return to Guardian El.";
+		else mes "Enter the Phantom Gate and defeat the Phantom of Nyrholt.";
+		navigateto "ch2safe4",86,146; break;
+	case 12: mes "Report to Guardian El to complete Chapter 2 and claim its reward."; navigateto "veledor",136,65; break;
+	default: mes "Your stage is not recognized. Keep your quest state and ask a GM to inspect it.";
+	}
+	return;
+}
+
+function	script	PN_GuideDailies	{
+	switch(select("Biosphere habitat hunts:Phantom of Nyrholt:Raised Land patrol:Leave")) {
+	case 1:
+		if (BaseLevel < 240) { mes "Biosphere hunts unlock at Base Level 240. Your level: "+BaseLevel+"."; return; }
+		setarray .@quest,17608,17609,17610,17611,900100,900102,900104;
+		setarray .@wait,17612,17613,17614,17615,900101,900103,900105;
+		setarray .@names$,"Severe Cold","Fire","Grassland","Death","Soul","Venom","Temple";
+		for (.@i=0; .@i<7; ++.@i) {
+			.@status$="Available";
+			if (isbegin_quest(.@wait[.@i]) && checkquest(.@wait[.@i],PLAYTIME) != 2) .@status$="On cooldown until 04:00";
+			else if (isbegin_quest(.@quest[.@i])) {
+				if (checkquest(.@quest[.@i],HUNTING) == 2) .@status$="Ready to report";
+				else .@status$="In progress - see quest kill count";
+			}
+			mes .@names$[.@i]+": "+.@status$;
+		}
+		mes "Each hunt: 100 kills, 5 habitat runes and 2 essences. Research Admin Beta checks the final reward and capacity.";
+		navigateto "ba_in01",252,353;
+		break;
+	case 2:
+		if (!CH2_Complete()) { mes "Complete Chapter 2 to unlock the repeatable Phantom expedition."; return; }
+		.@state=isbegin_quest(27119);
+		.@seconds=max(0,CH2_Daily_CD_27119-gettimetick(2));
+		if (.@state == 2 && .@seconds) mes "On cooldown: "+((.@seconds+59)/60)+" minutes remaining.";
+		else if (.@state == 1 && CH2_DailyPhantom) mes "Ready to report: claim 3 Flame Coins at the Phantom Gate.";
+		else if (.@state == 1) mes "In progress: defeat the Phantom, then report to the gate.";
+		else mes "Available: accept the repeatable expedition at the Phantom Gate.";
+		mes "The four-hour timer starts when you claim the clear reward.";
+		navigateto "ch2safe4",86,146;
+		break;
+	case 3:
+		if (!callfunc("EP21_GimliComplete")) { mes "Complete the Episode 21 Gimli report first."; return; }
+		if (!EP21_LugenburgDone && isbegin_quest(17776) != 2) { mes "Finish the Lugenburg Brothers side story with Wilhelm, Reinhardt and Tris."; navigateto "jor_mbase",140,201; return; }
+		if (EP21_RaisedDaily == callfunc("EP21_DailyKey")) mes "Today's patrol is complete. It resets at 04:00 server time.";
+		else if (EP21_RaisedQuest == 17777 || EP21_RaisedQuest == 17778) {
+			if (checkquest(EP21_RaisedQuest,HUNTING) == 2) mes "Ready to report: return to Wilhelm for 10 vouchers and 10 reputation.";
+			else mes "In progress: defeat 300 monsters on the assigned Raised Land map.";
+		} else mes "Available: choose a northern or southern Raised Land patrol with Wilhelm.";
+		navigateto "jor_mbase",140,201;
+	}
+	return;
 }
 
 -	script	PN Instance Desk	-1,{

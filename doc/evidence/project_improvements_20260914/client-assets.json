@@ -1,0 +1,8 @@
+{
+  "server_defined_items_checked": 25362,
+  "held_item_ids": 74,
+  "held_ids_without_metadata": [],
+  "held_missing_resources": [],
+  "catalog_item_ids_with_missing_references": 1595,
+  "scope": "Catalog references are triage candidates, not confirmed gameplay defects. Rendered fallback behavior remains unverified."
+}

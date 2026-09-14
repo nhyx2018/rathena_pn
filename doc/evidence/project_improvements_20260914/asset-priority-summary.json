@@ -1,0 +1,13 @@
+{
+  "scope": "Local Renewal source leads, not runtime acquisition proof. Numeric source references may be unrelated; conditional grants and declared drops need gameplay validation.",
+  "baseline_before_three_repairs": {
+    "missing_catalog_item_ids": 1598,
+    "active_npc_files_scanned": 920,
+    "custom_npc_reference_item_ids": 55,
+    "direct_source_lead_item_ids": 38,
+    "reference_only_item_ids": 306,
+    "no_source_lead_item_ids": 1254
+  },
+  "limitations": "Does not resolve item-group acquisition, dynamic variables, achievements, barter or summons. General source references include non-item uses of matching numbers and names.",
+  "full_report_sha256": "b7f4e444c95da769d3391224ff74a2728c9f1b3a9a1a9349e2017b40fa29dd89"
+}

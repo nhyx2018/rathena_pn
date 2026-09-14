@@ -1149,7 +1149,8 @@ void storage_premiumStorage_open(map_session_data *sd) {
 	nullpo_retv(sd);
 
 	// The storage request may have returned after RODEX writing began.
-	if (sd->state.mail_writing || pc_transaction_pending(sd) || sd->multi_storage.loading ||
+	if (sd->state.mail_writing || sd->mail.pending_zeny || sd->mail.pending_slots || sd->mail.pending_weight ||
+		pc_transaction_pending(sd) || sd->multi_storage.loading ||
 		sd->state.storage_flag || sd->state.trading || sd->state.vending || sd->state.buyingstore ||
 		sd->state.prevend || sd->state.banking || sd->state.callshop)
 		return;

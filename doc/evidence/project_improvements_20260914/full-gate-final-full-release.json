@@ -1,0 +1,208 @@
+{
+  "phase": "full",
+  "passed": true,
+  "checks": [
+    {
+      "name": "database_yaml_syntax",
+      "passed": true,
+      "files": 312
+    },
+    {
+      "name": "interserver_reconnect_test.py",
+      "passed": true,
+      "seconds": 0.36
+    },
+    {
+      "name": "bank_core_test.py",
+      "passed": true,
+      "seconds": 0.51
+    },
+    {
+      "name": "bank_service_test.py",
+      "passed": true,
+      "seconds": 0.77
+    },
+    {
+      "name": "release_checks_test.py",
+      "passed": true,
+      "seconds": 0.06
+    },
+    {
+      "name": "bug_hunt_test.py",
+      "passed": true,
+      "seconds": 0.11
+    },
+    {
+      "name": "scdata_reload_test.py",
+      "passed": true,
+      "seconds": 0.36
+    },
+    {
+      "name": "rodex_operation_test.py",
+      "passed": true,
+      "seconds": 0.26
+    },
+    {
+      "name": "hotfix_bonus_regression.py",
+      "passed": true,
+      "seconds": 0.11
+    },
+    {
+      "name": "fly_wing_rental_regression.py",
+      "passed": true,
+      "seconds": 4.52
+    },
+    {
+      "name": "aquila_cast_time_test.py",
+      "passed": true,
+      "seconds": 0.06
+    },
+    {
+      "name": "equipment_progression_test.py",
+      "passed": true,
+      "seconds": 9.59
+    },
+    {
+      "name": "equipment_reform_transaction_test.py",
+      "passed": true,
+      "seconds": 1.57
+    },
+    {
+      "name": "reform_commit_test.py",
+      "passed": true,
+      "seconds": 0.26
+    },
+    {
+      "name": "refine_transaction_test.py",
+      "passed": true,
+      "seconds": 0.72
+    },
+    {
+      "name": "episode_party_progression_test.py",
+      "passed": true,
+      "seconds": 0.11
+    },
+    {
+      "name": "database_backup_test.py",
+      "passed": true,
+      "seconds": 0.16
+    },
+    {
+      "name": "health_check_test.py",
+      "passed": true,
+      "seconds": 0.11
+    },
+    {
+      "name": "main_office_test.py",
+      "passed": true,
+      "seconds": 0.82
+    },
+    {
+      "name": "storage_sql_failure_test.py",
+      "passed": true,
+      "seconds": 1.22
+    },
+    {
+      "name": "mob_sql_schema_test.py",
+      "passed": true,
+      "seconds": 1.17
+    },
+    {
+      "name": "client_archive_stack_test.py",
+      "passed": true,
+      "seconds": 0.06
+    },
+    {
+      "name": "client_preflight_test.py",
+      "passed": true,
+      "seconds": 0.06
+    },
+    {
+      "name": "instance_access_manifest_test.py",
+      "passed": true,
+      "seconds": 0.06
+    },
+    {
+      "name": "bioresearch_geometry_test.py",
+      "passed": true,
+      "seconds": 0.26
+    },
+    {
+      "name": "alice_geometry_test.py",
+      "passed": true,
+      "seconds": 5.58
+    },
+    {
+      "name": "alice_database_test.py",
+      "passed": true,
+      "seconds": 1.22
+    },
+    {
+      "name": "instance_combat_rules_test.py",
+      "passed": true,
+      "seconds": 0.26
+    },
+    {
+      "name": "chapter1_protection_test.py",
+      "passed": true,
+      "seconds": 11.99
+    },
+    {
+      "name": "instance_entry_native_test.py",
+      "passed": true,
+      "seconds": 19.16
+    },
+    {
+      "name": "episode21_finale_flow_test.py",
+      "passed": true,
+      "seconds": 19.31
+    },
+    {
+      "name": "episode21_checkpoint_test.py",
+      "passed": true,
+      "seconds": 19.41
+    },
+    {
+      "name": "mob_matk_range_test.py",
+      "passed": true,
+      "seconds": 1.32
+    },
+    {
+      "name": "immortal_instance_test.py",
+      "passed": true,
+      "seconds": 19.51
+    },
+    {
+      "name": "instance_warper_test.py",
+      "passed": true,
+      "seconds": 19.71
+    },
+    {
+      "name": "airship_briefing_test.py",
+      "passed": true,
+      "seconds": 19.0
+    },
+    {
+      "name": "bioresearch_test.py",
+      "passed": true,
+      "seconds": 20.11
+    },
+    {
+      "name": "alice_test.py",
+      "passed": true,
+      "seconds": 20.26
+    },
+    {
+      "name": "client_compat_assets",
+      "passed": true,
+      "seconds": 0.11
+    },
+    {
+      "name": "isolated_startup",
+      "passed": true,
+      "sha256": "9ae952b39aa432aa1848c557d655ac88f8fd072d75b5a7d5749da560f753ac64",
+      "errors": []
+    }
+  ],
+  "candidate_sha256": "55cd37f03ae3eadebd85b0ac0bfd88b4694cddd0fe57e95f51f789e3403c9290"
+}

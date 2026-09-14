@@ -70,7 +70,7 @@ static pn_bank::Result pn_bank_action(map_session_data& sd, const pn_bank::Reque
     }
     if (sd.bank_ui.pending) return pn_bank::Saving;
     if (!battle_config.feature_banking || map_getmapflag(sd.m, MF_NOBANK) || !chrif_isconnected()) return pn_bank::Unavailable;
-    if (pc_isdead(&sd) || pc_cant_act(&sd) || sd.state.autotrade || sd.state.warping ||
+    if (pc_isdead(&sd) || pc_cant_act(&sd) || sd.state.mail_writing || sd.state.autotrade || sd.state.warping ||
         sd.state.changemap || gettick() - sd.bank_ui.last_action_tick < 250) return pn_bank::Busy;
     auto snapshot = pn_bank_snapshot(sd);
     auto plan = pn_bank::plan(snapshot, request.action, request.amount);

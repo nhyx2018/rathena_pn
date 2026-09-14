@@ -1,0 +1,321 @@
+{
+  "passed": true,
+  "started_utc": "2026-09-14T06:17:25.698883+00:00",
+  "scope": [
+    "map-server",
+    "src/map/pc.hpp",
+    "src/map/storage.cpp",
+    "src/custom/bank_ui.inc"
+  ],
+  "files_before": {
+    "map-server": "20036e29dcc2a58faf72ab2c4a53fe708d631c835d03843f0203ee1975406b0f",
+    "src/map/pc.hpp": "a8d47a1c40a09720f7c3e613b4a77d137beddb268a1374468ea3f2b661a11e12",
+    "src/map/storage.cpp": "24fd3f079cb9b485198aca15a15742409b62ef5b145982d2d76b1daed70798e4",
+    "src/custom/bank_ui.inc": "fd93b9f254bba40d3f60625416ac3deb62bd9af8aa23265156ef4fbba808a016"
+  },
+  "schema_changed": false,
+  "production_restore_performed": false,
+  "tables_before": {
+    "acc_reg_num": {
+      "rows": 23,
+      "sha256": "0a32f7abc831bf3485961c28ecd7ca7e9195edb2a816ea4e5a684687d5367d5d"
+    },
+    "acc_reg_str": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cart_inventory": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "char": {
+      "rows": 2,
+      "sha256": "2269e6d798976452811aba89c0e5001e9b8133efbc57c0bb2a17a057a59937b7"
+    },
+    "char_reg_num": {
+      "rows": 51,
+      "sha256": "0d0430126c8df301ae39d4719b5d87008153846f8f28f4ac698d0c00b7c46c13"
+    },
+    "char_reg_str": {
+      "rows": 2,
+      "sha256": "a809585537052296aa9057bfe1d8fb379bc87d36ab990afdb025ced82bf7e5a4"
+    },
+    "guild_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "inventory": {
+      "rows": 114,
+      "sha256": "250a79a472dcbe422dd9799b5733b88eda7a4cb9a888b581c3cb1b4a20c7ef5f"
+    },
+    "login": {
+      "rows": 2,
+      "sha256": "69a51beab70a0abe350fe72bbe3179e4309fb897477891d52da38354ce48ef9e"
+    },
+    "pn_bank_commits": {
+      "rows": 11,
+      "sha256": "574979fd2b2a4c8299268ae10cfa7429127a27ec3f53dffec4fe46512315ad45"
+    },
+    "pn_card_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_character_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_01": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_02": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_03": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_04": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_05": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_06": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_02": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_03": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_04": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_05": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_06": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_07": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_08": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_09": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_10": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_commits": {
+      "rows": 1,
+      "sha256": "c718fdffc24be5c87711990d9a2dacffcd3369b45699e675036ab4345b68c72a"
+    },
+    "quest": {
+      "rows": 31,
+      "sha256": "ddfb9ace52a2fbaae0f9c26498bd8f2e986835241195893ca74aa2f567def42a"
+    },
+    "storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    }
+  },
+  "tables_after": {
+    "acc_reg_num": {
+      "rows": 23,
+      "sha256": "0a32f7abc831bf3485961c28ecd7ca7e9195edb2a816ea4e5a684687d5367d5d"
+    },
+    "acc_reg_str": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cart_inventory": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "char": {
+      "rows": 2,
+      "sha256": "2269e6d798976452811aba89c0e5001e9b8133efbc57c0bb2a17a057a59937b7"
+    },
+    "char_reg_num": {
+      "rows": 51,
+      "sha256": "0d0430126c8df301ae39d4719b5d87008153846f8f28f4ac698d0c00b7c46c13"
+    },
+    "char_reg_str": {
+      "rows": 2,
+      "sha256": "a809585537052296aa9057bfe1d8fb379bc87d36ab990afdb025ced82bf7e5a4"
+    },
+    "guild_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "inventory": {
+      "rows": 114,
+      "sha256": "250a79a472dcbe422dd9799b5733b88eda7a4cb9a888b581c3cb1b4a20c7ef5f"
+    },
+    "login": {
+      "rows": 2,
+      "sha256": "69a51beab70a0abe350fe72bbe3179e4309fb897477891d52da38354ce48ef9e"
+    },
+    "pn_bank_commits": {
+      "rows": 11,
+      "sha256": "574979fd2b2a4c8299268ae10cfa7429127a27ec3f53dffec4fe46512315ad45"
+    },
+    "pn_card_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_character_storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_01": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_02": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_03": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_04": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_05": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_master_storage_06": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_02": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_03": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_04": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_05": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_06": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_07": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_08": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_09": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_10": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pn_storage_commits": {
+      "rows": 1,
+      "sha256": "c718fdffc24be5c87711990d9a2dacffcd3369b45699e675036ab4345b68c72a"
+    },
+    "quest": {
+      "rows": 31,
+      "sha256": "ddfb9ace52a2fbaae0f9c26498bd8f2e986835241195893ca74aa2f567def42a"
+    },
+    "storage": {
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    }
+  },
+  "persistent_rows_unchanged": true,
+  "files_after": {
+    "map-server": "455ab58bc569c708783f04eccc2adce78c863286f8ce8577e4933c845997c825",
+    "src/map/pc.hpp": "6f5c9ddf460bfd7d08e9793382099bcd7e6837be874fe3b50198ea6ccb18598b",
+    "src/map/storage.cpp": "42cc565f678f383267745a5f7245d17a33c2312bf17513b0af9154b88bab0ac1",
+    "src/custom/bank_ui.inc": "6d9e351e3e9eac28a9bce36b3281b46c10589509f15aa90229a9bbbf79b1bb69"
+  },
+  "health": {
+    "checked_utc": "2026-09-14T06:17:43.914934+00:00",
+    "checks": {
+      "rathena-login": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-char": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-map": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-web": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "rathena-db": {
+        "passed": true,
+        "running": true,
+        "docker_health": "not-configured",
+        "recent_error_lines": 0
+      },
+      "backup": {
+        "passed": true,
+        "report": "ragnarok-20260913T210406223048Z.sql.json",
+        "age_hours": 9.23,
+        "restore_verified": true,
+        "archive_checksum_verified": true
+      },
+      "disk": {
+        "passed": true,
+        "free_gib": 11.21,
+        "used_percent": 83.4
+      },
+      "backup_timer": {
+        "passed": true
+      }
+    },
+    "passed": true
+  },
+  "finished_utc": "2026-09-14T06:17:44.077335+00:00"
+}

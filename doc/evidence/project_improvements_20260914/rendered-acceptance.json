@@ -1,0 +1,6 @@
+{
+  "status": "pending",
+  "scenario_count": 30,
+  "reason": "Current Computer Use connection exposes browsers but no native apps.",
+  "checklist": "../../rendered_acceptance_20260914.md"
+}

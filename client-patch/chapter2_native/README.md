@@ -118,11 +118,15 @@ The earlier `../chapter2-native-candidate-20260906/` is an intentionally retaine
 **rejected draft** without mandatory caution metadata. Do not install it. It
 is useful only for demonstrating the helper validation failure and its fix.
 
-## Four separate material display records
+## Twelve separate material display records
 
-`SystemEN/itemInfo_Chapter2Materials.lua` defines only IDs 1002700 and
-1002751–1002753 in `tbl_chapter2materials`. The original active itemInfo import
-chain lacks these four records. Labels/type/weight follow existing server
+`SystemEN/itemInfo_Chapter2Materials.lua` defines IDs 1002700 and
+1002751–1002753, plus the eight missing monster drops 1002678, 1002679,
+1002681, 1002683, 1002693, 1002695, 1002702 and 1002705 in
+`tbl_chapter2materials`. The eight drops were added on 14 September after
+tracing active Chapter 2 spawns and their effective drop tables. An existing
+base definition takes precedence over these eight fallback entries.
+Labels/type/weight follow existing server
 records; the Blue/Red/Yellow Paper translations remain upstream TODOs.
 Descriptions add no effects, drop rates, prices, or acquisition claims.
 

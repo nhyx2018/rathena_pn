@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "evidence_origin": "Four executables executed successfully in this audit session; outputs were returned directly by the tool.",
+  "scope": "Native shipping Windows control/transport/loader fixtures; not rendered Ragexe gameplay",
+  "executables": {
+    "BankUITest.exe": {
+      "sha256": "134c3b7cf227c4d711833cf31c670a56d8a64761ba637ef236920cc98dbcae0c"
+    },
+    "BankTransportTest.exe": {
+      "sha256": "feefc8c3e2f874885234c564776d8913751c887a657d135ad3716c8bc18f298d"
+    },
+    "BankRefreshTest.exe": {
+      "sha256": "0ab5aa7f21cd0a2386bee6c14c107a8e79693687c2a8a640684e75569518c081"
+    },
+    "BankLoaderTest.exe": {
+      "sha256": "49f94e96577586417d252471f0e087a452f0d6ecbdc2dad41f7facbcc9944691"
+    }
+  }
+}

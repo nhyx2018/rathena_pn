@@ -15,7 +15,7 @@ struct ItemData { struct {bool inventory=false;int amount=30000;} stack; struct 
 struct ItemDb { std::shared_ptr<ItemData> data=std::make_shared<ItemData>(); std::shared_ptr<ItemData> find(uint32){return data;} } item_db;
 struct map_session_data {
     struct {uint32 account_id=2000001,char_id=150001; int32 zeny=1000000000;uint16 inventory_slots=MAX_INVENTORY;} status;
-    struct {bool active=true,autotrade=false,warping=false,changemap=false;} state;
+    struct {bool active=true,autotrade=false,warping=false,changemap=false,mail_writing=false;} state;
     pn_bank_state bank_ui;
     int64 bank_vault=1000000000;
     int32 weight=0,max_weight=1000000,fd=2,m=0;
@@ -112,6 +112,9 @@ int main(){
     request.nonce_hi=snapshot.nonce_hi;request.nonce_lo=snapshot.nonce_lo;request.request_id=1;request.action=Deposit;request.amount=100;
     invalid=request;invalid.nonce_hi++;assert(rpc(invalid).result==Stale && !player.bank_ui.pending);
     world_busy=true;assert(rpc(request).result==Busy);world_busy=false;
+    player.state.mail_writing=true;
+    assert(rpc(request).result==Busy && !player.bank_ui.pending && player.bank_vault==1000000000 && player.status.zeny==1000000000);
+    player.state.mail_writing=false;
     disabled=true;assert(rpc(request).result==Unavailable);disabled=false;
     connected=false;assert(rpc(request).result==Unavailable);connected=true;
     assert(rpc(request).result==Saving && player.bank_ui.pending && player.bank_vault==1000000100 && player.status.zeny==999999900);

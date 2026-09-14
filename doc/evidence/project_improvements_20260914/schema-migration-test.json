@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "tables": 4,
+  "existing_rows_preserved": 8,
+  "repeat_application_passed": true,
+  "max_unsigned_32bit_passed": true
+}

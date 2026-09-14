@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "scenarios": [
+    {
+      "passed": true,
+      "production_data_used": false,
+      "observed_only": false,
+      "scenario": "mail claim reserved wallet capacity before bank withdrawal",
+      "bank_result": 4,
+      "wallet_before": 2147483547,
+      "wallet_after": 2147483647,
+      "bank_before": 1000,
+      "bank_after": 1000,
+      "mail_after": 0,
+      "total_before": 2147484647,
+      "total_after": 2147484647,
+      "lost_zeny": 0
+    },
+    {
+      "passed": true,
+      "scenario": "delayed item claim keeps the last inventory slot; no lost item or bank debit"
+    },
+    {
+      "passed": true,
+      "scenario": "mail composer blocks bank mutation; cancelling permits an exact persisted deposit"
+    }
+  ]
+}

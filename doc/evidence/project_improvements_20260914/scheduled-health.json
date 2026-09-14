@@ -1,0 +1,51 @@
+{
+  "checked_utc": "2026-09-14T04:27:19.385198+00:00",
+  "checks": {
+    "rathena-login": {
+      "passed": true,
+      "running": true,
+      "docker_health": "not-configured",
+      "recent_error_lines": 0
+    },
+    "rathena-char": {
+      "passed": true,
+      "running": true,
+      "docker_health": "not-configured",
+      "recent_error_lines": 0
+    },
+    "rathena-map": {
+      "passed": true,
+      "running": true,
+      "docker_health": "not-configured",
+      "recent_error_lines": 0
+    },
+    "rathena-web": {
+      "passed": true,
+      "running": true,
+      "docker_health": "not-configured",
+      "recent_error_lines": 0
+    },
+    "rathena-db": {
+      "passed": true,
+      "running": true,
+      "docker_health": "not-configured",
+      "recent_error_lines": 0
+    },
+    "backup": {
+      "passed": true,
+      "report": "ragnarok-20260913T210406223048Z.sql.json",
+      "age_hours": 7.39,
+      "restore_verified": true,
+      "archive_checksum_verified": true
+    },
+    "disk": {
+      "passed": true,
+      "free_gib": 12.97,
+      "used_percent": 81.6
+    },
+    "backup_timer": {
+      "passed": true
+    }
+  },
+  "passed": true
+}

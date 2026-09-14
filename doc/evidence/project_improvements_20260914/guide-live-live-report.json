@@ -1,0 +1,177 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "cases": [
+    {
+      "case": "new character",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter one entry",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter one in progress",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two level lock",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two start",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 1",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 2",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 3",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 4",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 5",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 6",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 7",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 8",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 9",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 10",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 11",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 12",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two stage 99",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "chapter two complete",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "biosphere level lock",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "biosphere available",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "biosphere cooldown",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "biosphere expired cooldown",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom story lock",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom available",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom in progress",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom reward ready",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom cooldown",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "phantom timer expired",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "patrol locked",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "patrol side story",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "patrol available",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "zero cell prerequisites",
+      "passed": true,
+      "persistent_state_unchanged": true
+    },
+    {
+      "case": "episode twenty one prerequisites",
+      "passed": true,
+      "persistent_state_unchanged": true
+    }
+  ],
+  "scope": "Actual server dialogs and persistence; not a rendered gameplay session"
+}

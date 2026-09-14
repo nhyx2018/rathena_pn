@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "files_checked": 5625,
+  "checks": [
+    {
+      "name": "quick",
+      "passed": true
+    },
+    {
+      "name": "full",
+      "passed": true
+    }
+  ],
+  "update_sha256": "9476c803cb2e13332462356af3a257a2fbba8a880d09ff10bd3e1cc4096308a0",
+  "update_bytes": 598133,
+  "files_in_patch": [
+    "BankUI.dll",
+    "SystemEN/AccountBankInfo.lua",
+    "VERIFY-CLIENT.txt",
+    "Verify Client.cmd",
+    "client-manifest.json",
+    "tools/client/verify-client.ps1"
+  ]
+}

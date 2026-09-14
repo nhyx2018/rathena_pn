@@ -1,0 +1,15 @@
+{
+  "passed": false,
+  "production_data_used": false,
+  "observed_only": true,
+  "scenario": "mail claim reserved wallet capacity before bank withdrawal",
+  "bank_result": 1,
+  "wallet_before": 2147483547,
+  "wallet_after": 2147483647,
+  "bank_before": 1000,
+  "bank_after": 900,
+  "mail_after": 0,
+  "total_before": 2147484647,
+  "total_after": 2147484547,
+  "lost_zeny": 100
+}

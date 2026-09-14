@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "file_count": 5625,
+  "package": "C:\\Users\\Alpha\\Downloads\\Compressed\\Data2026\\Data\\server-work\\audit-all-20260914\\client-update\\PN-Client-Update-20260914-Audit.zip",
+  "package_sha256": "a461d15553a05fda2236730e5e4859aa00746af4245b5474483309af4baf784a",
+  "package_bytes": 599959,
+  "added_metadata_ids": [
+    1002678,
+    1002679,
+    1002681,
+    1002683,
+    1002693,
+    1002695,
+    1002702,
+    1002705
+  ],
+  "installed_files": [
+    {
+      "path": "SystemEN/itemInfo_Chapter2Materials.lua",
+      "before_sha256": "bcb1cdd1e74111466ad00f6c8f7a7c4b65406da904fbe592deee65c8aa922da7",
+      "after_sha256": "5f33a0c0cc79761e3e129bf30b8c0dc63245026e5ffcd791d5d02749560fd88f"
+    },
+    {
+      "path": "VERIFY-CLIENT.txt",
+      "before_sha256": "0352dcadf4cb47ae34f96d52dafcc82629c1b14aeba090d1aff54fc51a6faf69",
+      "after_sha256": "1c2faaadd9cd6a0e533295daadceb85efe404d5de0cd9de460876a60eac399a0"
+    },
+    {
+      "path": "client-manifest.json",
+      "before_sha256": "9a0d5568424baf69184901f46973132856d6a4eb2b63a3f855e566ec5c3c52a2",
+      "after_sha256": "7f9517d3beb446d2190fcf3089db10b045bdec41dbcc4541261a73b9a8e7a958"
+    }
+  ],
+  "checks": [
+    "actual Lua loader and AddItem",
+    "quick client checks",
+    "full file hashes",
+    "zip integrity"
+  ],
+  "rendered_gameplay_passed": false
+}

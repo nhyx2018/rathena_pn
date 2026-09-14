@@ -1,0 +1,75 @@
+{
+  "archives": [
+    {
+      "name": "client_repairs.grf",
+      "entries": 173,
+      "verified_payloads": 173,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "enchant_repair.grf",
+      "entries": 3,
+      "verified_payloads": 3,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "pn_office.grf",
+      "entries": 9,
+      "verified_payloads": 9,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "chapter2_maps.grf",
+      "entries": 51,
+      "verified_payloads": 51,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "chapter2_native.grf",
+      "entries": 2,
+      "verified_payloads": 2,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "nebula_upgrade_v2.grf",
+      "entries": 1,
+      "verified_payloads": 1,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "server.grf",
+      "entries": 1,
+      "verified_payloads": 1,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "english.grf",
+      "entries": 24,
+      "verified_payloads": 24,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "new.grf",
+      "entries": 1170,
+      "verified_payloads": 1170,
+      "encrypted_skipped": 0
+    },
+    {
+      "name": "data.grf",
+      "entries": 241336,
+      "verified_payloads": 240751,
+      "encrypted_skipped": 0
+    }
+  ],
+  "errors": [],
+  "duplicates": [],
+  "navigation_previews": [
+    {
+      "archive": "data.grf",
+      "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c6d61705c70726f6e746572612e626d70",
+      "offset": 4563204304,
+      "size": 263220,
+      "sha256": "22dc5bfe560b75ea63b6e347dba59d4e566232e5ca83a78c60f097598a0f519c"
+    }
+  ]
+}

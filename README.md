@@ -101,6 +101,7 @@ The [navigation audit](doc/quest_navigation_audit_20260913.md) documents route a
 | Service | Open or visit | Purpose |
 | --- | --- | --- |
 | Main Office | `@office` · `pn_office,100,40` | Searchable directory across 52 lobby, training and fashion desks |
+| Progression Guide | Main Office · `pn_office,108,80` | Next story objective, Chapter 2 stages, daily availability, equipment services and material sources |
 | Account bank | `@bank` · Alt+B · Ctrl+B | Shared savings, wallet transfers, diamond and ticket exchanges |
 | Multi-storage | `@storage` · `@mstorage` · Prontera Mystic Box · Office Kafra | Account pages, card storage, private bound items and 50M expansions |
 | Saved settings | `@settings` | Character overrides and game-account login preferences |
@@ -170,6 +171,7 @@ Native tests need the documented compiler/runtime dependencies. Dated reports re
 
 | Topic | Guides and evidence |
 | --- | --- |
+| Latest audit | [Six-area audit and deployed fixes](doc/audit_all_20260914.md) · [Rendered checklist](doc/rendered_acceptance_20260914.md) |
 | Current client | [Release notes](doc/releases/client-2026-09-13.md) · [Bank controls](doc/bank_controls_20260913.md) |
 | Banking | [Build/install](client-patch/account_bank/README.md) · [64-bit persistence](doc/account_bank_64bit_20260913.md) |
 | Storage | [Pages, expansion, migration and validation](doc/multi_storage_20260913.md) |

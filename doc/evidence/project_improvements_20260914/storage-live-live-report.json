@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "production_data_used": false,
+  "scenarios": [
+    "all screenshot menu entries and twelve initially locked pages",
+    "both player commands show Expand Storages as the first visible menu option",
+    "visible Mystic Box NPC opens multi-storage and locked-page purchase confirmation",
+    "direct and expansion-list confirmations do not charge on inspection, Cancel or menu Escape",
+    "independent normal and premium pages, native deposit and withdrawal, immediate SQL persistence",
+    "card-only and character-bound filters preserve metadata and reject invalid deposits",
+    "rename and reorder keep the same page inventory and native window title",
+    "confirmed expansion charges exactly 50M character zeny and unlocks one 600-slot page",
+    "sibling shares account pages, names, order and unlocks; private bound page stays separate; insufficient funds rejected",
+    "failed transfer rolls back both containers, then retries safely after client disconnect",
+    "failed expansion and disconnected confirmation charge once after recovery",
+    "native storage-to-cart and cart-to-storage transfers commit both containers",
+    "invalid indices, negative/zero and oversized quantities cannot move items",
+    "guild page uses native membership and permission checks",
+    "all 600 slots load through split client packets and a full page rejects an extra item",
+    "committed transfer survives a map crash; an uncommitted transfer rolls back after a map crash",
+    "GM level 99 uses the same command menu and locked-page purchase confirmation"
+  ]
+}

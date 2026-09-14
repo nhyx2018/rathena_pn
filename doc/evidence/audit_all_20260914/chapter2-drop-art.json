@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "resource": "EpisodClear20",
+  "artwork": "existing generic material artwork",
+  "checks": [
+    {
+      "path_hex": "646174615c7370726974655cbec6c0ccc5db5c657069736f64636c65617232302e616374",
+      "archive": "data.grf",
+      "bytes": 116,
+      "sha256": "1e74733dbfb6dda871d1df4d557707aeca0284dca93d8d760289e668957705ae",
+      "type": "act",
+      "passed": true
+    },
+    {
+      "path_hex": "646174615c7370726974655cbec6c0ccc5db5c657069736f64636c65617232302e737072",
+      "archive": "data.grf",
+      "bytes": 1331,
+      "sha256": "7c0d8c468cd7a3696203a7b3ab477b9ad4e42280294cf10b8a1672f165acd102",
+      "type": "spr",
+      "passed": true
+    },
+    {
+      "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c636f6c6c656374696f6e5c657069736f64636c65617232302e626d70",
+      "archive": "data.grf",
+      "bytes": 22856,
+      "sha256": "3c5f20c77ed2618f653dcc431056cd92b7cad4453d8ac4b6fde4ec56a1cc8f81",
+      "type": "bmp",
+      "passed": true,
+      "width": 75,
+      "height": 100
+    },
+    {
+      "path_hex": "646174615c746578747572655cc0afc0fac0cec5cdc6e4c0ccbdba5c6974656d5c657069736f64636c65617232302e626d70",
+      "archive": "data.grf",
+      "bytes": 1782,
+      "sha256": "9ffad3f40c978beaf54e4f5754c691b9a6a7e42e1c72be5962cd448be074dd32",
+      "type": "bmp",
+      "passed": true,
+      "width": 24,
+      "height": 24
+    }
+  ]
+}

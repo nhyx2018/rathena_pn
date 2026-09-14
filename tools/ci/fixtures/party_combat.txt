@@ -1,0 +1,91 @@
+-	script	BugHuntRuntime	-1,{
+OnInit:
+ bindatcmd "bhparty","BugHuntRuntime::OnParty",0,0;
+ bindatcmd "bhjoin","BugHuntRuntime::OnJoin",0,0;
+ bindatcmd "bhstate","BugHuntRuntime::OnState",0,0;
+ bindatcmd "bhleader","BugHuntRuntime::OnLeader",0,0;
+ bindatcmd "bhleave","BugHuntRuntime::OnLeave",0,0;
+ bindatcmd "bhinstance","BugHuntRuntime::OnInstance",0,0;
+ bindatcmd "bhenter","BugHuntRuntime::OnEnter",0,0;
+ bindatcmd "bhcombat","BugHuntRuntime::OnCombat",0,0;
+ bindatcmd "bhhit","BugHuntRuntime::OnHit",0,0;
+ bindatcmd "bhmagic","BugHuntRuntime::OnMagic",0,0;
+ bindatcmd "bhhp","BugHuntRuntime::OnHP",0,0;
+ bindatcmd "bhwater","BugHuntRuntime::OnWater",0,0;
+ end;
+OnParty:
+ if (getcharid(3)!=99000011) end;
+ if (getcharid(1)) {
+  if (!is_party_leader()) party_changeleader getcharid(1),getcharid(0);
+  dispbottom "BH_CREATE 1";
+  end;
+ }
+ dispbottom "BH_CREATE " + party_create("BugHuntRuntime");
+ $BHParty=getcharid(1);
+ end;
+OnJoin:
+ if (getcharid(3)!=99000013) end;
+ if (getcharid(1)) { dispbottom "BH_JOIN 1"; end; }
+ dispbottom "BH_JOIN " + party_addmember(getcharid(1,"ReleaseProbe0"),getcharid(0));
+ end;
+OnLeader:
+ if (getcharid(3)!=99000011) end;
+ dispbottom "BH_LEADER " + party_changeleader(getcharid(1),99000014);
+ end;
+OnLeave:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ dispbottom "BH_LEAVE " + party_delmember();
+ end;
+OnInstance:
+ if (getcharid(3)!=99000013) end;
+ dispbottom "BH_INSTANCE " + instance_create("Old Glast Heim");
+ end;
+OnEnter:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ dispbottom "BH_ENTER " + instance_enter("Old Glast Heim");
+ end;
+OnState:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ dispbottom "BH_STATE " + getcharid(1) + " " + is_party_leader() + " " + instance_id(IM_PARTY) + " " + strcharinfo(3);
+ end;
+OnCombat:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ warp "prontera",150,180;
+ skill "MG_FIREBOLT",1,3;
+ heal 10000,10000;
+ if (.Dummy && unitexists(.Dummy)) unitkill .Dummy;
+ monster "prontera",151,180,"BugHuntDummy",1002,1;
+ .Dummy=$@mobid[0];
+ setunitdata .Dummy,UMOB_MAXHP,1000000;
+ setunitdata .Dummy,UMOB_MODE,0;
+ setunitdata .Dummy,UMOB_ELETYPE,Ele_Neutral;
+ setunitdata .Dummy,UMOB_ELELEVEL,1;
+ dispbottom "BH_DUMMY " + .Dummy;
+ dispbottom "BH_FIREBOLT " + getskilllv("MG_FIREBOLT");
+ end;
+OnHit:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ .@gid=getcharid(3);
+ dispbottom "BH_ATTACK_SENT";
+ detachrid;
+ unitattack .@gid,.Dummy,0;
+ end;
+OnMagic:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ .@gid=getcharid(3);
+ heal 0,1000;
+ dispbottom "BH_MAGIC_SENT";
+ detachrid;
+ unitskilluseid .@gid,"MG_FIREBOLT",1,.Dummy;
+ end;
+OnWater:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ setunitdata .Dummy,UMOB_ELETYPE,Ele_Water;
+ dispbottom "BH_WATER";
+ end;
+OnHP:
+ if (getcharid(3)!=99000011 && getcharid(3)!=99000013) end;
+ getunitdata .Dummy,.@u;
+ dispbottom "BH_HP " + .@u[UMOB_HP];
+ end;
+}

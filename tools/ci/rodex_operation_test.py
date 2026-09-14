@@ -59,6 +59,7 @@ struct map_session_data {
  } state;
  struct { bool pending=false; } bank_ui;
  struct { bool pending=false,loading=false; } multi_storage;
+ struct { unsigned pending_zeny=0,pending_slots=0,pending_weight=0; } mail;
  struct { int opt1=0; } sc;
  Storage storage,premiumStorage;
 };
@@ -111,7 +112,19 @@ int main() {
   storage_premiumStorage_open(&blocked);
   assert(blocked.state.storage_flag==0 && opened==2);
  }
- std::cout << "256 RODEX state combinations and storage/composer transitions: PASS\n";
+ for(int pending=0;pending<3;++pending) {
+  map_session_data blocked;
+  blocked.mail.pending_zeny=pending==0?100:0;
+  blocked.mail.pending_slots=pending==1?1:0;
+  blocked.mail.pending_weight=pending==2?10:0;
+  assert(pc_cant_act2(&blocked));
+  assert(storage_storageopen(&blocked)==1);
+  storage_premiumStorage_open(&blocked);
+  assert(blocked.state.storage_flag==0 && opened==2);
+  blocked.mail={};
+  assert(!pc_cant_act2(&blocked));
+ }
+ std::cout << "256 RODEX state combinations, storage/composer transitions and delayed-claim capacity guards: PASS\n";
 }
 '''
 test = prefix + '\n'.join([

@@ -1,0 +1,12 @@
+{
+  "enabled_surfaces": "browser",
+  "registered_services": [
+    "browser"
+  ],
+  "app_version": "26.908.40834",
+  "inventory_native_app_count": 0,
+  "user_reported_plugin_enabled": true,
+  "user_reported_any_app_enabled": true,
+  "config_modified": false,
+  "scope": "Observed app-generated runtime configuration; reason for native surface omission is not established."
+}

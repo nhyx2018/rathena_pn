@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "files_checked": 5625,
+  "checks": [
+    {
+      "name": "installed Lua loader and preservation of 26908 item records",
+      "passed": true
+    },
+    {
+      "name": "quick",
+      "passed": true
+    },
+    {
+      "name": "full",
+      "passed": true
+    }
+  ],
+  "update_sha256": "043f6eea174c3020ac7f6f61ea3a6d3848cb5a8cad7b4d7afaf56c0f2831e18a",
+  "update_bytes": 599093,
+  "files_in_patch": [
+    "BankUI.dll",
+    "SystemEN/AccountBankInfo.lua",
+    "SystemEN/ItemResourceRepair.lua",
+    "VERIFY-CLIENT.txt",
+    "Verify Client.cmd",
+    "client-manifest.json",
+    "tools/client/verify-client.ps1"
+  ],
+  "repaired_item_ids": [
+    5054,
+    6417,
+    11534
+  ]
+}
