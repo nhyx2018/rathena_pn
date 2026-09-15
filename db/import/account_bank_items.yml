@@ -9,6 +9,6 @@ Body:
     Type: Etc
     Buy: 1002000
     Sell: 998000
-    Weight: 10
+    Weight: 0
     Trade:
       NoSell: true

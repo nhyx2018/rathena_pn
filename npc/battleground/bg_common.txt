@@ -465,6 +465,10 @@ bat_room,160,150,3	script	Erundek	109,{
 				case 1:
 					mes "[Erundek]";
 					if (countitem(.@Weapons[.@i+1]) >= 100) {
+						if (!checkweight(.@Weapons[.@i],1)) {
+							mes "Make room for the reward before exchanging your badges.";
+							close;
+						}
 						mes "Thank you for exchanging.";
 						delitem .@Weapons[.@i+1],100;
 						getitem .@Weapons[.@i],1;
@@ -547,7 +551,7 @@ bat_room,160,150,3	script	Erundek	109,{
 		mes "Which Badge do you want to exchange?";
 		mes "You need ^3131FF"+.@Items[.@i+1]+" Badges^000000 to exchange.";
 		next;
-		if (.@item[0] < 12269 || .@item[0] > 12273 ) {
+		if (.@Items[.@i] < 12269 || .@Items[.@i] > 12273 ) {
 			mes "[Erundek]";
 			mes "Remember, Battleground Reward Items are ^FF0000Character Bound^000000. Are you sure you want this item?";
 			next;
@@ -560,6 +564,10 @@ bat_room,160,150,3	script	Erundek	109,{
 		}
 		set .@cost, ((.@j==1)?7828:7829);
 		if (countitem(.@cost) >= .@Items[.@i+1]) {
+			if (!callsub(S_CheckBadgeReward,.@Items[.@i])) {
+				mes "Make room for the reward before exchanging your badges.";
+				close;
+			}
 			mes "Thank you for exchanging.";
 			delitem .@cost, .@Items[.@i+1];
 			getitem .@Items[.@i],1;
@@ -568,6 +576,38 @@ bat_room,160,150,3	script	Erundek	109,{
 		break;
 	}
 	close;
+S_CheckBadgeReward:
+	.@id = getarg(0);
+	if (.@id < 12269 || .@id > 12273)
+		return checkweight(.@id,1);
+	return callsub(S_CheckPlainRation,.@id,1);
+
+// Exact plain getitem capacity for this merchant's reviewed stackable outputs.
+// Definitions have no GUID, custom inventory stack limit, or autoequip flag.
+S_CheckPlainRation:
+	.@id = getarg(0);
+	.@amount = getarg(1);
+	if (.@id < 12269 || .@id > 12273)
+		return false;
+	if (.@amount < 1 || .@amount > 30000)
+		return false;
+	.@unit_weight = getiteminfo(.@id,ITEMINFO_WEIGHT);
+	if (.@unit_weight < 0 || Weight + .@unit_weight * .@amount > MaxWeight)
+		return false;
+	.@slots = getinventoryslots();
+	if (.@slots < 1 || .@slots > MAX_INVENTORY)
+		return false;
+	getinventorylist;
+	for (.@n = 0; .@n < @inventorylist_count; ++.@n) {
+		if (@inventorylist_idx[.@n] < .@slots)
+			++.@occupied;
+		if (@inventorylist_id[.@n] != .@id || @inventorylist_bound[.@n] != 0 || @inventorylist_expire[.@n] != 0 || @inventorylist_uniqueid$[.@n] != "0" || @inventorylist_card1[.@n] != 0 || @inventorylist_card2[.@n] != 0 || @inventorylist_card3[.@n] != 0 || @inventorylist_card4[.@n] != 0)
+			continue;
+		// The first compatible stack is terminal, even if a later stack has room.
+		return @inventorylist_idx[.@n] < .@slots && @inventorylist_amount[.@n] + .@amount <= 30000;
+	}
+	return .@occupied < .@slots;
+
 }
 
 // Badge Reward Function

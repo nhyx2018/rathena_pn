@@ -11,10 +11,10 @@ Body:
   - Id: 106441
     AegisName: Ch2_Phantom_Crystal
     Name: Snapdragon's Phantom Crystal
-    Type: Usable
+    Type: Delayconsume
     Weight: 10
     Script: |
-      callfunc "CH2_OpenPhantomCrystal";
+      doevent "CH2_PhantomCrystal::OnOpen";
   - Id: 106471
     AegisName: Ch2_Dreamweave_Blue
     Name: Blue Mangmahal

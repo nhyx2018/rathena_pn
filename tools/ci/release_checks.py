@@ -41,6 +41,7 @@ TESTS = (
     'mob_sql_schema_test.py',
     'client_archive_stack_test.py',
     'client_release_audit_test.py',
+    'dynamic_reward_audit_test.py',
     'client_preflight_test.py',
     'instance_access_manifest_test.py',
     'bioresearch_geometry_test.py',

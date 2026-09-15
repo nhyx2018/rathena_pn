@@ -1129,7 +1129,18 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 		mes "points for this reward?";
 		next;
 		if (select( "Exchange.", "Cancel" ) == 1) {
-			RESRVPTS = .@total;
+			// The confirmation yields; spend the current balance, not the earlier preview.
+			if (RESRVPTS < .@select_price[.@index_points]) {
+				mes "Your Special Reserve Points changed. You do not have enough points for this reward.";
+				close;
+			}
+			if (.@s < 10) {
+				if (!callsub(S_CheckReserveOutput,.@select_price[0],.@select_price[.@index_quantity])) {
+					mes "Make room for the complete reward, then try again. Your points were not spent.";
+					close;
+				}
+			}
+			RESRVPTS -= .@select_price[.@index_points];
 			if (.@s < 10)
 				getitem .@select_price[0], .@select_price[.@index_quantity];
 			else {
@@ -1280,6 +1291,32 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 	mes "for even better rewards.";
 	mes "Thank you for your patronage.";
 	close;
+
+// Exact plain getitem capacity for the two ordinary reserve-point rewards.
+// Their definitions have no GUID, custom inventory stack limit, or autoequip.
+S_CheckReserveOutput:
+	.@id = getarg(0);
+	.@amount = getarg(1);
+	if (!(.@id == 501 || .@id == 516))
+		return false;
+	if (.@amount < 1 || .@amount > 30000)
+		return false;
+	.@unit_weight = getiteminfo(.@id,ITEMINFO_WEIGHT);
+	if (.@unit_weight < 0 || Weight + .@unit_weight * .@amount > MaxWeight)
+		return false;
+	.@slots = getinventoryslots();
+	if (.@slots < 1 || .@slots > MAX_INVENTORY)
+		return false;
+	getinventorylist;
+	for (.@n = 0; .@n < @inventorylist_count; ++.@n) {
+		if (@inventorylist_idx[.@n] < .@slots)
+			++.@occupied;
+		if (@inventorylist_id[.@n] != .@id || @inventorylist_bound[.@n] != 0 || @inventorylist_expire[.@n] != 0 || @inventorylist_uniqueid$[.@n] != "0" || @inventorylist_card1[.@n] != 0 || @inventorylist_card2[.@n] != 0 || @inventorylist_card3[.@n] != 0 || @inventorylist_card4[.@n] != 0)
+			continue;
+		// Native getitem uses the first compatible stack, even if a later one fits.
+		return @inventorylist_idx[.@n] < .@slots && @inventorylist_amount[.@n] + .@amount <= 30000;
+	}
+	return .@occupied < .@slots;
 }
 
 aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{

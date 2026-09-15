@@ -162,12 +162,58 @@ function	script	CH2_GiveInstanceItem	{
 // their official bundle quantities or weights. The compatibility implementation
 // therefore exposes a deterministic one-crystal/one-material choice instead of
 // inventing a hidden random table.
+// Exact plain-stack capacity for this file's fixed material outputs.
+function	script	CH2_CanGrantMaterial	{
+	.@n=getarg(2);
+	if (.@n<1 || .@n>1) return 0;
+	copyarray .@grant_ids[0],getarg(0),.@n;
+	copyarray .@grant_amounts[0],getarg(1),.@n;
+	if (.@n<1 || !checkweight2(.@grant_ids,.@grant_amounts)) return 0;
+	.@slots=getinventoryslots();
+	if (.@slots<1 || .@slots>MAX_INVENTORY) return 0;
+	getinventorylist;
+	.@occupied=0; .@needed=0;
+	for (.@r=0; .@r<@inventorylist_count; ++.@r)
+		if (@inventorylist_idx[.@r]<.@slots) ++.@occupied;
+	for (.@i=0; .@i<.@n; ++.@i) {
+		if (!(.@grant_ids[.@i] == 1001997 || .@grant_ids[.@i] == 1002011 || .@grant_ids[.@i] == 1002014 || (.@grant_ids[.@i] >= 1001999 && .@grant_ids[.@i] <= 1002002))) return 0;
+		for (.@j=0; .@j<.@i; ++.@j) if (.@grant_ids[.@j]==.@grant_ids[.@i]) return 0;
+		if (.@grant_amounts[.@i]<1 || .@grant_amounts[.@i]>30000) return 0;
+		.@match=-1;
+		for (.@r=0; .@r<@inventorylist_count; ++.@r) {
+			if (@inventorylist_id[.@r]!=.@grant_ids[.@i] || @inventorylist_bound[.@r] || @inventorylist_expire[.@r] || @inventorylist_uniqueid$[.@r]!="0" || @inventorylist_card1[.@r] || @inventorylist_card2[.@r] || @inventorylist_card3[.@r] || @inventorylist_card4[.@r]) continue;
+			.@match=.@r; break;
+		}
+		if (.@match>=0) {
+			if (@inventorylist_idx[.@match]>=.@slots || @inventorylist_amount[.@match]+.@grant_amounts[.@i]>30000) return 0;
+		} else ++.@needed;
+	}
+	return .@occupied+.@needed<=.@slots;
+}
+
+// Defer item-use dialogue until pc_useitem has released its temporary script state.
+-	script	CH2_PhantomCrystal	-1,{
+	end;
+OnOpen:
+	if (countitem(106441) < 1)
+		end;
+	callfunc "CH2_OpenPhantomCrystal";
+	end;
+}
+
 function	script	CH2_OpenPhantomCrystal	{
 	mes "[Snapdragon's Phantom Crystal]";
-	mes "Choose one documented material. The crystal is consumed when opened.";
+	mes "Choose one material. The crystal is consumed only when the material can be delivered.";
 	next;
 	.@choice = select("Frontier Magic Dust:Chaotic Rune Ore:Disparate Rune Ore:Azure Illusion Fragment:Sunset Illusion Fragment:Teal Illusion Fragment:Jet Black Illusion Fragment");
 	setarray .@material[0],1001997,1002011,1002014,1001999,1002000,1002001,1002002;
+	setarray .@output[0],.@material[.@choice-1];
+	setarray .@quantity[0],1;
+	if (countitem(106441) < 1 || !callfunc("CH2_CanGrantMaterial",.@output,.@quantity,1)) {
+		mes "The crystal was not consumed. Make room in your inventory and try again.";
+		close;
+	}
+	delitem 106441,1;
 	getitem .@material[.@choice-1],1;
 	mes "The crystal releases your selected material.";
 	close;

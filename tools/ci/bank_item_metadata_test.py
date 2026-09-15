@@ -154,7 +154,7 @@ for _,lines in ipairs({identified,unidentified}) do
   local text=table.concat(lines,'\n')
   assert(text:find('1M Zeny Ticket',1,true))
   assert(text:find('1,002,000',1,true) and text:find('998,000',1,true))
-  assert(text:find('Weight:^000000 1',1,true))
+  assert(text:find('Weight:^000000 0',1,true))
 end
 -- Preserve an existing installation's own resources and extra metadata.
 local customized=clone(ticket)

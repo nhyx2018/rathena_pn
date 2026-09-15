@@ -21,6 +21,7 @@ tbl_chapter2 = {
 		identifiedDescriptionName = {
 			"A crystal left by the Snapdragon Phantom.",
 			"Double-click to choose one supported Frontier Magic Dust, Rune Ore, or Illusion Fragment material.",
+			"Consumed only after the selected material can be delivered. Make room before opening.",
 			"^777777Compatibility behavior: public sources do not publish the original bundle weights.^000000",
 			"^777777Chapter 2 - Flame Branch^000000"
 		},

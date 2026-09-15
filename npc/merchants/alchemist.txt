@@ -63,7 +63,6 @@ alde_alche,24,188,3	script	Guild Dealer	740,{
 				}
 			}
 			set .@sell,.@input * 8;
-			set .@item_weight,.@input * 10;
 			if (Zeny < .@sell) {
 				mes "[Gever Al Sharp]";
 				mes "You don't";
@@ -72,7 +71,7 @@ alde_alche,24,188,3	script	Guild Dealer	740,{
 				mes "you have first.";
 				close;
 			}
-			if ((MaxWeight - Weight) < .@item_weight) {
+			if (!callsub(S_CheckPlainOutput,7134,.@input)) {
 				mes "[Gever Al Sharp]";
 				mes "It doesn't seem like";
 				mes "you can carry everything.";
@@ -156,6 +155,14 @@ S_SellManual:
 	mes "That'll be "+ .@zeny_req +" zeny.";
 	next;
 	if (select("Purchase.:Quit.") == 1) {
+		if (Zeny < .@zeny_req) {
+			mes "You do not have enough zeny for this manual.";
+			close;
+		}
+		if (!callsub(S_CheckPlainOutput,.@item_id,1)) {
+			mes "Make room for the manual before purchasing.";
+			close;
+		}
 		Zeny = Zeny - .@zeny_req;
 		getitem .@item_id,1;
 		mes "[Gever Al Sharp]";
@@ -167,4 +174,30 @@ S_SellManual:
 	mes "Come again";
 	mes "next time.";
 	close;
+
+// Exact plain getitem capacity for this merchant's reviewed stackable outputs.
+// Definitions have no GUID, custom inventory stack limit, or autoequip flag.
+S_CheckPlainOutput:
+	.@id = getarg(0);
+	.@amount = getarg(1);
+	if (!(.@id == 7144 || (.@id >= 7127 && .@id <= 7134)))
+		return false;
+	if (.@amount < 1 || .@amount > 30000)
+		return false;
+	.@unit_weight = getiteminfo(.@id,ITEMINFO_WEIGHT);
+	if (.@unit_weight < 0 || Weight + .@unit_weight * .@amount > MaxWeight)
+		return false;
+	.@slots = getinventoryslots();
+	if (.@slots < 1 || .@slots > MAX_INVENTORY)
+		return false;
+	getinventorylist;
+	for (.@n = 0; .@n < @inventorylist_count; ++.@n) {
+		if (@inventorylist_idx[.@n] < .@slots)
+			++.@occupied;
+		if (@inventorylist_id[.@n] != .@id || @inventorylist_bound[.@n] != 0 || @inventorylist_expire[.@n] != 0 || @inventorylist_uniqueid$[.@n] != "0" || @inventorylist_card1[.@n] != 0 || @inventorylist_card2[.@n] != 0 || @inventorylist_card3[.@n] != 0 || @inventorylist_card4[.@n] != 0)
+			continue;
+		// The first compatible stack is terminal, even if a later stack has room.
+		return @inventorylist_idx[.@n] < .@slots && @inventorylist_amount[.@n] + .@amount <= 30000;
+	}
+	return .@occupied < .@slots;
 }

@@ -40,12 +40,16 @@ def strip_comments(text):
 
 
 def main():
+    global REPO
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root',type=Path,default=REPO)
     parser.add_argument('--metadata',type=Path,required=True)
     parser.add_argument('--triage',type=Path,required=True)
     parser.add_argument('--held',type=Path,help='Optional prior snapshot; not a fresh database inventory')
     parser.add_argument('--report',type=Path,required=True)
     args=parser.parse_args()
+    REPO=args.root
+    hashes.clear()
     items={};item_sources={}
     for source,row in records('db/item_db.yml'):
         overlay(items.setdefault(row['Id'],{}),row);item_sources[row['Id']]=source
@@ -168,6 +172,7 @@ def main():
         'items_with_source_paths':sum(node.startswith('item:') for node in previous),
         'unresolved_catalog_item_ids':len(rows),'unresolved_ids_with_source_paths':sum(row['source_path_found'] for row in rows),
         'dynamic_grant_lines_not_resolved':len(dynamic),'items_with_source_paths_without_client_metadata':len(no_metadata)},
+        'acquired_items':[{'item_id':int(node[5:]),'name':items[int(node[5:])].get('AegisName'),'path':trace(node)} for node in sorted(previous) if node.startswith('item:')],
         'items':rows,'missing_metadata':no_metadata,'dynamic_grants':dynamic,
         'source_sha256':hashes,'metadata_sha256':hashlib.sha256(metadata_raw).hexdigest(),'triage_sha256':hashlib.sha256(triage_path.read_bytes()).hexdigest(),
         'boundary':'Typed source paths, configured barter and achievement outputs prioritize runtime QA; they are not gameplay proof. Conditions, dynamic grants/spawns, prerequisite reachability, loose files and runtime artwork fallbacks remain unverified. Held-item roots, when supplied, are an older snapshot.'}

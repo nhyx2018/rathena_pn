@@ -134,7 +134,7 @@ extern "C" map_session_data* crystal_character(int32 id){return attached&&attach
 extern "C" bool crystal_registry(map_session_data*,int64,int64) asm("__wrap__Z14pc_setregistryP16map_session_datall");
 extern "C" bool crystal_registry(map_session_data* sd,int64 key,int64 value){
     const std::string name=get_str(script_getvarid(key));check(sd==attached,"registry attached to correct player");
-    check(name=="ARG0"||name=="#FP_Fashion"||name=="kvm_point"||name.rfind("EP21_FB_Crystal_",0)==0,"only exact achievement/crystal persistent variables");
+    check(name=="ARG0"||name=="#FP_Fashion"||name=="kvm_point"||name=="PNLake_ClaimToken"||name=="#PNLake_FullRewardToken"||name=="PNLake_ActiveInstance"||name=="PNLake_ActiveToken"||name=="PNLake_ReservedInstance"||name=="PNLake_ReservedToken"||name.rfind("EP21_FB_Crystal_",0)==0,"only exact achievement/crystal persistent variables");
     nums[key]=value;if(name=="ARG0")++argument_writes;return true;
 }
 extern "C" void achievement_packet(map_session_data*,const struct achievement*,int32) asm("__wrap__Z23clif_achievement_updateP16map_session_dataPK11achievementi");
