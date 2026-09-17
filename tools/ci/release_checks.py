@@ -47,6 +47,7 @@ TESTS = (
     'bioresearch_geometry_test.py',
     'alice_geometry_test.py',
     'alice_database_test.py',
+    'kro_285_progression_test.py',
     'instance_combat_rules_test.py',
 )
 
