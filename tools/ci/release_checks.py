@@ -44,6 +44,8 @@ TESTS = (
     'dynamic_reward_audit_test.py',
     'client_preflight_test.py',
     'instance_access_manifest_test.py',
+    'instance_geometry_test.py',
+    'warper_destination_test.py',
     'bioresearch_geometry_test.py',
     'alice_geometry_test.py',
     'alice_database_test.py',

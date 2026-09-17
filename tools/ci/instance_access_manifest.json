@@ -1,7 +1,7 @@
 {
-  "review_date": "2026-09-09",
+  "review_date": "2026-09-17",
   "scope": "Unique instance guide categories, enabled Renewal import graph, effective instance DB, Warper menu and installed client map presence. Entry candidates require gate review; presence is not a completed gameplay test.",
-  "enabled_npc_file_count": 917,
+  "enabled_npc_file_count": 920,
   "local_instance_count": 102,
   "unique_client_map_count": 124,
   "unavailable_client_maps": [],
@@ -1446,7 +1446,6 @@
       ],
       "status": "implemented",
       "warper_labels": [
-        "Old Glast Heim",
         "Old Glast Heim Challenge"
       ],
       "warper_status": "listed",
@@ -2118,6 +2117,43 @@
           "x": 147,
           "y": 279,
           "name": "Laboratory Entrance#memo"
+        }
+      ],
+      "client_map_status": "all_available"
+    },
+    {
+      "name": "Room of Consciousness",
+      "local_instance_ids": [
+        32
+      ],
+      "database_names": [
+        "Room of Consciousness"
+      ],
+      "status": "implemented",
+      "warper_labels": [
+        "Episode 16.1 - Room of Consciousness"
+      ],
+      "warper_status": "listed",
+      "enabled_scripts": [
+        "npc/re/quests/quests_16_1.txt",
+        "npc/re/instances/RoomOfConsciousness.txt"
+      ],
+      "entry_npc_candidates": [
+        {
+          "script": "npc/re/quests/quests_16_1.txt",
+          "line": 2378,
+          "map": "prt_lib_q",
+          "x": 91,
+          "y": 85,
+          "name": "Nillem#ep16_lib_q"
+        },
+        {
+          "script": "npc/re/quests/quests_16_1.txt",
+          "line": 2671,
+          "map": "prt_lib_q",
+          "x": 88,
+          "y": 90,
+          "name": "Swaying Space#evt_gate02"
         }
       ],
       "client_map_status": "all_available"
@@ -4054,7 +4090,8 @@
         "1@mir"
       ],
       "name_references": [
-        "npc/re/quests/quests_16_1.txt"
+        "npc/re/quests/quests_16_1.txt",
+        "npc/custom/warper.txt"
       ],
       "entry_npc_candidates": [
         {
@@ -4074,7 +4111,9 @@
           "name": "Swaying Space#evt_gate02"
         }
       ],
-      "warper_labels": [],
+      "warper_labels": [
+        "Episode 16.1 - Room of Consciousness"
+      ],
       "client_maps": {
         "1@mir": {
           "gat": {
@@ -7954,6 +7993,7 @@
     "Wave Mode (Forest / Sky)",
     "Weekend Memorial",
     "Werner Laboratory (Daily)",
-    "Wolfchev's Laboratory"
+    "Wolfchev's Laboratory",
+    "Episode 16.1 - Room of Consciousness"
   ]
 }

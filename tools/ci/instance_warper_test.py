@@ -64,6 +64,7 @@ ROUTES = {
     68: ('Chapter 2 - Phantom of Nyrholt','ch2safe4',86,146),
     69: ('Bioresearch Laboratory','yuno',216,343),
     70: ('Alice Twisted Madness','dali',66,100),
+    71: ('Episode 16.1 - Room of Consciousness','prt_lib_q',91,83),
 }
 
 
@@ -126,6 +127,10 @@ def scenarios():
     add(69,'Bioresearch level170',True,level=170)
     add(70,'Alice level174',False,level=174)
     add(70,'Alice level175',True,level=175)
+    add(71,'Room of Consciousness before library access',False,var='ep16_royal',value=17)
+    add(71,'Room of Consciousness library introduction',True,var='ep16_royal',value=18)
+    add(71,'Room of Consciousness repeatable visit',True,var='ep16_royal',value=30)
+    add(71,'Room of Consciousness unavailable in Pre-Renewal',False,var='ep16_royal',value=18,renewal=False)
     return cases
 
 
@@ -181,6 +186,10 @@ def fixtures(build, pre_fix=False):
         body='{\nfunction Go; function ValidateWarp; function Restrict;\nGo("'+mapname+'",1,1); end;\n'+'\n'.join(helpers)+'\n}'
         filename='region_'+mapname+'.script'; (build/filename).write_text(body); digest.update(body.encode())
         header.append('{"region_'+mapname+'","'+filename+'","",0,false},')
+    entry=source.split('// Start every conversation with a fresh selection and restriction state.',1)[1].split('menu\t"Last Warp',1)[0]
+    body='{\n@f=1; @d=1; @warp_block=8; @menu$="stale"; setarray @c[0],99,88;\n'+entry+'\nif (@f || @d || @warp_block || @menu$ != "" || getarraysize(@c)) warp "bad",1,1; else warp "prontera",1,1; end;\n}'
+    (build/'entry.script').write_text(body); digest.update(body.encode())
+    header.append('{"entry","entry.script","",0,false},')
     body='{\n'+label_body(source,'OnNaviGenerate')+'\n}'
     (build/'navigation.script').write_text(body); digest.update(body.encode())
     header.append('{"OnNaviGenerate","navigation.script","",0,false},\n};')
@@ -209,6 +218,11 @@ extern "C" char* warp_read(const map_session_data*,int64) asm("__wrap__Z19pc_rea
 extern "C" char* warp_read(const map_session_data* sd,int64 id) { return string_regs[sd->id][get_str((int32)id)].data(); }
 extern "C" bool warp_set(map_session_data*,int64,const char*) asm("__wrap__Z18pc_setregistry_strP16map_session_datalPKc");
 extern "C" bool warp_set(map_session_data* sd,int64 id,const char* value) { string_regs[sd->id][get_str((int32)id)]=value; return true; }
+extern "C" char* temp_read(const map_session_data*,int64) asm("__wrap__Z13pc_readregstrPK16map_session_datal");
+extern "C" char* temp_read(const map_session_data* sd,int64 id) { return warp_read(sd,id); }
+extern "C" bool temp_set(map_session_data*,int64,const char*) asm("__wrap__Z12pc_setregstrP16map_session_datalPKc");
+extern "C" bool temp_set(map_session_data* sd,int64 id,const char* value) { return warp_set(sd,id,value); }
+
 '''
 MAIN=r'''
 extern "C" int __wrap_main(int argc,char** argv) {
@@ -221,6 +235,7 @@ extern "C" int __wrap_main(int argc,char** argv) {
     instances.at(1)->regs.vars=i64db_alloc(DB_OPT_RELEASE_DATA);
     auto p=std::make_unique<map_session_data>(); p->id=99000010; p->type=BL_PC;
     p->status.account_id=p->id; p->status.char_id=p->id;
+    p->regs.vars=i64db_alloc(DB_OPT_BASE);
     p->fd=0; p->state.ignoretimeout=true; p->npc_idle_timer=INVALID_TIMER; players.emplace_back(std::move(p));
     for (int id:quest_ids) { auto entry=std::make_shared<s_quest_db>(); entry->id=id; quest_db.put(id,entry); }
     for (const auto& test:source_cases) {
@@ -240,6 +255,8 @@ extern "C" int __wrap_main(int argc,char** argv) {
             check(string_regs[players[0]->id]["lastwarp$"]==c.map && registries[players[0]->id]["lastwarpx"]==c.x && registries[players[0]->id]["lastwarpy"]==c.y,"successful route records last warp");
         } else if (!c.allow) check(string_regs[players[0]->id]["lastwarp$"]=="old_map" && registries[players[0]->id]["lastwarpx"]==11 && registries[players[0]->id]["lastwarpy"]==12,"denied route preserves previous warp");
     }
+    reset(); finish("entry");
+    check(moves.size()==1 && moves[0].map=="prontera","reopening clears canceled-menu temporary state");
     regional_mode=true;
     for (const char* region:{"bl_ice","bl_depth1","bl_depth2","ch1fild1","ch1zero1","ch1zero3","jor_mbase","jor_base"}) for (bool permit:{false,true}) {
         reset(); regional_calls=0; map_access=permit; players[0]->status.base_level=300;
@@ -255,7 +272,12 @@ extern "C" int __wrap_main(int argc,char** argv) {
     }
     check(errors==0,"no native runtime or parser errors");
     for (auto& code:codes) script_free_code(code.second); codes.clear(); reset();
-    script_free_vars(instances.at(1)->regs.vars); instances.clear(); quest_db.clear(); players.clear(); attached=nullptr;
+    script_free_vars(instances.at(1)->regs.vars); instances.clear(); quest_db.clear();
+    for (auto& player:players) {
+        player->regs.vars->destroy(player->regs.vars,nullptr);
+        if (player->regs.arrays) player->regs.arrays->destroy(player->regs.arrays,script_free_array_db);
+    }
+    players.clear(); attached=nullptr;
     do_final_script(); timer_final(); db_final();
     std::printf("INSTANCE_WARPER_RESULT checks=%u failures=%u errors=%u\n",checks,failures,errors);
     malloc_final(); return failures||errors ? 1:0;
@@ -282,7 +304,7 @@ def main():
     prefix=prefix.replace('else boundary(false, "unrecognized callfunc boundary");', 'else { std::fprintf(stderr, "UNKNOWN FUNCTION %s case %s\\n",function.c_str(),current.c_str()); boundary(false, "unrecognized callfunc boundary"); }')
     prefix=prefix.replace('"getexp", "callfunc"};','"getexp", "callfunc", "message", "checkre", "naviregisterwarp"};',1)
     native.CPP=prefix+MAIN; native.fixtures=fixtures
-    native.WRAPPERS+=('_Z19pc_readregistry_strPK16map_session_datal','_Z18pc_setregistry_strP16map_session_datalPKc')
+    native.WRAPPERS+=('_Z13pc_readregstrPK16map_session_datal','_Z12pc_setregstrP16map_session_datalPKc','_Z19pc_readregistry_strPK16map_session_datal','_Z18pc_setregistry_strP16map_session_datalPKc')
     def run(directory):
         directory.mkdir(parents=True,exist_ok=True); native.run(directory.resolve(),False,False,args.prepare_only,completion_marker='INSTANCE_WARPER_RESULT ')
     if args.build_dir: run(args.build_dir)

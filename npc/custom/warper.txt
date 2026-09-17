@@ -33,6 +33,12 @@ function Go; function ValidateWarp; function Disp; function Pick; function Restr
 //	Main Menu:
 // --------------------------------------------------
 
+// Canceling a submenu ends the script but leaves character temporary variables.
+// Start every conversation with a fresh selection and restriction state.
+@f = false; @d = false; @warp_block = 0;
+@menu$ = "";
+deletearray @c[0],getarraysize(@c);
+
 menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
     	" ~ Towns",Towns,
     	" ~ Fields",Fields,
@@ -83,6 +89,11 @@ function Go {
 }
 function ValidateWarp {
 	.@map$ = getarg(0);
+	// Same milestone as Dimension Warper MkII; also protects Last Warp.
+	if (.@map$ == "prt_lib_q" && ep16_royal < 18) {
+		message strcharinfo(0),"Advance The Royal Banquet until Nillem opens the past Royal Library.";
+		return false;
+	}
 	// Episode 19 - preserve the same milestones as the story's airship and
 	// dungeon entrances.  Direct warps must not skip the Issgard introduction.
 	if ((.@map$ == "jor_back1" || .@map$ == "jor_back2" || .@map$ == "jor_back3" || .@map$ == "jor_tail") && ep19_main < 7) {
@@ -1093,7 +1104,8 @@ I70: Restrict("RE");
 	Go("dali",66,100);
 
 I_Episodes:
-menu	"Episode 17.1 - OS Occupation",I40,
+menu	"Episode 16.1 - Room of Consciousness",I71,
+		"Episode 17.1 - OS Occupation",I40,
 		"Episode 17.1 - Cor Memorial",I41,
 		"Episode 17.2 - Farm Lost in Time",I42,
 		"Episode 17.2 - Water Garden (Normal / Hard)",I43,
@@ -1108,6 +1120,8 @@ menu	"Episode 17.1 - OS Occupation",I40,
 		"Chapter 2 - Phantom of Nyrholt",I68,
 		"Back to Instances",Instances;
 
+I71: Restrict("RE");
+	Go("prt_lib_q",91,83);
 
 I_Classic:
 menu	"Airship Raid",I52,
@@ -1154,6 +1168,7 @@ S10: Go("turbo_room",99,114);
 S11: Go("grademk",34,184);
 
 OnNaviGenerate:
+	if (checkre(0)) naviregisterwarp("Warper > Episode 16.1 - Room of Consciousness", "prt_lib_q", 91, 83);
 	naviregisterwarp("Warper > Grade Workshop", "grademk", 34, 184);
 
 	// for non-prontera warpers, just give it warp to prontera
@@ -1690,10 +1705,10 @@ OnNaviGenerate:
 		naviregisterwarp("Warper > Kunlun Dungeon 2", "gon_dun02", 28, 113);
 		naviregisterwarp("Warper > Kunlun Dungeon 3", "gon_dun03", 68, 16);
 	}
-	naviregisterwarp("Warper > Hidden Dungeon 1", "prt_maze01", 176, 7);
+	naviregisterwarp("Warper > Hidden Dungeon 1", "prt_maze01", 99, 31);
 	if (!.OnlyFirstDun) {
 		naviregisterwarp("Warper > Hidden Dungeon 2", "prt_maze02", 93, 20);
-		naviregisterwarp("Warper > Hidden Dungeon 3", "prt_maze03", 23, 8);
+		naviregisterwarp("Warper > Hidden Dungeon 3", "prt_maze03", 182, 88);
 	}
 	naviregisterwarp("Warper > Ice Dungeon 1", "ice_dun01", 157, 14);
 	if (!.OnlyFirstDun) {
@@ -1941,6 +1956,101 @@ OnNaviGenerate:
 		naviregisterwarp("Warper > Eden Group Headquarters", "moc_para01", 31, 14);
 		naviregisterwarp("Warper > Para Market", "paramk", 97, 17);
 	}
+
+	// Renewal destinations added after the original navigation inventory.
+	if (checkre(0)) {
+		naviregisterwarp("Warper > Frozen Scale Hill", "jor_back1", 378, 223);
+		if (!.OnlyFirstFld) naviregisterwarp("Warper > Frozen Scale Plains", "jor_back2", 223, 18);
+		if (!.OnlyFirstFld) naviregisterwarp("Warper > Frozen Scale Glacier", "jor_back3", 365, 241);
+		if (!.OnlyFirstFld) naviregisterwarp("Warper > Frozen Tail", "jor_tail", 140, 280);
+		naviregisterwarp("Warper > Grey Wolf Forest 1", "gw_fild01", 22, 315);
+		if (!.OnlyFirstFld) naviregisterwarp("Warper > Grey Wolf Forest 2", "gw_fild02", 122, 388);
+		naviregisterwarp("Warper > Kiwawa Desert 1", "rockrdg1", 38, 246);
+		if (!.OnlyFirstFld) naviregisterwarp("Warper > Kiwawa Desert 2", "rockrdg2", 31, 207);
+		naviregisterwarp("Warper > 1st Floor - Comprehensive Lab", "amicitia1", 253, 244);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > 2nd Floor - Intensive Culture Room", "amicitia2", 145, 278);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Abyss Lakes 4", "abyss_04", 169, 159);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Tomb of the Fallen", "lhz_dun_n", 100, 202);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Nightmare Clock Tower, 2nd Floor", "c_tower2_", 266, 27);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Nightmare Clock Tower, 3rd Floor", "c_tower3_", 60, 142);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Unknown Basement", "clock_01", 79, 39);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Einbroch Dungeon 3", "ein_dun03", 269, 279);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Castle 2 - Nightmare Mode", "gl_cas02_", 104, 31);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Churchyard - Nightmare Mode", "gl_chyard_", 148, 144);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Abyss Glastheim Castle F1", "gl_cas01_", 199, 29);
+		naviregisterwarp("Warper > Desolate Village", "tur_d03_i", 132, 189);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Bleak Turtle Palace", "tur_d04_i", 99, 186);
+		naviregisterwarp("Warper > Deep Sea Cave 1", "iz_d04_i", 130, 230);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Deep Sea Cave 2", "iz_d05_i", 141, 188);
+		naviregisterwarp("Warper > Abandoned Pit Floor 1", "jor_ab01", 112, 15);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Abandoned Pit Floor 2", "jor_ab02", 280, 87);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake God's Warmth 1st Floor", "jor_dun01", 112, 12);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake God's Warmth 2nd Floor", "jor_dun02", 274, 85);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Inside the Snake's Nest", "jor_dun03", 58, 48);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake's Nest", "jor_nest", 62, 255);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Sacred Root", "jor_sanct", 162, 86);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Eastern Ruins of Juperos", "ver_eju", 146, 215);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Magma Dungeon 3", "mag_dun03", 118, 113);
+		naviregisterwarp("Warper > Niflheim Dungeon - 1st Floor", "nif_dun01", 145, 90);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Niflheim Dungeon - 2nd Floor", "nif_dun02", 150, 20);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Odin Past", "odin_past", 276, 236);
+		naviregisterwarp("Warper > Oz Labyrinth Floor 1", "oz_dun01", 21, 191);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Oz Labyrinth Floor 2", "oz_dun02", 141, 277);
+		naviregisterwarp("Warper > Prontera Underground Prison", "prt_prison", 159, 289);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Prontera Invasion", "prt_q", 155, 353);
+		naviregisterwarp("Warper > Rock Ridge Mine", "rockmi1", 247, 19);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Underground Waterway Culvert", "harboro2", 281, 104);
+		naviregisterwarp("Warper > Rudus Dungeon 1", "sp_rudus", 200, 377);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Rudus Dungeon 2", "sp_rudus2", 185, 258);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Rudus Dungeon 3", "sp_rudus3", 366, 207);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Rudus Dungeon 4", "sp_rudus4", 378, 178);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Scaraba Hole 3", "dic_dun03", 101, 141);
+		naviregisterwarp("Warper > Sewage Treatment Plant", "ba_pw02", 275, 21);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > 1st Power Plant", "ba_pw01", 15, 115);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > 2nd Power Plant", "ba_pw03", 15, 115);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Large Bath Meditathio", "ba_bath", 159, 27);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Lost Farm Valley", "ba_lost", 162, 36);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Library Memory Corridor", "ba_lib", 159, 11);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Upper Floor of Tartaros Storage", "ba_2whs01", 156, 33);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Lower Floor of Tartaros Storage", "ba_2whs02", 337, 333);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Ice", "bl_ice", 36, 84);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Fire", "bl_lava", 163, 17);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Grass", "bl_grass", 157, 19);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Death", "bl_death", 315, 62);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Soul", "bl_soul", 155, 15);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Venom", "bl_venom", 146, 22);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere - Temple", "bl_temple", 53, 85);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere Depth 1", "bl_depth1", 179, 179);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere Depth 2 Hub", "ba_chess", 13, 20);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Biosphere Depth 2", "bl_depth2", 190, 64);
+		naviregisterwarp("Warper > Lab-OPTATIO", "verus01", 244, 61);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > R&D-WISH", "verus02", 72, 20);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Verus Center Square", "verus03", 122, 22);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Ancient Ice Canyon - East", "jor_back5", 353, 73);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Ancient Ice Canyon - West", "jor_back6", 200, 200);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake's Maze", "jor_maze", 206, 16);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake God's Root Floor 1", "jor_root1", 32, 34);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Snake God's Root Floor 2", "jor_root2", 25, 285);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Deep Roots Cave", "jor_root3", 200, 200);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Icy Zone", "jor_twice", 235, 111);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > World Tree Twig", "jor_twig", 187, 198);
+		naviregisterwarp("Warper > Northern Rising Land", "jor_raise1", 276, 386);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Southern Rising Land", "jor_raise2", 118, 410);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Gimleh Temple Floor 1", "jor_tmple1", 170, 62);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Gimleh Temple Floor 2", "jor_tmple2", 24, 173);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Jormungand Cult Temple Floor 1", "jor_sklf1", 298, 170);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Jormungand Cult Temple Floor 2", "jor_sklf2", 276, 128);
+		naviregisterwarp("Warper > Twisted Land of Darkness", "ygg_roots", 325, 147);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Distorted Brimir Floor 1", "uknw_ruin", 264, 238);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Distorted Brimir Floor 2", "uknw_ruin2", 33, 246);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Destroyed Geffen Field", "hem_fild", 207, 27);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Destroyed Verus", "hem_dun01", 18, 86);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Destroyed Valkyrie Realm", "hem_dun02", 160, 51);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Devoured Geffenia East", "ch1_gfn01", 59, 169);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Devoured Geffenia West", "ch1_gfn03", 145, 33);
+		if (!.OnlyFirstDun) naviregisterwarp("Warper > Dark Whisper", "ch1_dw", 264, 294);
+	}
+	end;
 
 OnInit:
 	.Satan_Morocc = true;	//	false will enable moc_fild 4,5,6,8,9,10,14,15 while disable moc_fild 20,21,22 Default is true.
