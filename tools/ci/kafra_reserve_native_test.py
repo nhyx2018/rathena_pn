@@ -1,8 +1,8 @@
-"""Native complete Kafra reserve1 source, final confirmation, and plain grants.
+"""Native Kafra reserve purchases and complete lottery prize paths.
 
 Inventory/VM operations execute production code. Registry, transport and world
-use inherited explicit doubles. Lottery cases stop immediately after its common
-payment, before later animation/input; no lottery delivery or durability claim.
+use inherited explicit doubles. Lottery cases include parser, dialog, inventory,
+and prize grant; registry persistence and crash durability remain outside scope.
 """
 import argparse
 import json
@@ -15,7 +15,8 @@ import finalbattle_current_reward_test as current
 test = current.test
 PATH = 'npc/cities/aldebaran.txt'
 NAME = 'Kafra Employee#reserve1'
-IDS = (1201, 501, 516)
+IDS = (1201, 501, 504, 505, 516, 526, 602, 607, 608, 645, 656, 657,
+       2201, 2226, 2328, 2403)
 RUNNER = Path(__file__)
 CASES = RUNNER.with_name('kafra_reserve_native_cases.inc')
 
@@ -25,12 +26,14 @@ def validate(root):
     reader = test.gate.base.Reader(root)
     _, rows = test.gate.base.database_graph(reader)
     items = test.gate.base.scalar_overlay(rows['db/item_db.yml'], 'Id')
-    for id in (501, 516):
+    for id in (501, 504, 505, 516, 526, 602, 607, 608, 645, 656, 657):
         item = items[id]
-        assert item['Type'] == 'Healing', (id, 'actual ordinary stackable type')
+        assert item['Type'] in ('Healing', 'Usable', 'DelayConsume'), (id, 'actual stackable type')
         assert not any(item.get('Flags', {}).get(k, False) for k in ('UniqueId', 'Autoequip')), (id, 'plain output identity')
         assert not item.get('Stack', {}).get('Inventory', False), (id, 'no custom inventory stack limit')
         assert item.get('Weight', 0) > 0, (id, 'positive actual weight')
+    for id in (2201, 2226, 2328, 2403):
+        assert items[id]['Type'] == 'Armor', (id, 'actual equipment type')
     manifest['kafra_source_sha256'] = test.sha((root/PATH).read_bytes())
     manifest['kafra_native_runner_sha256'] = test.sha(RUNNER.read_bytes())
     manifest['kafra_native_cases_sha256'] = test.sha(CASES.read_bytes())
@@ -43,12 +46,17 @@ def prepare(build, before):
     for label, root in (('before', before), ('after', test.ROOT)):
         body = test.gate.body((root/PATH).read_text(), NAME)
         (build/f'kafra-{label}.script').write_text(body)
+    source = (test.ROOT/PATH).read_text()
+    (build/'kafra-reserve2.script').write_text(test.gate.body(source, 'Kafra Employee#reserve2'))
+    (build/'kafra-lottery-helper.script').write_text(test.gate.body(source, 'F_ReserveLotteryGrant'))
+    functions = (test.ROOT/'npc/other/Global_Functions.txt').read_text()
+    (build/'kafra-num-suffix.script').write_text(test.gate.body(functions, 'F_GetNumSuffix'))
     manifest = validate(test.ROOT)
     inputs = list(current.inputs())
     assert not {row['Id'] for row in inputs[4]}.intersection(IDS)
     inputs[4] += [manifest['kafra_items'][str(id)] for id in IDS]
     inputs[6] = manifest
-    (build/'shop_cases.inc').write_text('#define SHOP_ITEM_COUNT 3\n' + CASES.read_text())
+    (build/'shop_cases.inc').write_text(f'#define SHOP_ITEM_COUNT {len(IDS)}\n' + CASES.read_text())
     # Keep the shared harness unchanged. Expand only this fixture's explicit
     # registry double allowlist to the actual Kafra persistent point variable.
     driver = (test.ROOT/test.DRIVER).read_text()

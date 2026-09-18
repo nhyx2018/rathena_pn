@@ -1140,9 +1140,10 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 					close;
 				}
 			}
-			RESRVPTS -= .@select_price[.@index_points];
-			if (.@s < 10)
+			if (.@s < 10) {
+				RESRVPTS -= .@select_price[.@index_points];
 				getitem .@select_price[0], .@select_price[.@index_quantity];
+			}
 			else {
 				mes "[Kafra Employee]";
 				if (.@choose_sub_select == 0) {
@@ -1159,10 +1160,8 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 				}
 				next;
 				mes "[Kafra Employee]";
-				mes "How many times";
-				mes "would you like to spin";
-				mes "the lottery machine?";
-				mes "You can spin it 1 to 5 times.";
+				mes "How long should the lottery drum spin?";
+				mes "Choose 1 to 5 beats. This is one lottery chance.";
 				next;
 				while( input(.@input,1,5) != 0 ) {
 					mes "[Kafra Employee]";
@@ -1189,6 +1188,24 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 					next;
 					.@random_while++;
 				}
+				// Deliver before the reveal dialog. A disconnect during any later
+				// pause cannot consume points without delivering the prize.
+				if (.@choose_sub_select == 0) {
+					if (.@choose_prize <= 10) { .@prize_id = 516; .@prize_amount = 100; }
+					else if (.@choose_prize <= 15) { .@prize_id = 602; .@prize_amount = 4; }
+					else if (.@choose_prize <= 19) { .@prize_id = 2403; .@prize_amount = 1; }
+					else { .@prize_id = 2328; .@prize_amount = 1; }
+				}
+				else {
+					if (.@choose_prize <= 10) { .@prize_id = 501; .@prize_amount = 100; }
+					else if (.@choose_prize <= 16) { .@prize_id = 2201; .@prize_amount = 1; }
+					else if (.@choose_prize <= 19) { .@prize_id = 2226; .@prize_amount = 1; }
+					else { .@prize_id = 505; .@prize_amount = 3; }
+				}
+				if (!callfunc("F_ReserveLotteryGrant",.@select_price[.@index_points],.@prize_id,.@prize_amount)) {
+					mes "Your points or inventory changed. No points were spent; please make room and try again.";
+					close;
+				}
 				mes "[Kafra Employee]";
 				if (.@choose_sub_select == 0) {
 					mes "Ooh, something";
@@ -1198,7 +1215,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 					next;
 					mes "[Kafra Employee]";
 					if (.@choose_prize <= 10) {
-						getitem 516,100;// Sweet_Potato
 						mes "Hm? F-fourth prize?";
 						mes "You got the 4th prize!!";
 						mes "Well, that's not too bad.";
@@ -1207,7 +1223,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "drinking with your friends~";
 					}
 					else if (.@choose_prize <= 15) {
-						getitem 602,4;// Wing_Of_Butterfly
 						mes "It's Third Prize!";
 						mes "4 Butterfly Wings~";
 						mes "When you're in trouble,";
@@ -1216,7 +1231,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "To your safe place.";
 					}
 					else if (.@choose_prize <= 19) {
-						getitem 2403,1;// Shoes
 						mes "Second Prize!";
 						mes "A brand new shiny pair";
 						mes "of Shoes! Its elegant design";
@@ -1225,7 +1239,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "hope you enjoy your new shoes~";
 					}
 					else if (.@choose_prize == 20) {
-						getitem 2328,1;// Wooden_Mail
 						mes "Whoa...!";
 						mes "First Prize!";
 						mes "Your very own";
@@ -1243,7 +1256,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 					next;
 					mes "[Kafra Employee]";
 					if (.@choose_prize <= 10) {
-						getitem 501,100;// Red_Potion
 						mes "F-fourth prize...?!";
 						mes "Boooo! 100 Red Potions.";
 						mes "Wait.. That's actually pretty";
@@ -1252,7 +1264,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "sharing them with your friends!";
 					}
 					else if (.@choose_prize <= 16) {
-						getitem 2201,1;// Sunglasses
 						mes "Third Prize!";
 						mes "Your very own pair";
 						mes "of suave Sunglasses!";
@@ -1261,7 +1272,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "or when playing poker~";
 					}
 					else if (.@choose_prize <= 19) {
-						getitem 2226,1;// Cap
 						mes "Second Prize!";
 						mes "A... Cap? Hmmm,";
 						mes "these have pretty good";
@@ -1270,7 +1280,6 @@ aldeba_in,79,161,7	script	Kafra Employee#reserve1	4_F_KAFRA3,{
 						mes "this hat is. Oh well...";
 					}
 					else if (.@choose_prize == 20) {
-						getitem 505,3;// Blue_Potion
 						mes "Oh wow...!";
 						mes "First Prize!";
 						mes "3 Blue Potions~";
@@ -1356,7 +1365,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 				mes "Please check your special reserve points and choose another one~";
 				close;
 			}
-			RESRVPTS = RESRVPTS - .@points[.@s];
 			mes "^0000FF"+ F_GetNumSuffix(.@s) +" Lottery Chance!!^000000";
 			next;
 			mes "[Kafra Employee]";
@@ -1382,9 +1390,32 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 			next;
 			mes "[Kafra Employee]";
 			.@choose_prize = rand(1,20);
+			.@prize_id2 = 0;
+			.@prize_amount2 = 0;
+			if (.@s == 1) {
+				if (.@choose_prize < 15) { .@prize_id = 501; .@prize_amount = 150; }
+				else if (.@choose_prize < 18) { .@prize_id = 645; .@prize_amount = 15; }
+				else if (.@choose_prize < 20) { .@prize_id = 505; .@prize_amount = 3; }
+				else { .@prize_id = 608; .@prize_amount = 1; }
+			}
+			else if (.@s == 2) {
+				if (.@choose_prize < 15) { .@prize_id = 504; .@prize_amount = 10; }
+				else if (.@choose_prize < 18) { .@prize_id = 656; .@prize_amount = 15; }
+				else if (.@choose_prize < 20) { .@prize_id = 657; .@prize_amount = 10; }
+				else { .@prize_id = 608; .@prize_amount = 1; .@prize_id2 = 607; .@prize_amount2 = 1; }
+			}
+			else {
+				if (.@choose_prize < 15) { .@prize_id = 504; .@prize_amount = 30; }
+				else if (.@choose_prize < 18) { .@prize_id = 505; .@prize_amount = 10; }
+				else if (.@choose_prize < 20) { .@prize_id = 608; .@prize_amount = 1; .@prize_id2 = 526; .@prize_amount2 = 10; }
+				else { .@prize_id = 607; .@prize_amount = 3; .@prize_id2 = 608; .@prize_amount2 = 2; }
+			}
+			if (!callfunc("F_ReserveLotteryGrant",.@points[.@s],.@prize_id,.@prize_amount,.@prize_id2,.@prize_amount2)) {
+				mes "Your points or inventory changed. No points were spent; please make room and try again.";
+				close;
+			}
 			if (.@s == 1) {
 				if (.@choose_prize < 15) {
-					getitem 501,150;// Red_Potion
 					mes "What a pity!";
 					mes "You got the 4th prize!!";
 					mes "The prize is ^00FF00150 Red Potions~^000000";
@@ -1393,7 +1424,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "Whoa~ 150 potions! It is enough to share with your friends~";
 				}
 				else if (.@choose_prize < 18) {
-					getitem 645,15;// Center_Potion
 					mes "The 3rd~~";
 					mes "The 3rd prize!";
 					mes "The prize is ^00FF0015 Concentration Potion~^000000";
@@ -1403,7 +1433,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "However, overdose is not good for your body~";
 				}
 				else if (.@choose_prize < 20) {
-					getitem 505,3;// Blue_Potion
 					mes "The 2nd~~";
 					mes "The 3rd prize~~";
 					mes "The prize is ^00FF003 Blue Potions~^000000";
@@ -1412,7 +1441,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "Try these when your spiritual power is low~";
 				}
 				else if (.@choose_prize == 20) {
-					getitem 608,1;// Seed_Of_Yggdrasil
 					mes "Whoa~!! The first... The First!!!";
 					mes "Congratulations~~ You got the 1st prize~";
 					mes "The prize is ^00FF001 Yggdrasil Seed~^000000";
@@ -1423,7 +1451,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 			}
 			else if (.@s == 2) {
 				if (.@choose_prize < 15) {
-					getitem 504,10;// White_Potion
 					mes "What a pity!";
 					mes "You got the 4th prize!!";
 					mes "The prize is ^00FF0010 White Potions~^000000";
@@ -1432,7 +1459,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "The greatest among potions! Use it before you fall into faint~";
 				}
 				else if (.@choose_prize < 18) {
-					getitem 656,15;// Awakening_Potion
 					mes "The 3rd~~";
 					mes "The 3rd prize!";
 					mes "The prize is ^00FF0015 Awakening Potions~^000000";
@@ -1442,7 +1468,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "Overdose is not good for your body~";
 				}
 				else if (.@choose_prize < 20) {
-					getitem 657,10;// Berserk_Potion
 					mes "The 2nd~~";
 					mes "The 3rd prize~~";
 					mes "The prize is ^00FF0010 Berserk Potions~^000000";
@@ -1451,8 +1476,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "Overdose may cause madness~";
 				}
 				else if (.@choose_prize == 20) {
-					getitem 608,1;// Seed_Of_Yggdrasil
-					getitem 607,1;// Yggdrasilberry
 					mes "Whoa~!! The first... The First!!!";
 					mes "Congratulations~~ You got the 1st prize~";
 					mes "The prize is ^00FF001 Yggdrasilberry~^000000";
@@ -1464,7 +1487,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 			}
 			else if (.@s == 3) {
 				if (.@choose_prize < 15) {
-					getitem 504,30;// White_Potion
 					mes "What a pity!";
 					mes "You got the 4th prize!!";
 					mes "The prize is ^00FF0030 White Potions~^000000";
@@ -1473,7 +1495,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "The greatest among potions! Use it before you fall into faint~";
 				}
 				else if (.@choose_prize < 18) {
-					getitem 505,10;// Blue_Potion
 					mes "The 3rd~~";
 					mes "The 3rd prize!";
 					mes "The prize is ^00FF0010 Blue Potions~^000000";
@@ -1482,8 +1503,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "Try these when your spiritual power is low~";
 				}
 				else if (.@choose_prize < 20) {
-					getitem 608,1;// Seed_Of_Yggdrasil
-					getitem 526,10;// Royal_Jelly
 					mes "The 2nd~~";
 					mes "The 3rd prize~~";
 					mes "The prize is ^00FF001 Yggdrasil Seed~^000000";
@@ -1494,8 +1513,6 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 					mes "These are very healthy food so ~";
 				}
 				else if (.@choose_prize == 20) {
-					getitem 607,3;// Yggdrasilberry
-					getitem 608,2;// Seed_Of_Yggdrasil
 					mes "Whoa~!! The first... The First!!!";
 					mes "Congratulations~~ You got the 1st prize~";
 					mes "The prize is ^00FF003 Yggdrasilberries~^000000";
@@ -1514,6 +1531,68 @@ aldeba_in,88,161,3	script	Kafra Employee#reserve2	4_F_KAFRA3,{
 	mes "Collect more~ and more~ special reserve points~";
 	mes "Thank you for using Kafra Corporation's services~~";
 	close;
+}
+
+// No dialog/input may occur between this exact capacity check, prize grant,
+// and point deduction. A failed getitem stops the script before points change.
+function	script	F_ReserveLotteryGrant	{
+	.@price = getarg(0);
+	.@id1 = getarg(1);
+	.@amount1 = getarg(2);
+	.@id2 = getarg(3,0);
+	.@amount2 = getarg(4,0);
+	if (.@price < 1 || RESRVPTS < .@price || .@amount1 < 1 || .@amount1 > 30000)
+		return false;
+	if ((.@id2 == 0) != (.@amount2 == 0) || .@amount2 < 0 || .@amount2 > 30000 || .@id1 == .@id2)
+		return false;
+	.@slots = getinventoryslots();
+	if (.@slots < 1 || .@slots > MAX_INVENTORY)
+		return false;
+	getinventorylist;
+	for (.@n = 0; .@n < @inventorylist_count; ++.@n)
+		if (@inventorylist_idx[.@n] < .@slots)
+			++.@occupied;
+	for (.@which = 0; .@which < 2; ++.@which) {
+		.@id = (.@which == 0 ? .@id1 : .@id2);
+		.@amount = (.@which == 0 ? .@amount1 : .@amount2);
+		if (.@id == 0)
+			continue;
+		// Only the lottery's established plain items and equipment are valid.
+		if (!( .@id == 501 || .@id == 504 || .@id == 505 || .@id == 516 ||
+		       .@id == 526 || .@id == 602 || .@id == 607 || .@id == 608 ||
+		       .@id == 645 || .@id == 656 || .@id == 657 || .@id == 2201 ||
+		       .@id == 2226 || .@id == 2328 || .@id == 2403 ))
+			return false;
+		.@weight = getiteminfo(.@id,ITEMINFO_WEIGHT);
+		if (.@weight < 0)
+			return false;
+		.@total_weight += .@weight * .@amount;
+		if (.@id == 2201 || .@id == 2226 || .@id == 2328 || .@id == 2403) {
+			if (.@amount != 1)
+				return false;
+			++.@needed;
+			continue;
+		}
+		.@found = false;
+		for (.@n = 0; .@n < @inventorylist_count; ++.@n) {
+			if (@inventorylist_id[.@n] != .@id || @inventorylist_bound[.@n] != 0 || @inventorylist_expire[.@n] != 0 || @inventorylist_uniqueid$[.@n] != "0" || @inventorylist_card1[.@n] != 0 || @inventorylist_card2[.@n] != 0 || @inventorylist_card3[.@n] != 0 || @inventorylist_card4[.@n] != 0)
+				continue;
+			// Native getitem targets the first compatible plain stack.
+			if (@inventorylist_idx[.@n] >= .@slots || @inventorylist_amount[.@n] + .@amount > 30000)
+				return false;
+			.@found = true;
+			break;
+		}
+		if (!.@found)
+			++.@needed;
+	}
+	if (Weight + .@total_weight > MaxWeight || .@occupied + .@needed > .@slots)
+		return false;
+	getitem .@id1,.@amount1;
+	if (.@id2 != 0)
+		getitem .@id2,.@amount2;
+	RESRVPTS -= .@price;
+	return true;
 }
 
 // Inside Clock Tower

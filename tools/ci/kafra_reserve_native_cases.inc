@@ -1,5 +1,6 @@
 // Complete source body under the actual parser/VM. Transport/registry/world
-// doubles are inherited. Lottery cases end before animation and prize delivery.
+// doubles are inherited. Lottery cases end before animation and prize delivery;
+// the candidate must not charge for an undelivered prize.
 void kafra_walk(script_code* code,const std::vector<int>& answers,const std::function<void()>& final_response={},bool lottery=false){
  auto* sd=attached;sd->state.menu_or_input=0;sd->npc_menu=0;
  run_script(code,0,sd->id,NPC);unsigned pauses=0,answer=0;
@@ -18,8 +19,48 @@ void kafra_walk(script_code* code,const std::vector<int>& answers,const std::fun
  }
  check(answer==answers.size(),"Kafra traversed requested real menus");
 }
+void kafra_full_lottery(script_code* code,bool second,int mode){
+ auto sd=recipient();put(0,644,1);weight();
+ sd->x=sd->y=100;crystal_npc.x=crystal_npc.y=100;
+ const int price=second?5000:1000;
+ setnum("RESRVPTS",price+100);
+ sd->state.menu_or_input=0;sd->npc_menu=0;sd->npc_amount=0;
+ const std::vector<int> answers=second?std::vector<int>{1,1}:std::vector<int>{10,1,1};
+ const unsigned confirmed=2;
+ const std::vector<int> ids=second?std::vector<int>{501,645,505,608}:std::vector<int>{516,602,2403,2328};
+ int old_total=0;for(int id:ids)old_total+=count(id);
+ bool boundary=false;unsigned answer=0,pauses=0;
+ run_script(code,0,sd->id,NPC);
+ while(sd->st){
+  check(++pauses<40,"Kafra full lottery dialogue remains bounded");auto* st=sd->st;
+  if(st->state==RERUNLINE){
+   check(answer<answers.size(),"Kafra full lottery expected menu or numeric input");
+   sd->npc_menu=answers[answer];sd->npc_amount=answers[answer++];
+  }else if(st->state==CLOSE)st->state=END;
+  else{
+   check(st->state==STOP,"Kafra full lottery known Next suspension");
+   if(!boundary&&answer==confirmed){
+    boundary=true;
+    check(nums[add_str("RESRVPTS")]==price+100,"Kafra no payment before prize delivery");
+    if(mode==1)sd->status.inventory_slots=1;
+    if(mode==2)st->state=END;
+   }
+  }
+  run_script_main(st);
+ }
+ check(boundary,"Kafra full lottery passed final confirmation");
+ int total=0;for(int id:ids)total+=count(id);
+ check(errors==0,"Kafra full lottery has no native grant errors");
+ check(nums[add_str("RESRVPTS")]==price+100-(mode==0?price:0),"Kafra full lottery charges only delivered prize");
+ check(mode==0?total>old_total:total==old_total,"Kafra full lottery exact delivery or no output");
+}
 void shop_cases(const std::string& dir){
  const unsigned start=cases;const bool negative=std::getenv("KAFRA_NEGATIVE")!=nullptr;
+ auto* suffix=compile(read(dir+"/kafra-num-suffix.script"),"actual F_GetNumSuffix dependency");
+ strdb_put(script_get_userfunc_db(),"F_GetNumSuffix",suffix);
+ auto* lottery_helper=compile(read(dir+"/kafra-lottery-helper.script"),"actual Kafra lottery delivery helper");
+ strdb_put(script_get_userfunc_db(),"F_ReserveLotteryGrant",lottery_helper);
+ auto* reserve2=compile(read(dir+"/kafra-reserve2.script"),"actual full Kafra reserve2");
  unsigned grant_failures=0;
  for(bool second:{false,true}){
   const int output=second?501:516,price=second?1100:100,amount=7;
@@ -80,10 +121,45 @@ void shop_cases(const std::string& dir){
    int64 balance=0;Snapshot before;
    kafra_walk(code,answers,[&](){setnum("RESRVPTS",mode==1?7000:mode==2?3500:mode==3?price-1:5000);balance=nums[add_str("RESRVPTS")];},true);
    check(errors==0,"Kafra lottery common balance guard no VM errors");before.unchanged();
-   check(nums[add_str("RESRVPTS")]==(negative?5000-price:balance-((mode==3||mode==4)?0:price)),"Kafra lottery entry charges current affordable balance exactly once");
+   check(nums[add_str("RESRVPTS")]==(negative?5000-price:balance),"Kafra lottery keeps points until prize delivery");
    script_free_code(code);
   }
  }
+ if(!negative){
+  for(int mode:{0,1,2}){
+   auto* first=compile(read(dir+"/kafra-after.script"),"complete Kafra reserve1 lottery");
+   kafra_full_lottery(first,false,mode);script_free_code(first);
+   kafra_full_lottery(reserve2,true,mode);
+  }
+  // Execute the actual shared function through the native VM for every
+   // lottery output, including the three two-item prize batches.
+  const std::vector<std::tuple<int,int,int,int,int>> prizes={
+   {1000,516,100,0,0},{1000,602,4,0,0},{1000,2403,1,0,0},{1000,2328,1,0,0},
+   {3000,501,100,0,0},{3000,2201,1,0,0},{3000,2226,1,0,0},{3000,505,3,0,0},
+   {5000,501,150,0,0},{5000,645,15,0,0},{5000,505,3,0,0},{5000,608,1,0,0},
+   {7000,504,10,0,0},{7000,656,15,0,0},{7000,657,10,0,0},{7000,608,1,607,1},
+   {10000,504,30,0,0},{10000,505,10,0,0},{10000,608,1,526,10},{10000,607,3,608,2}
+  };
+  for(auto [price,id1,amount1,id2,amount2]:prizes){
+   for(int mode:{0,1,2}){
+    auto sd=recipient();put(0,644,1);weight();setnum("RESRVPTS",mode==1?price-1:price+100);
+    if(mode==2)sd->status.inventory_slots=1;
+    const int old1=count(id1),old2=id2?count(id2):0;
+    std::ostringstream source;
+    source<<"{ ARG0=callfunc(\"F_ReserveLotteryGrant\","<<price<<","<<id1<<","<<amount1<<","<<id2<<","<<amount2<<"); end; }";
+    auto* code=compile(source.str(),"actual Kafra lottery native delivery");
+    run_script(code,0,sd->id,NPC);
+    check(!sd->st&&errors==0,"Kafra lottery native delivery completes without grant error");
+    const bool success=mode==0;
+    check(nums[add_str("ARG0")]==success,"Kafra lottery reports delivery only on success");
+    check(nums[add_str("RESRVPTS")] == (mode==1?price-1:price+100-(success?price:0)),"Kafra lottery never charges a failed delivery");
+    check(count(id1)==old1+(success?amount1:0),"Kafra first prize quantity exact");
+    if(id2)check(count(id2)==old2+(success?amount2:0),"Kafra second prize quantity exact");
+    script_free_code(code);
+   }
+  }
+ }
  check(!negative||grant_failures==4,"Kafra exactly four historical native failed grants");
+ script_free_code(reserve2);
  std::printf("KAFRA_RESERVE_NATIVE_OK cases=%u negative=%d expected_grant_failures=%u\n",cases-start,negative,grant_failures);
 }
